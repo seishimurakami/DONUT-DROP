@@ -2,1351 +2,912 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>DONUT DROP 🍩</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap');
 
-  :root {
-    --bg: #0a0015;
-    --panel: #120025;
-    --accent: #ff6bcd;
-    --accent2: #ffcc00;
-    --accent3: #00f5d4;
-    --text: #fff5ff;
-    --glow-pink: 0 0 20px #ff6bcd88, 0 0 40px #ff6bcd44;
-    --glow-yellow: 0 0 20px #ffcc0088, 0 0 40px #ffcc0044;
-    --glow-cyan: 0 0 20px #00f5d488, 0 0 40px #00f5d444;
-  }
+:root {
+  --bg: #0a0015;
+  --accent: #ff6bcd;
+  --accent2: #ffcc00;
+  --accent3: #00f5d4;
+  --text: #fff5ff;
+  --glow-pink: 0 0 20px #ff6bcd88, 0 0 40px #ff6bcd44;
+  --glow-yellow: 0 0 20px #ffcc0088, 0 0 40px #ffcc0044;
+  --glow-cyan: 0 0 20px #00f5d488, 0 0 40px #00f5d444;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  body {
-    background: var(--bg);
-    font-family: 'Fredoka One', 'Kosugi Maru', cursive;
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: 'Fredoka One', 'Kosugi Maru', cursive;
+  color: var(--text);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
 
-  /* Animated background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 20% 50%, #2a004488 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, #00223388 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 80%, #330044aa 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, #2a004488 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, #00223388 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, #330044aa 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
 
-  #bg-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.4;
-  }
+#bg-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.4; pointer-events: none; }
 
-  #game-wrapper {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    justify-content: center;
-  }
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events: none; z-index: 50;
+}
 
-  /* Title */
-  #title {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    text-align: center;
-    font-size: 22px;
-    letter-spacing: 2px;
-    text-shadow: var(--glow-pink);
-    color: var(--accent);
-    white-space: nowrap;
-    animation: titlePulse 3s ease-in-out infinite;
-  }
-  #title span { color: var(--accent2); }
+/* ── Shared overlay / button ── */
+#overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,10,0.88);
+  border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 20; backdrop-filter: blur(6px); gap: 18px;
+}
+#overlay h1 {
+  font-size: 34px; text-align: center; line-height: 1.2;
+  color: var(--accent); text-shadow: var(--glow-pink);
+  animation: overlayGlow 2s ease-in-out infinite;
+}
+@keyframes overlayGlow {
+  0%,100%{text-shadow:var(--glow-pink);}
+  50%{text-shadow:0 0 40px #ff6bcd,0 0 80px #ff6bcd88;}
+}
+#overlay .sub {
+  font-size: 13px; color: rgba(255,255,255,0.5);
+  text-align: center; line-height: 1.7;
+  font-family: 'Kosugi Maru', sans-serif;
+}
+.btn {
+  background: linear-gradient(135deg, var(--accent), #cc44aa);
+  border: none; border-radius: 50px; padding: 13px 38px;
+  font-family: 'Fredoka One', cursive; font-size: 19px;
+  color: white; cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,107,205,0.5), 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.2s; letter-spacing: 1px;
+  animation: btnPop 1.5s ease-in-out infinite;
+}
+.btn:hover { transform: scale(1.07); animation: none; }
+.btn:active { transform: scale(0.97); }
+@keyframes btnPop { 0%,100%{transform:scale(1);} 50%{transform:scale(1.03);} }
 
-  @keyframes titlePulse {
-    0%, 100% { text-shadow: var(--glow-pink); }
-    50% { text-shadow: 0 0 30px #ff6bcdcc, 0 0 60px #ff6bcd66; }
-  }
+/* ── Combo flash (shared) ── */
+#combo-flash {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 54px; color: var(--accent2);
+  text-shadow: 0 0 40px #ffcc00, 0 0 80px #ffcc0066;
+  pointer-events: none; z-index: 100; opacity: 0; transition: opacity 0.1s;
+  white-space: nowrap;
+}
+#score-popup {
+  position: fixed; font-size: 22px; font-family: 'Fredoka One', cursive;
+  color: var(--accent3); text-shadow: var(--glow-cyan);
+  pointer-events: none; z-index: 100; opacity: 0;
+}
 
-  /* Left panel */
-  .side-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 160px;
-  }
+/* ── Game canvas shared ── */
+#game-canvas {
+  display: block; image-rendering: pixelated;
+  border: 2px solid rgba(255,107,205,0.5); border-radius: 12px;
+  box-shadow: 0 0 30px rgba(255,107,205,0.3), 0 0 60px rgba(255,107,205,0.1), inset 0 0 30px rgba(0,0,0,0.5);
+}
+#particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 12px; }
 
-  .info-box {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,107,205,0.3);
-    border-radius: 16px;
-    padding: 14px 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 0 20px rgba(255,107,205,0.05);
-    transition: box-shadow 0.3s;
-  }
-  .info-box:hover {
-    box-shadow: inset 0 0 20px rgba(255,107,205,0.1), 0 0 20px rgba(255,107,205,0.15);
-  }
+/* ════════════════════════════════════
+   PC LAYOUT
+════════════════════════════════════ */
+[data-mode="pc"] #app {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: 100dvh;
+}
 
-  .info-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--accent3);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    text-shadow: var(--glow-cyan);
-  }
+[data-mode="pc"] #title {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 10; font-size: 22px; letter-spacing: 2px;
+  color: var(--accent); text-shadow: var(--glow-pink); white-space: nowrap;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+[data-mode="pc"] #title span { color: var(--accent2); }
+@keyframes titlePulse {
+  0%,100%{text-shadow:var(--glow-pink);}
+  50%{text-shadow:0 0 30px #ff6bcdcc,0 0 60px #ff6bcd66;}
+}
 
-  .info-value {
-    font-size: 28px;
-    color: var(--accent2);
-    text-shadow: var(--glow-yellow);
-    font-family: 'Fredoka One', cursive;
-    line-height: 1;
-  }
+[data-mode="pc"] #game-wrapper {
+  display: flex; gap: 20px; align-items: flex-start; justify-content: center;
+}
 
-  .info-value.small { font-size: 18px; }
+[data-mode="pc"] .side-panel { display: flex; flex-direction: column; gap: 16px; width: 160px; }
 
-  /* Game canvas */
-  #game-canvas {
-    border: 2px solid rgba(255,107,205,0.5);
-    border-radius: 12px;
-    box-shadow:
-      0 0 30px rgba(255,107,205,0.3),
-      0 0 60px rgba(255,107,205,0.1),
-      inset 0 0 30px rgba(0,0,0,0.5);
-    display: block;
-    image-rendering: pixelated;
-  }
+[data-mode="pc"] .info-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,107,205,0.3); border-radius: 16px;
+  padding: 14px 16px; backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 20px rgba(255,107,205,0.05); transition: box-shadow 0.3s;
+}
+[data-mode="pc"] .info-box:hover {
+  box-shadow: inset 0 0 20px rgba(255,107,205,0.1), 0 0 20px rgba(255,107,205,0.15);
+}
+[data-mode="pc"] .info-label {
+  font-size: 11px; letter-spacing: 3px; color: var(--accent3);
+  text-transform: uppercase; margin-bottom: 6px; text-shadow: var(--glow-cyan);
+}
+[data-mode="pc"] .info-value {
+  font-size: 28px; color: var(--accent2); text-shadow: var(--glow-yellow);
+  font-family: 'Fredoka One', cursive; line-height: 1;
+}
+[data-mode="pc"] .info-value.small { font-size: 18px; }
 
-  /* Next piece preview */
-  #next-canvas {
-    border: 1px solid rgba(0,245,212,0.4);
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,245,212,0.2);
-    display: block;
-    margin: 0 auto;
-  }
+[data-mode="pc"] #next-canvas {
+  border: 1px solid rgba(0,245,212,0.4); border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,245,212,0.2); display: block; margin: 0 auto;
+}
+[data-mode="pc"] #hold-canvas { display: block; margin: 0 auto; }
 
-  /* Level indicator */
-  #level-bar-wrapper {
-    height: 6px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-    margin-top: 8px;
-    overflow: hidden;
-  }
-  #level-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent3), var(--accent));
-    border-radius: 3px;
-    transition: width 0.5s ease;
-    box-shadow: 0 0 8px var(--accent3);
-  }
+[data-mode="pc"] #level-bar-wrapper {
+  height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 8px; overflow: hidden;
+}
+[data-mode="pc"] #level-bar {
+  height: 100%; background: linear-gradient(90deg,var(--accent3),var(--accent));
+  border-radius: 3px; transition: width 0.5s ease; box-shadow: 0 0 8px var(--accent3);
+}
+[data-mode="pc"] .controls {
+  font-size: 10px; color: rgba(255,255,255,0.35); line-height: 1.8; letter-spacing: 0.5px;
+}
+[data-mode="pc"] .controls b { color: rgba(255,107,205,0.7); font-weight: normal; }
+[data-mode="pc"] .donut-legend {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  font-size: 10px; color: rgba(255,255,255,0.5);
+  font-family: 'Kosugi Maru', sans-serif; line-height: 1.6;
+}
 
-  /* Controls hint */
-  .controls {
-    font-size: 10px;
-    color: rgba(255,255,255,0.35);
-    line-height: 1.8;
-    letter-spacing: 0.5px;
-  }
-  .controls b {
-    color: rgba(255,107,205,0.7);
-    font-weight: normal;
-  }
+/* ════════════════════════════════════
+   MOBILE LAYOUT
+════════════════════════════════════ */
+[data-mode="mobile"] #app {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  height: 100dvh; gap: 0;
+}
 
-  /* Overlay screens */
-  #overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,10,0.88);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-    backdrop-filter: blur(6px);
-    gap: 20px;
-  }
+[data-mode="mobile"] #topbar {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px 4px; background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,107,205,0.2);
+  flex-shrink: 0;
+}
+[data-mode="mobile"] #title-top {
+  font-size: 17px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
+}
+[data-mode="mobile"] .top-stats { display: flex; gap: 12px; align-items: center; }
+[data-mode="mobile"] .stat-mini { text-align: center; line-height: 1.1; }
+[data-mode="mobile"] .stat-mini .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 2px; display: block; }
+[data-mode="mobile"] .stat-mini .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.6); }
 
-  #overlay h1 {
-    font-size: 36px;
-    text-align: center;
-    line-height: 1.2;
-    text-shadow: var(--glow-pink);
-    color: var(--accent);
-    animation: overlayGlow 2s ease-in-out infinite;
-  }
+[data-mode="mobile"] #game-area {
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
+}
+[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+[data-mode="mobile"] .mini-box {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
+  border-radius: 10px; padding: 6px 8px; text-align: center; min-width: 60px;
+}
+[data-mode="mobile"] .mini-box .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; display: block; margin-bottom: 2px; }
+[data-mode="mobile"] .mini-box .val { font-size: 17px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
+[data-mode="mobile"] #game-canvas { border-width: 1.5px; border-radius: 10px; }
 
-  @keyframes overlayGlow {
-    0%, 100% { text-shadow: var(--glow-pink); }
-    50% { text-shadow: 0 0 40px #ff6bcd, 0 0 80px #ff6bcd88; }
-  }
-
-  #overlay .sub {
-    font-size: 14px;
-    color: rgba(255,255,255,0.5);
-    text-align: center;
-    line-height: 1.6;
-    font-family: 'Kosugi Maru', sans-serif;
-  }
-
-  .btn {
-    background: linear-gradient(135deg, var(--accent), #cc44aa);
-    border: none;
-    border-radius: 50px;
-    padding: 14px 40px;
-    font-family: 'Fredoka One', cursive;
-    font-size: 20px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(255,107,205,0.5), 0 4px 20px rgba(0,0,0,0.4);
-    transition: all 0.2s;
-    letter-spacing: 1px;
-    animation: btnPop 1.5s ease-in-out infinite;
-  }
-  .btn:hover {
-    transform: scale(1.07);
-    box-shadow: 0 0 30px rgba(255,107,205,0.8), 0 6px 24px rgba(0,0,0,0.5);
-  }
-  .btn:active { transform: scale(0.97); }
-
-  @keyframes btnPop {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-  }
-  .btn:hover { animation: none; }
-
-  /* Combo flash */
-  #combo-display {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 60px;
-    font-family: 'Fredoka One', cursive;
-    color: var(--accent2);
-    text-shadow: 0 0 40px #ffcc00, 0 0 80px #ffcc0066;
-    pointer-events: none;
-    z-index: 100;
-    opacity: 0;
-    transition: opacity 0.1s;
-  }
-
-  /* Score popup */
-  #score-popup {
-    position: fixed;
-    font-size: 24px;
-    font-family: 'Fredoka One', cursive;
-    color: var(--accent3);
-    text-shadow: var(--glow-cyan);
-    pointer-events: none;
-    z-index: 100;
-    opacity: 0;
-  }
-
-  /* Particle canvas overlay */
-  #particle-canvas {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10;
-    border-radius: 12px;
-  }
-
-  .donut-legend {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    font-size: 10px;
-    color: rgba(255,255,255,0.5);
-    font-family: 'Kosugi Maru', sans-serif;
-    line-height: 1.6;
-  }
-
-  /* Scanline effect */
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 50;
-  }
+[data-mode="mobile"] #controls {
+  width: 100%; display: grid;
+  grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+  gap: 5px; padding: 5px 8px 10px; flex-shrink: 0;
+}
+[data-mode="mobile"] .ctrl-btn {
+  background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; height: 50px; cursor: pointer; transition: all 0.1s; position: relative;
+}
+[data-mode="mobile"] .ctrl-btn.active {
+  background: rgba(255,107,205,0.25); border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(255,107,205,0.5); transform: scale(0.93);
+}
+[data-mode="mobile"] .ctrl-btn.large { font-size: 14px; color: rgba(255,255,255,0.9); }
 </style>
 </head>
 <body>
 <div class="scanlines"></div>
 <canvas id="bg-canvas"></canvas>
-<div id="combo-display"></div>
-<div id="score-popup">+100</div>
-
-<div id="title">🍩 <span>DONUT DROP</span> 🍩</div>
-
-<div id="game-wrapper">
-  <!-- Left Panel -->
-  <div class="side-panel">
-    <div class="info-box">
-      <div class="info-label">SCORE</div>
-      <div class="info-value" id="score-display">0</div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">LEVEL</div>
-      <div class="info-value" id="level-display">1</div>
-      <div id="level-bar-wrapper"><div id="level-bar" style="width:0%"></div></div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">LINES</div>
-      <div class="info-value" id="lines-display">0</div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">COMBO</div>
-      <div class="info-value" id="combo-display-box">0x</div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">CONTROLS</div>
-      <div class="controls">
-        <b>← →</b> 移動<br>
-        <b>↑</b> 回転<br>
-        <b>↓</b> 加速<br>
-        <b>SPACE</b> 一気落とし<br>
-        <b>Z</b> 逆回転<br>
-        <b>P</b> ポーズ<br>
-        <b>M</b> ミュート
-      </div>
-    </div>
-  </div>
-
-  <!-- Game Canvas wrapper -->
-  <div style="position:relative;">
-    <canvas id="game-canvas" width="300" height="600"></canvas>
-    <canvas id="particle-canvas" width="300" height="600"></canvas>
-    <div id="overlay">
-      <h1>🍩<br>DONUT DROP</h1>
-      <div class="sub">
-        ミスタードーナツのドーナツを<br>
-        うまく並べてラインを消そう！<br><br>
-        キーボードで操作してください
-      </div>
-      <button class="btn" id="start-btn">🎮 スタート！</button>
-    </div>
-  </div>
-
-  <!-- Right Panel -->
-  <div class="side-panel">
-    <div class="info-box">
-      <div class="info-label">NEXT</div>
-      <canvas id="next-canvas" width="140" height="140"></canvas>
-    </div>
-    <div class="info-box">
-      <div class="info-label">HOLD</div>
-      <canvas id="hold-canvas" width="140" height="100"></canvas>
-      <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px;font-family:'Kosugi Maru',sans-serif;">Cキーでホールド</div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">DONUTS</div>
-      <div class="donut-legend" id="donut-legend"></div>
-    </div>
-    <div class="info-box">
-      <div class="info-label">HI-SCORE</div>
-      <div class="info-value small" id="hiscore-display">0</div>
-    </div>
-  </div>
-</div>
+<div id="combo-flash"></div>
+<div id="score-popup"></div>
+<div id="app"></div>
 
 <script>
-// ============================================================
-// DONUT DROP
-// ============================================================
+// ════════════════════════════════════════════════════════
+// DEVICE DETECTION
+// ════════════════════════════════════════════════════════
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  || ('ontouchstart' in window && window.innerWidth < 1024);
 
+document.documentElement.setAttribute('data-mode', isMobile ? 'mobile' : 'pc');
+
+// ════════════════════════════════════════════════════════
+// LAYOUT CONSTANTS
+// ════════════════════════════════════════════════════════
 const COLS = 10, ROWS = 20;
-const CELL = 30; // cell size in pixels
-const CANVAS_W = COLS * CELL; // 300
-const CANVAS_H = ROWS * CELL; // 600
+let CELL, CW, CH, NEXT_SIZE, HOLD_W, HOLD_H;
 
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-const pCanvas = document.getElementById('particle-canvas');
-const pCtx = pCanvas.getContext('2d');
+if (isMobile) {
+  const topH = 58, ctrlH = 122, pad = 18;
+  const availH = window.innerHeight - topH - ctrlH - pad;
+  const availW = window.innerWidth * 0.63;
+  CELL = Math.max(18, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 30));
+  NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
+} else {
+  CELL = 30;
+  NEXT_SIZE = 140; HOLD_W = 140; HOLD_H = 100;
+}
+CW = COLS * CELL;
+CH = ROWS * CELL;
+
+// ════════════════════════════════════════════════════════
+// DOM INJECTION
+// ════════════════════════════════════════════════════════
+const app = document.getElementById('app');
+
+if (isMobile) {
+  app.innerHTML = `
+    <div id="topbar">
+      <div id="title-top">🍩 DONUT DROP</div>
+      <div class="top-stats">
+        <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
+        <div class="stat-mini"><span class="lbl">LEVEL</span><span class="val" id="level-display">1</span></div>
+        <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
+      </div>
+    </div>
+    <div id="game-area">
+      <div class="side-mini">
+        <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
+        <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
+        <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+      </div>
+      <div style="position:relative;flex-shrink:0;">
+        <canvas id="game-canvas"></canvas>
+        <canvas id="particle-canvas"></canvas>
+        <div id="overlay">
+          <h1>🍩<br>DONUT DROP</h1>
+          <div class="sub">ドーナツを並べてラインを消そう！<br><br>下のボタンまたはタッチで操作</div>
+          <button class="btn" id="start-btn">🎮 スタート！</button>
+        </div>
+      </div>
+    </div>
+    <div id="controls">
+      <button class="ctrl-btn" id="btn-rotL">↺</button>
+      <button class="ctrl-btn" id="btn-rotR">↻</button>
+      <button class="ctrl-btn large" id="btn-hold">HOLD</button>
+      <button class="ctrl-btn" id="btn-mute">🔊</button>
+      <button class="ctrl-btn" id="btn-pause">⏸</button>
+      <button class="ctrl-btn" id="btn-left">◀</button>
+      <button class="ctrl-btn" id="btn-down">▼</button>
+      <button class="ctrl-btn large" id="btn-drop">DROP</button>
+      <button class="ctrl-btn" id="btn-right">▶</button>
+      <button class="ctrl-btn" id="btn-extra">🍩</button>
+    </div>
+  `;
+} else {
+  app.innerHTML = `
+    <div id="title">🍩 <span>DONUT DROP</span> 🍩</div>
+    <div id="game-wrapper">
+      <div class="side-panel">
+        <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="score-display">0</div></div>
+        <div class="info-box">
+          <div class="info-label">LEVEL</div><div class="info-value" id="level-display">1</div>
+          <div id="level-bar-wrapper"><div id="level-bar" style="width:0%"></div></div>
+        </div>
+        <div class="info-box"><div class="info-label">LINES</div><div class="info-value" id="lines-display">0</div></div>
+        <div class="info-box"><div class="info-label">COMBO</div><div class="info-value" id="combo-display-box">0x</div></div>
+        <div class="info-box">
+          <div class="info-label">CONTROLS</div>
+          <div class="controls">
+            <b>← →</b> 移動<br><b>↑</b> 回転<br><b>↓</b> 加速<br>
+            <b>SPACE</b> 一気落とし<br><b>Z</b> 逆回転<br><b>C</b> ホールド<br>
+            <b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;">
+        <canvas id="game-canvas"></canvas>
+        <canvas id="particle-canvas"></canvas>
+        <div id="overlay">
+          <h1>🍩<br>DONUT DROP</h1>
+          <div class="sub">ミスタードーナツのドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
+          <button class="btn" id="start-btn">🎮 スタート！</button>
+        </div>
+      </div>
+      <div class="side-panel">
+        <div class="info-box"><div class="info-label">NEXT</div><canvas id="next-canvas"></canvas></div>
+        <div class="info-box">
+          <div class="info-label">HOLD</div><canvas id="hold-canvas"></canvas>
+          <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:4px;font-family:'Kosugi Maru',sans-serif;">Cキーでホールド</div>
+        </div>
+        <div class="info-box"><div class="info-label">DONUTS</div><div class="donut-legend" id="donut-legend"></div></div>
+        <div class="info-box"><div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div></div>
+      </div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════
+// CANVAS REFERENCES
+// ════════════════════════════════════════════════════════
+const gameCanvas = document.getElementById('game-canvas');
+const pCanvas    = document.getElementById('particle-canvas');
 const nextCanvas = document.getElementById('next-canvas');
-const nextCtx = nextCanvas.getContext('2d');
 const holdCanvas = document.getElementById('hold-canvas');
-const holdCtx = holdCanvas.getContext('2d');
-const bgCanvas = document.getElementById('bg-canvas');
-const bgCtx = bgCanvas.getContext('2d');
+const bgCanvas   = document.getElementById('bg-canvas');
 
-// ============================================================
+gameCanvas.width  = CW;   gameCanvas.height  = CH;
+pCanvas.width     = CW;   pCanvas.height     = CH;
+nextCanvas.width  = NEXT_SIZE; nextCanvas.height = NEXT_SIZE;
+holdCanvas.width  = HOLD_W;    holdCanvas.height = HOLD_H;
+
+const ctx     = gameCanvas.getContext('2d');
+const pCtx    = pCanvas.getContext('2d');
+const nextCtx = nextCanvas.getContext('2d');
+const holdCtx = holdCanvas.getContext('2d');
+const bgCtx   = bgCanvas.getContext('2d');
+
+// ════════════════════════════════════════════════════════
 // DONUT TYPES
-// ============================================================
+// ════════════════════════════════════════════════════════
 const DONUTS = [
-  {
-    id: 0, name: 'ポンデリング',
-    emoji: '🍩',
-    body: '#F5DEB3', glaze: '#DEB887', hole: '#8B4513',
-    sprinkles: ['#FF69B4','#4169E1','#32CD32'],
-    special: 'ring', // rendered as bumpy ring
-    points: 10,
-  },
-  {
-    id: 1, name: 'チョコリング',
-    emoji: '🍫',
-    body: '#4A1C00', glaze: '#6B2D00', hole: '#2A0A00',
-    sprinkles: ['#FFD700','#FFFFFF'],
-    special: 'choco',
-    points: 12,
-  },
-  {
-    id: 2, name: 'ストロベリー',
-    emoji: '🍓',
-    body: '#FFB6C1', glaze: '#FF69B4', hole: '#8B0030',
-    sprinkles: ['#FFFFFF','#FF1493','#FFD700'],
-    special: 'strawberry',
-    points: 15,
-  },
-  {
-    id: 3, name: 'ハニーディップ',
-    emoji: '🍯',
-    body: '#FFD700', glaze: '#FFA500', hole: '#8B6914',
-    sprinkles: [],
-    special: 'honey',
-    points: 10,
-  },
-  {
-    id: 4, name: 'オールドファッション',
-    emoji: '🤎',
-    body: '#C4813A', glaze: '#A0522D', hole: '#5C2A00',
-    sprinkles: [],
-    special: 'crinkle',
-    points: 8,
-  },
-  {
-    id: 5, name: 'ブルーベリー',
-    emoji: '🫐',
-    body: '#7B68EE', glaze: '#6A5ACD', hole: '#2E1A6E',
-    sprinkles: ['#FFFFFF','#B0C4DE'],
-    special: 'berry',
-    points: 18,
-  },
-  {
-    id: 6, name: 'フレンチクルーラー',
-    emoji: '💛',
-    body: '#FFFACD', glaze: '#FFE66D', hole: '#B8860B',
-    sprinkles: ['#FF6347'],
-    special: 'cruller',
-    points: 14,
-  },
-  {
-    id: 7, name: 'エンゼルクリーム',
-    emoji: '👼',
-    body: '#FFF8DC', glaze: '#FFEAA7', hole: '#D4A017',
-    sprinkles: ['#FFD700','#FF69B4'],
-    special: 'cream',
-    points: 20,
-  },
+  { id:0, name:'ポンデリング',      emoji:'🍩', body:'#F5DEB3', glaze:'#DEB887', hole:'#8B4513', sprinkles:['#FF69B4','#4169E1','#32CD32'], special:'ring',      points:10 },
+  { id:1, name:'チョコリング',      emoji:'🍫', body:'#4A1C00', glaze:'#6B2D00', hole:'#2A0A00', sprinkles:['#FFD700','#FFFFFF'],            special:'choco',     points:12 },
+  { id:2, name:'ストロベリー',      emoji:'🍓', body:'#FFB6C1', glaze:'#FF69B4', hole:'#8B0030', sprinkles:['#FFFFFF','#FF1493','#FFD700'],  special:'strawberry',points:15 },
+  { id:3, name:'ハニーディップ',    emoji:'🍯', body:'#FFD700', glaze:'#FFA500', hole:'#8B6914', sprinkles:[],                               special:'honey',     points:10 },
+  { id:4, name:'オールドファッション',emoji:'🤎',body:'#C4813A', glaze:'#A0522D', hole:'#5C2A00', sprinkles:[],                               special:'crinkle',   points:8  },
+  { id:5, name:'ブルーベリー',      emoji:'🫐', body:'#7B68EE', glaze:'#6A5ACD', hole:'#2E1A6E', sprinkles:['#FFFFFF','#B0C4DE'],            special:'berry',     points:18 },
+  { id:6, name:'フレンチクルーラー',emoji:'💛', body:'#FFFACD', glaze:'#FFE66D', hole:'#B8860B', sprinkles:['#FF6347'],                      special:'cruller',   points:14 },
+  { id:7, name:'エンゼルクリーム',  emoji:'👼', body:'#FFF8DC', glaze:'#FFEAA7', hole:'#D4A017', sprinkles:['#FFD700','#FF69B4'],            special:'cream',     points:20 },
 ];
 
-// Update donut legend
 const legendEl = document.getElementById('donut-legend');
-DONUTS.forEach(d => {
+if (legendEl) DONUTS.forEach(d => {
   legendEl.innerHTML += `<span>${d.emoji}</span><span style="color:rgba(255,255,255,0.6)">${d.name}</span>`;
 });
 
-// ============================================================
-// PIECE SHAPES (cell offsets from pivot)
-// Innovative shapes beyond standard tetrominos
-// ============================================================
+// ════════════════════════════════════════════════════════
+// PIECE SHAPES
+// ════════════════════════════════════════════════════════
 const SHAPES = [
-  // 0: ポンデリング style - diamond ring (4 cells)
-  [[0,-1],[1,0],[0,1],[-1,0]],
-  // 1: I-piece (4 horizontal)
-  [[-2,0],[-1,0],[0,0],[1,0]],
-  // 2: L-piece
-  [[0,-1],[0,0],[0,1],[1,1]],
-  // 3: J-piece
-  [[0,-1],[0,0],[0,1],[-1,1]],
-  // 4: T-piece
-  [[-1,0],[0,0],[1,0],[0,-1]],
-  // 5: S-piece
-  [[0,0],[1,0],[0,1],[-1,1]],
-  // 6: Z-piece
-  [[-1,0],[0,0],[0,1],[1,1]],
-  // 7: Cross / Plus (5 cells) - special!
-  [[0,0],[-1,0],[1,0],[0,-1],[0,1]],
-  // 8: Big L (5 cells)
-  [[0,-1],[0,0],[0,1],[0,2],[1,2]],
-  // 9: Single donut
-  [[0,0]],
-  // 10: Diagonal (3 cells)
-  [[-1,-1],[0,0],[1,1]],
-  // 11: U-shape (5 cells)
-  [[-1,0],[1,0],[-1,1],[0,1],[1,1]],
-  // 12: Corner (3 cells)
-  [[0,0],[1,0],[0,1]],
+  [[0,-1],[1,0],[0,1],[-1,0]],              // 0 diamond (ポンデリング)
+  [[-2,0],[-1,0],[0,0],[1,0]],              // 1 I
+  [[0,-1],[0,0],[0,1],[1,1]],               // 2 L
+  [[0,-1],[0,0],[0,1],[-1,1]],              // 3 J
+  [[-1,0],[0,0],[1,0],[0,-1]],              // 4 T
+  [[0,0],[1,0],[0,1],[-1,1]],              // 5 S
+  [[-1,0],[0,0],[0,1],[1,1]],              // 6 Z
+  [[0,0],[-1,0],[1,0],[0,-1],[0,1]],       // 7 cross (5 cells)
+  [[0,-1],[0,0],[0,1],[0,2],[1,2]],         // 8 big L (5 cells)
+  [[0,0]],                                  // 9 single
+  [[-1,-1],[0,0],[1,1]],                    // 10 diagonal
+  [[-1,0],[1,0],[-1,1],[0,1],[1,1]],        // 11 U
+  [[0,0],[1,0],[0,1]],                      // 12 corner
 ];
-
-// Shape weights (common vs rare)
 const SHAPE_WEIGHTS = [3,4,4,4,4,3,3,1,2,2,3,2,4];
 
 function weightedRandom(weights) {
-  const total = weights.reduce((a,b)=>a+b,0);
-  let r = Math.random()*total;
-  for(let i=0;i<weights.length;i++){
-    r -= weights[i];
-    if(r<=0) return i;
-  }
+  let r = Math.random() * weights.reduce((a,b)=>a+b,0);
+  for(let i=0;i<weights.length;i++) { r-=weights[i]; if(r<=0) return i; }
   return weights.length-1;
 }
 
-// ============================================================
-// AUDIO ENGINE (Web Audio API)
-// ============================================================
-let audioCtx = null;
-let muted = false;
-let bgmGain = null;
-let sfxGain = null;
+// ════════════════════════════════════════════════════════
+// AUDIO ENGINE
+// ════════════════════════════════════════════════════════
+let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
 
 function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  bgmGain = audioCtx.createGain();
-  bgmGain.gain.value = 0.18;
-  bgmGain.connect(audioCtx.destination);
-  sfxGain = audioCtx.createGain();
-  sfxGain.gain.value = 0.5;
-  sfxGain.connect(audioCtx.destination);
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  bgmGain = audioCtx.createGain(); bgmGain.gain.value=0.18; bgmGain.connect(audioCtx.destination);
+  sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
   startBGM();
 }
 
-function playTone(freq, type, dur, vol=1, start=0, dest=null) {
-  if (!audioCtx || muted) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(vol, audioCtx.currentTime + start);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + dur);
-  osc.connect(gain);
-  gain.connect(dest || sfxGain);
-  osc.start(audioCtx.currentTime + start);
-  osc.stop(audioCtx.currentTime + start + dur);
+function playTone(freq,type,dur,vol=1,start=0,dest=null) {
+  if(!audioCtx||muted) return;
+  const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+  osc.type=type; osc.frequency.value=freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime+start);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+start+dur);
+  osc.connect(g); g.connect(dest||sfxGain);
+  osc.start(audioCtx.currentTime+start); osc.stop(audioCtx.currentTime+start+dur);
 }
 
-function playChord(freqs, type, dur, vol=0.3, dest=null) {
-  freqs.forEach(f => playTone(f, type, dur, vol, 0, dest));
-}
+function sfxMove()    { playTone(220,'sine',0.06,0.3); }
+function sfxRotate()  { playTone(330,'square',0.08,0.2); }
+function sfxDrop()    { playTone(110,'sawtooth',0.15,0.4); }
+function sfxLineClear(n) { [523,659,784,1047].slice(0,n).forEach((f,i)=>playTone(f,'square',0.2,0.4,i*0.05)); }
+function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'square',0.3,0.4,i*0.07)); }
+function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); }
+function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
+function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
 
-// Sound effects
-function sfxMove() { playTone(220, 'sine', 0.06, 0.3); }
-function sfxRotate() { playTone(330, 'square', 0.08, 0.2); }
-function sfxDrop() { playTone(110, 'sawtooth', 0.15, 0.4); }
-function sfxLineClear(lines) {
-  const notes = [523,659,784,1047];
-  for(let i=0;i<Math.min(lines,4);i++){
-    playTone(notes[i], 'square', 0.2, 0.4, i*0.05);
-  }
-}
-function sfxLevelUp() {
-  [523,659,784,1047,1319].forEach((f,i) => playTone(f, 'square', 0.3, 0.4, i*0.07));
-}
-function sfxGameOver() {
-  [523,494,440,392,349,294,247].forEach((f,i) => playTone(f, 'sawtooth', 0.4, 0.4, i*0.12));
-}
-function sfxHold() { playTone(440, 'triangle', 0.1, 0.3); playTone(660, 'triangle', 0.1, 0.3, 0.08); }
-function sfxCombo(n) {
-  const f = 440 * Math.pow(1.2, n);
-  playTone(f, 'square', 0.15, 0.5);
-}
-
-// Simple chiptune BGM
-let bgmScheduled = false;
 function startBGM() {
-  if (!audioCtx || bgmScheduled) return;
-  bgmScheduled = true;
-  const melody = [
-    [392,0],[440,0.3],[494,0.6],[523,0.9],
-    [587,1.2],[659,1.5],[698,1.8],[784,2.1],
-    [698,2.4],[659,2.7],[587,3.0],[523,3.3],
-    [494,3.6],[440,3.9],[392,4.2],[330,4.5],
-    [349,4.8],[392,5.1],[440,5.4],[494,5.7],
-    [523,6.0],[587,6.3],[659,6.6],[784,6.9],
-  ];
-  const bass = [
-    [130,0],[130,0.6],[146,1.2],[146,1.8],
-    [155,2.4],[155,3.0],[130,3.6],[130,4.2],
-    [146,4.8],[146,5.4],[174,6.0],[174,6.6],
-  ];
-
-  const loopLen = 7.2;
-  let loopStart = audioCtx.currentTime;
-
-  function scheduleBGM(start) {
-    melody.forEach(([freq, t]) => {
-      playTone(freq*0.5, 'square', 0.28, 0.5, start + t - audioCtx.currentTime, bgmGain);
-    });
-    bass.forEach(([freq, t]) => {
-      playTone(freq, 'sawtooth', 0.55, 0.4, start + t - audioCtx.currentTime, bgmGain);
-    });
+  if(!audioCtx||bgmStarted) return;
+  bgmStarted=true;
+  const melody=[[392,0],[440,.3],[494,.6],[523,.9],[587,1.2],[659,1.5],[698,1.8],[784,2.1],[698,2.4],[659,2.7],[587,3],[523,3.3],[494,3.6],[440,3.9],[392,4.2],[330,4.5],[349,4.8],[392,5.1],[440,5.4],[494,5.7],[523,6],[587,6.3],[659,6.6],[784,6.9]];
+  const bass=[[130,0],[130,.6],[146,1.2],[146,1.8],[155,2.4],[155,3],[130,3.6],[130,4.2],[146,4.8],[146,5.4],[174,6],[174,6.6]];
+  const loopLen=7.2;
+  let loopStart=audioCtx.currentTime;
+  function sched(s) {
+    melody.forEach(([f,t])=>playTone(f*.5,'square',.28,.5,s+t-audioCtx.currentTime,bgmGain));
+    bass.forEach(([f,t])=>playTone(f,'sawtooth',.55,.4,s+t-audioCtx.currentTime,bgmGain));
   }
-
   function loop() {
-    if (!audioCtx || muted) { bgmScheduled = false; return; }
-    scheduleBGM(loopStart);
-    loopStart += loopLen;
-    setTimeout(loop, (loopLen - 0.5) * 1000);
+    if(!audioCtx||muted){bgmStarted=false;return;}
+    sched(loopStart); loopStart+=loopLen;
+    setTimeout(loop,(loopLen-0.5)*1000);
   }
   loop();
 }
 
-// ============================================================
+function toggleMute() {
+  muted=!muted;
+  if(bgmGain) bgmGain.gain.value=muted?0:0.18;
+  const btn=document.getElementById('btn-mute');
+  if(btn) btn.textContent=muted?'🔇':'🔊';
+}
+
+// ════════════════════════════════════════════════════════
 // PARTICLE SYSTEM
-// ============================================================
-const particles = [];
+// ════════════════════════════════════════════════════════
+const particles=[];
 
-function spawnParticles(x, y, color, count=12) {
+function spawnParticles(x,y,color,count=12) {
   for(let i=0;i<count;i++){
-    const angle = (Math.PI*2/count)*i + Math.random()*0.5;
-    const speed = 2 + Math.random()*4;
+    const a=(Math.PI*2/count)*i+Math.random()*.5, sp=2+Math.random()*4;
     particles.push({
-      x, y,
-      vx: Math.cos(angle)*speed,
-      vy: Math.sin(angle)*speed - 2,
-      life: 1,
-      decay: 0.02 + Math.random()*0.03,
-      size: 4 + Math.random()*6,
-      color,
-      shape: Math.random() > 0.5 ? 'circle' : 'donut',
+      x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
+      life:1,decay:.02+Math.random()*.03,size:4+Math.random()*6,
+      color, shape:Math.random()>.5?'circle':'donut',
     });
   }
 }
-
 function spawnLineParticles(row) {
-  for(let col=0;col<COLS;col++){
-    const x = col*CELL + CELL/2;
-    const y = row*CELL + CELL/2;
-    const color = `hsl(${Math.random()*360},100%,70%)`;
-    spawnParticles(x, y, color, 5);
-  }
+  for(let c=0;c<COLS;c++) spawnParticles(c*CELL+CELL/2,row*CELL+CELL/2,`hsl(${Math.random()*360},100%,70%)`,5);
 }
-
-function spawnDropParticles(x, y) {
-  for(let i=0;i<6;i++){
-    particles.push({
-      x: x + CELL/2 + (Math.random()-0.5)*CELL,
-      y: y + CELL/2,
-      vx: (Math.random()-0.5)*3,
-      vy: -Math.random()*4,
-      life: 1,
-      decay: 0.04,
-      size: 3 + Math.random()*4,
-      color: '#FFD700',
-      shape: 'star',
-    });
-  }
+function spawnDropParticles(x,y) {
+  for(let i=0;i<6;i++) particles.push({
+    x:x+CELL/2+(Math.random()-.5)*CELL, y:y+CELL/2,
+    vx:(Math.random()-.5)*3, vy:-Math.random()*4,
+    life:1, decay:.04, size:3+Math.random()*4, color:'#FFD700', shape:'star',
+  });
 }
-
 function updateParticles() {
   for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.15;
-    p.vx *= 0.97;
-    p.life -= p.decay;
-    if(p.life <= 0) particles.splice(i,1);
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.vx*=0.97; p.life-=p.decay;
+    if(p.life<=0) particles.splice(i,1);
   }
 }
-
 function drawParticles() {
-  pCtx.clearRect(0,0,CANVAS_W,CANVAS_H);
-  particles.forEach(p => {
-    pCtx.save();
-    pCtx.globalAlpha = p.life;
-    pCtx.fillStyle = p.color;
-    pCtx.strokeStyle = p.color;
-    pCtx.translate(p.x, p.y);
-    if(p.shape === 'donut') {
-      pCtx.beginPath();
-      pCtx.arc(0,0,p.size,0,Math.PI*2);
-      pCtx.arc(0,0,p.size*0.4,0,Math.PI*2,true);
-      pCtx.fill();
-    } else if(p.shape === 'star') {
-      drawStar(pCtx, 0, 0, 4, p.size, p.size*0.4);
+  pCtx.clearRect(0,0,CW,CH);
+  particles.forEach(p=>{
+    pCtx.save(); pCtx.globalAlpha=p.life; pCtx.fillStyle=p.color;
+    pCtx.translate(p.x,p.y);
+    if(p.shape==='donut'){
+      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.arc(0,0,p.size*.4,0,Math.PI*2,true); pCtx.fill();
+    } else if(p.shape==='star'){
+      drawStar(pCtx,0,0,4,p.size,p.size*.4);
     } else {
-      pCtx.beginPath();
-      pCtx.arc(0,0,p.size,0,Math.PI*2);
-      pCtx.fill();
+      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.fill();
     }
     pCtx.restore();
   });
 }
-
-function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
-  let rot = (Math.PI/2)*3;
-  const step = Math.PI/spikes;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy-outerR);
+function drawStar(c,cx,cy,spikes,outerR,innerR){
+  let rot=(Math.PI/2)*3, step=Math.PI/spikes;
+  c.beginPath(); c.moveTo(cx,cy-outerR);
   for(let i=0;i<spikes;i++){
-    ctx.lineTo(cx+Math.cos(rot)*outerR, cy+Math.sin(rot)*outerR);
-    rot += step;
-    ctx.lineTo(cx+Math.cos(rot)*innerR, cy+Math.sin(rot)*innerR);
-    rot += step;
+    c.lineTo(cx+Math.cos(rot)*outerR,cy+Math.sin(rot)*outerR); rot+=step;
+    c.lineTo(cx+Math.cos(rot)*innerR,cy+Math.sin(rot)*innerR); rot+=step;
   }
-  ctx.lineTo(cx, cy-outerR);
-  ctx.closePath();
-  ctx.fill();
+  c.lineTo(cx,cy-outerR); c.closePath(); c.fill();
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════
 // DONUT DRAWING
-// ============================================================
-function drawDonut(ctx, x, y, size, donut, alpha=1, time=0) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(x + size/2, y + size/2);
+// ════════════════════════════════════════════════════════
+function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
+  c.save(); c.globalAlpha=alpha; c.translate(x+sz/2,y+sz/2);
+  const r=sz*.42, hr=sz*.16;
 
-  const r = size * 0.42;
-  const hr = size * 0.16;
-
-  if (donut.special === 'ring') {
-    // Pon de Ring - bumpy ring with connected circles
-    const bumpR = r * 0.28;
-    const bumpCount = 8;
-    // Draw connecting ring
-    ctx.beginPath();
-    ctx.arc(0,0,r*0.72,0,Math.PI*2);
-    ctx.arc(0,0,r*0.38,0,Math.PI*2,true);
-    const grad = ctx.createRadialGradient(-r*0.2,-r*0.2,0,0,0,r);
-    grad.addColorStop(0,'#FFF8E7');
-    grad.addColorStop(0.5, donut.body);
-    grad.addColorStop(1, donut.glaze);
-    ctx.fillStyle = grad;
-    ctx.fill();
-    // Bumps
-    for(let i=0;i<bumpCount;i++){
-      const a = (Math.PI*2/bumpCount)*i + time*0.3;
-      const bx = Math.cos(a)*r*0.56;
-      const by = Math.sin(a)*r*0.56;
-      const g2 = ctx.createRadialGradient(bx-bumpR*0.3,by-bumpR*0.3,0,bx,by,bumpR);
-      g2.addColorStop(0,'#FFF8E7');
-      g2.addColorStop(1,donut.body);
-      ctx.beginPath();
-      ctx.arc(bx,by,bumpR,0,Math.PI*2);
-      ctx.fillStyle = g2;
-      ctx.fill();
+  if(donut.special==='ring'){
+    const bumpR=r*.28, bc=8;
+    c.beginPath(); c.arc(0,0,r*.72,0,Math.PI*2); c.arc(0,0,r*.38,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#FFF8E7'); g.addColorStop(.5,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+    for(let i=0;i<bc;i++){
+      const a=(Math.PI*2/bc)*i+time*.3, bx=Math.cos(a)*r*.56, by=Math.sin(a)*r*.56;
+      const g2=c.createRadialGradient(bx-bumpR*.3,by-bumpR*.3,0,bx,by,bumpR);
+      g2.addColorStop(0,'#FFF8E7'); g2.addColorStop(1,donut.body);
+      c.beginPath(); c.arc(bx,by,bumpR,0,Math.PI*2); c.fillStyle=g2; c.fill();
     }
-  } else if (donut.special === 'crinkle') {
-    // Old Fashioned - crinkled edges
-    ctx.beginPath();
-    const pts = 16;
+  } else if(donut.special==='crinkle'){
+    c.beginPath();
+    const pts=16;
     for(let i=0;i<=pts;i++){
-      const a = (Math.PI*2/pts)*i;
-      const wobble = 1 + 0.1*Math.sin(a*6);
-      const rr = r*wobble;
-      if(i===0) ctx.moveTo(Math.cos(a)*rr, Math.sin(a)*rr);
-      else ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr);
+      const a=(Math.PI*2/pts)*i, rr=r*(1+.1*Math.sin(a*6));
+      if(i===0) c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
     }
-    ctx.arc(0,0,hr,0,Math.PI*2,true);
-    const grad = ctx.createRadialGradient(-r*0.2,-r*0.2,0,0,0,r);
-    grad.addColorStop(0,'#D4A574');
-    grad.addColorStop(0.6, donut.body);
-    grad.addColorStop(1, donut.glaze);
-    ctx.fillStyle = grad;
-    ctx.fill();
+    c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#D4A574'); g.addColorStop(.6,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
   } else {
-    // Standard donut shape
-    ctx.beginPath();
-    ctx.arc(0,0,r,0,Math.PI*2);
-    ctx.arc(0,0,hr,0,Math.PI*2,true);
-    const grad = ctx.createRadialGradient(-r*0.25,-r*0.25,hr*0.5,0,0,r);
-    grad.addColorStop(0,'#FFFFFF55');
-    grad.addColorStop(0.3, donut.body + 'EE');
-    grad.addColorStop(1, donut.glaze + 'CC');
-    ctx.fillStyle = grad;
-    ctx.fill();
+    c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.25,-r*.25,hr*.5,0,0,r);
+    g.addColorStop(0,'#FFFFFF55'); g.addColorStop(.3,donut.body+'EE'); g.addColorStop(1,donut.glaze+'CC');
+    c.fillStyle=g; c.fill();
+    c.beginPath(); c.arc(0,-r*.05,r*.75,Math.PI+.5,-.5); c.arc(0,-r*.05,hr*1.1,-.5,Math.PI+.5,true);
+    c.fillStyle=donut.glaze+'AA'; c.fill();
   }
 
-  // Glaze on top (upper half)
-  if (donut.special !== 'ring' && donut.special !== 'crinkle') {
-    ctx.beginPath();
-    ctx.arc(0,-r*0.05,r*0.75,Math.PI+0.5,-0.5);
-    ctx.arc(0,-r*0.05,hr*1.1,-0.5,Math.PI+0.5,true);
-    const glazeColor = donut.glaze;
-    ctx.fillStyle = glazeColor + 'AA';
-    ctx.fill();
-  }
-
-  // Sprinkles
-  if(donut.sprinkles.length > 0){
-    const sprinkleCount = 8;
-    for(let i=0;i<sprinkleCount;i++){
-      const sa = (Math.PI*2/sprinkleCount)*i + time*0.1;
-      const sr = hr + (r-hr)*0.55 + Math.sin(sa*3)*2;
-      const sx = Math.cos(sa)*sr;
-      const sy = Math.sin(sa)*sr;
-      const color = donut.sprinkles[i % donut.sprinkles.length];
-      ctx.save();
-      ctx.translate(sx,sy);
-      ctx.rotate(sa + Math.PI/4);
-      ctx.fillStyle = color;
-      ctx.fillRect(-3,-1,6,2);
-      ctx.restore();
+  if(donut.sprinkles.length>0){
+    for(let i=0;i<8;i++){
+      const sa=(Math.PI*2/8)*i+time*.1, sr=hr+(r-hr)*.55+Math.sin(sa*3)*2;
+      c.save(); c.translate(Math.cos(sa)*sr,Math.sin(sa)*sr); c.rotate(sa+Math.PI/4);
+      c.fillStyle=donut.sprinkles[i%donut.sprinkles.length]; c.fillRect(-3,-1,6,2); c.restore();
     }
   }
-
-  // Highlight
-  ctx.beginPath();
-  ctx.arc(-r*0.2,-r*0.3,r*0.18,0,Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fill();
-
-  // Glow
-  ctx.shadowColor = donut.glaze;
-  ctx.shadowBlur = 8;
-  ctx.beginPath();
-  ctx.arc(0,0,r*1.05,0,Math.PI*2);
-  ctx.arc(0,0,hr*0.9,0,Math.PI*2,true);
-  ctx.strokeStyle = donut.glaze + '44';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.restore();
+  c.beginPath(); c.arc(-r*.2,-r*.3,r*.18,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+  c.shadowColor=donut.glaze; c.shadowBlur=8;
+  c.beginPath(); c.arc(0,0,r*1.05,0,Math.PI*2); c.arc(0,0,hr*.9,0,Math.PI*2,true);
+  c.strokeStyle=donut.glaze+'44'; c.lineWidth=2; c.stroke();
+  c.restore();
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════
 // BACKGROUND ANIMATION
-// ============================================================
-let bgTime = 0;
-const bgDonuts = Array.from({length:15},()=>({
-  x: Math.random()*window.innerWidth,
-  y: Math.random()*window.innerHeight,
-  r: 20+Math.random()*50,
-  speed: 0.2+Math.random()*0.5,
-  donut: DONUTS[Math.floor(Math.random()*DONUTS.length)],
-  phase: Math.random()*Math.PI*2,
-  alpha: 0.05+Math.random()*0.12,
+// ════════════════════════════════════════════════════════
+let bgTime=0;
+const bgDonuts=Array.from({length:15},()=>({
+  x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+  r:20+Math.random()*50, speed:.2+Math.random()*.5,
+  donut:DONUTS[Math.floor(Math.random()*DONUTS.length)],
+  phase:Math.random()*Math.PI*2, alpha:.05+Math.random()*.12,
 }));
 
-function resizeBg() {
-  bgCanvas.width = window.innerWidth;
-  bgCanvas.height = window.innerHeight;
-}
-resizeBg();
-window.addEventListener('resize', resizeBg);
+function resizeBg(){bgCanvas.width=window.innerWidth;bgCanvas.height=window.innerHeight;}
+resizeBg(); window.addEventListener('resize',resizeBg);
 
-function drawBg() {
-  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-  bgTime += 0.005;
-  bgDonuts.forEach(d => {
-    d.y -= d.speed;
-    if(d.y < -100) { d.y = bgCanvas.height+100; d.x = Math.random()*bgCanvas.width; }
-    bgCtx.save();
-    bgCtx.globalAlpha = d.alpha + 0.05*Math.sin(bgTime+d.phase);
-    bgCtx.translate(d.x, d.y);
-    bgCtx.rotate(bgTime*0.3*d.speed);
-    const r = d.r;
-    bgCtx.beginPath();
-    bgCtx.arc(0,0,r,0,Math.PI*2);
-    bgCtx.arc(0,0,r*0.38,0,Math.PI*2,true);
-    bgCtx.fillStyle = d.donut.body;
-    bgCtx.fill();
-    bgCtx.restore();
+function drawBg(){
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); bgTime+=.005;
+  bgDonuts.forEach(d=>{
+    d.y-=d.speed; if(d.y<-100){d.y=bgCanvas.height+100;d.x=Math.random()*bgCanvas.width;}
+    bgCtx.save(); bgCtx.globalAlpha=d.alpha+.05*Math.sin(bgTime+d.phase);
+    bgCtx.translate(d.x,d.y); bgCtx.rotate(bgTime*.3*d.speed);
+    bgCtx.beginPath(); bgCtx.arc(0,0,d.r,0,Math.PI*2); bgCtx.arc(0,0,d.r*.38,0,Math.PI*2,true);
+    bgCtx.fillStyle=d.donut.body; bgCtx.fill(); bgCtx.restore();
   });
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════
 // GAME STATE
-// ============================================================
-const grid = Array.from({length:ROWS},()=>Array(COLS).fill(null));
-let currentPiece = null;
-let nextPieceData = null;
-let holdPieceData = null;
-let canHold = true;
-let score = 0;
-let lines = 0;
-let level = 1;
-let combo = 0;
-let hiScore = parseInt(localStorage.getItem('donutHiScore')||'0');
-let gameRunning = false;
-let gamePaused = false;
-let dropTimer = 0;
-let dropInterval = 700; // ms
-let lastTime = 0;
-let shakeTimer = 0;
-let gameTime = 0;
+// ════════════════════════════════════════════════════════
+const grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+let currentPiece=null, nextPieceData=null, holdPieceData=null, canHold=true;
+let score=0, lines=0, level=1, combo=0;
+let hiScore=parseInt(localStorage.getItem('donutHiScore')||'0');
+let gameRunning=false, gamePaused=false;
+let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
-document.getElementById('hiscore-display').textContent = hiScore.toLocaleString();
+const hsd=document.getElementById('hiscore-display');
+if(hsd) hsd.textContent=hiScore.toLocaleString();
 
-// ============================================================
-// PIECE MANAGEMENT
-// ============================================================
-function newPieceData() {
-  const si = weightedRandom(SHAPE_WEIGHTS);
-  const di = Math.floor(Math.random()*DONUTS.length);
-  return { shapeIdx: si, donutIdx: di };
+// ════════════════════════════════════════════════════════
+// PIECE LOGIC
+// ════════════════════════════════════════════════════════
+function newPieceData() { return {shapeIdx:weightedRandom(SHAPE_WEIGHTS), donutIdx:Math.floor(Math.random()*DONUTS.length)}; }
+function createPiece(d) {
+  return {x:Math.floor(COLS/2),y:1, cells:SHAPES[d.shapeIdx].map(([dx,dy])=>({dx,dy})), donutIdx:d.donutIdx, shapeIdx:d.shapeIdx, time:0};
 }
-
-function createPiece(data) {
-  const cells = SHAPES[data.shapeIdx].map(([dx,dy])=>({dx,dy}));
-  return {
-    x: Math.floor(COLS/2),
-    y: 1,
-    cells,
-    donutIdx: data.donutIdx,
-    shapeIdx: data.shapeIdx,
-    time: 0,
-  };
+function collides(p) {
+  return p.cells.some(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&grid[ny][nx]!==null);});
 }
+function rotatePiece(p,dir=1) {
+  const rot=p.cells.map(({dx,dy})=>({dx:-dy*dir,dy:dx*dir}));
+  for(const kx of [0,-1,1,-2,2]) for(const ky of [0,-1,1]){
+    const k={...p,x:p.x+kx,y:p.y+ky,cells:rot};
+    if(!collides(k)) return k;
+  }
+  return p;
+}
+function hardDrop(p) { let q={...p,cells:[...p.cells]};while(!collides({...q,y:q.y+1}))q.y++;return q; }
 
 function spawnPiece() {
-  if(!nextPieceData) nextPieceData = newPieceData();
-  currentPiece = createPiece(nextPieceData);
-  nextPieceData = newPieceData();
-  canHold = true;
-  if(collides(currentPiece)) {
-    endGame();
-  }
+  if(!nextPieceData) nextPieceData=newPieceData();
+  currentPiece=createPiece(nextPieceData); nextPieceData=newPieceData(); canHold=true;
+  if(collides(currentPiece)) endGame();
 }
 
-function rotatePiece(piece, dir=1) {
-  const rotated = piece.cells.map(({dx,dy}) => ({
-    dx: -dy*dir,
-    dy: dx*dir,
-  }));
-  const test = {...piece, cells:rotated};
-  // Wall kicks
-  const kicks = [0,-1,1,-2,2];
-  for(const kx of kicks){
-    for(const ky of [0,-1,1]){
-      const kicked = {...test, x:test.x+kx, y:test.y+ky, cells:rotated};
-      if(!collides(kicked)) return kicked;
-    }
-  }
-  return piece;
-}
-
-function collides(piece) {
-  return piece.cells.some(({dx,dy}) => {
-    const nx = piece.x+dx, ny = piece.y+dy;
-    return nx<0 || nx>=COLS || ny>=ROWS || (ny>=0 && grid[ny][nx]!==null);
-  });
-}
-
-function lockPiece(piece) {
-  piece.cells.forEach(({dx,dy}) => {
-    const nx=piece.x+dx, ny=piece.y+dy;
-    if(ny>=0 && ny<ROWS && nx>=0 && nx<COLS) {
-      grid[ny][nx] = piece.donutIdx;
-    }
-  });
+function lockPiece(p) {
+  p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)grid[ny][nx]=p.donutIdx;});
   sfxDrop();
-  // Spawn drop particles at last position
-  piece.cells.forEach(({dx,dy}) => {
-    const nx=piece.x+dx, ny=piece.y+dy;
-    if(ny>=0) spawnDropParticles(nx*CELL, ny*CELL);
-  });
-  checkLines();
-  spawnPiece();
+  p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0)spawnDropParticles(nx*CELL,ny*CELL);});
+  checkLines(); spawnPiece();
 }
 
 function checkLines() {
-  let cleared = 0;
-  const clearedRows = [];
-  for(let r=ROWS-1;r>=0;r--){
-    if(grid[r].every(c=>c!==null)){
-      clearedRows.push(r);
-    }
-  }
-  cleared = clearedRows.length;
-  if(cleared>0){
-    clearedRows.forEach(r => spawnLineParticles(r));
-    // Remove rows and add new ones at top
-    clearedRows.forEach(r => {
-      grid.splice(r,1);
-      grid.unshift(Array(COLS).fill(null));
-    });
-    sfxLineClear(cleared);
-    combo++;
-    if(combo>1) sfxCombo(combo);
-    shakeTimer = 15;
-
-    const comboMult = combo;
-    const baseScore = [0,100,300,600,1000][Math.min(cleared,4)];
-    const earned = baseScore * level * comboMult;
-    score += earned;
-    lines += cleared;
-
-    const newLevel = Math.floor(lines/10)+1;
-    if(newLevel>level){
-      level = newLevel;
-      dropInterval = Math.max(100, 700 - (level-1)*60);
-      sfxLevelUp();
-    }
-
-    // Show combo
+  const cleared=[];
+  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null)) cleared.push(r);
+  if(cleared.length){
+    cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
+    sfxLineClear(cleared.length);
+    combo++; if(combo>1) sfxCombo(combo);
+    shakeTimer=15;
+    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*level*combo;
+    score+=earned; lines+=cleared.length;
+    const nl=Math.floor(lines/10)+1;
+    if(nl>level){level=nl;dropInterval=Math.max(100,700-(level-1)*60);sfxLevelUp();}
     if(combo>1) showCombo(combo);
-    showScorePopup(earned);
+    if(!isMobile) showScorePopup(earned);
     updateUI();
-  } else {
-    combo = 0;
-  }
-  document.getElementById('combo-display-box').textContent = combo > 0 ? combo+'x' : '0x';
+  } else { combo=0; }
+  const cb=document.getElementById('combo-display-box');
+  if(cb) cb.textContent=combo>0?combo+'x':'0x';
 }
 
-function hardDrop(piece) {
-  let p = {...piece, cells:[...piece.cells]};
-  while(!collides({...p, y:p.y+1})) p.y++;
-  return p;
-}
-
-// ============================================================
+// ════════════════════════════════════════════════════════
 // HOLD
-// ============================================================
+// ════════════════════════════════════════════════════════
 function holdPiece() {
   if(!canHold) return;
-  sfxHold();
-  canHold = false;
-  if(holdPieceData===null){
-    holdPieceData = {shapeIdx:currentPiece.shapeIdx, donutIdx:currentPiece.donutIdx};
-    spawnPiece();
-  } else {
-    const tmp = holdPieceData;
-    holdPieceData = {shapeIdx:currentPiece.shapeIdx, donutIdx:currentPiece.donutIdx};
-    currentPiece = createPiece(tmp);
-  }
+  sfxHold(); canHold=false;
+  if(!holdPieceData){holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};spawnPiece();}
+  else{const t=holdPieceData;holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};currentPiece=createPiece(t);}
   drawHold();
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════
 // RENDERING
-// ============================================================
+// ════════════════════════════════════════════════════════
 function drawGrid() {
-  // Background grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-  ctx.lineWidth = 1;
-  for(let c=0;c<=COLS;c++){
-    ctx.beginPath();
-    ctx.moveTo(c*CELL,0);
-    ctx.lineTo(c*CELL,CANVAS_H);
-    ctx.stroke();
-  }
-  for(let r=0;r<=ROWS;r++){
-    ctx.beginPath();
-    ctx.moveTo(0,r*CELL);
-    ctx.lineTo(CANVAS_W,r*CELL);
-    ctx.stroke();
-  }
-
-  // Filled cells
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      if(grid[r][c]!==null){
-        const donut = DONUTS[grid[r][c]];
-        drawDonut(ctx, c*CELL+1, r*CELL+1, CELL-2, donut, 1, gameTime*0.05);
-      }
-    }
-  }
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,CH);ctx.stroke();}
+  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(CW,r*CELL);ctx.stroke();}
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+    if(grid[r][c]!==null) drawDonut(ctx,c*CELL+1,r*CELL+1,CELL-2,DONUTS[grid[r][c]],1,gameTime*.05);
 }
 
 function drawCurrentPiece() {
   if(!currentPiece) return;
-
-  // Ghost piece
-  const ghost = hardDrop(currentPiece);
-  const donut = DONUTS[currentPiece.donutIdx];
-  ghost.cells.forEach(({dx,dy}) => {
-    const nx=ghost.x+dx, ny=ghost.y+dy;
-    if(ny>=0){
-      ctx.save();
-      ctx.globalAlpha = 0.2;
-      ctx.beginPath();
-      ctx.arc(nx*CELL+CELL/2, ny*CELL+CELL/2, CELL*0.38, 0, Math.PI*2);
-      ctx.arc(nx*CELL+CELL/2, ny*CELL+CELL/2, CELL*0.14, 0, Math.PI*2, true);
-      ctx.strokeStyle = donut.glaze;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.restore();
-    }
+  const ghost=hardDrop(currentPiece), donut=DONUTS[currentPiece.donutIdx];
+  ghost.cells.forEach(({dx,dy})=>{
+    const nx=ghost.x+dx,ny=ghost.y+dy;
+    if(ny>=0){ctx.save();ctx.globalAlpha=0.2;ctx.beginPath();
+      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.38,0,Math.PI*2);
+      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.14,0,Math.PI*2,true);
+      ctx.strokeStyle=donut.glaze;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
   });
-
-  // Actual piece
-  currentPiece.cells.forEach(({dx,dy}) => {
-    const nx=currentPiece.x+dx, ny=currentPiece.y+dy;
-    if(ny>=0){
-      drawDonut(ctx, nx*CELL+1, ny*CELL+1, CELL-2, donut, 1, gameTime*0.1);
-    }
+  currentPiece.cells.forEach(({dx,dy})=>{
+    const nx=currentPiece.x+dx,ny=currentPiece.y+dy;
+    if(ny>=0) drawDonut(ctx,nx*CELL+1,ny*CELL+1,CELL-2,donut,1,gameTime*.1);
   });
 }
 
 function drawNext() {
-  nextCtx.clearRect(0,0,140,140);
+  nextCtx.clearRect(0,0,NEXT_SIZE,NEXT_SIZE);
   if(!nextPieceData) return;
-  const donut = DONUTS[nextPieceData.donutIdx];
-  const cells = SHAPES[nextPieceData.shapeIdx];
-  const minX = Math.min(...cells.map(([dx])=>dx));
-  const maxX = Math.max(...cells.map(([dx])=>dx));
-  const minY = Math.min(...cells.map(([,dy])=>dy));
-  const maxY = Math.max(...cells.map(([,dy])=>dy));
-  const w = maxX-minX+1, h = maxY-minY+1;
-  const scale = Math.min(28, 120/Math.max(w,h));
-  const ox = 70 - ((minX+maxX)/2)*scale;
-  const oy = 70 - ((minY+maxY)/2)*scale;
-  cells.forEach(([dx,dy]) => {
-    drawDonut(nextCtx, ox+dx*scale-scale/2+1, oy+dy*scale-scale/2+1, scale-2, donut, 1, gameTime*0.1);
-  });
+  const donut=DONUTS[nextPieceData.donutIdx], cells=SHAPES[nextPieceData.shapeIdx];
+  const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
+  const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
+  const sc=Math.min(NEXT_SIZE*0.2, (NEXT_SIZE-10)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=NEXT_SIZE/2-((minX+maxX)/2)*sc, oy=NEXT_SIZE/2-((minY+maxY)/2)*sc;
+  cells.forEach(([dx,dy])=>drawDonut(nextCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
 }
 
 function drawHold() {
-  holdCtx.clearRect(0,0,140,100);
+  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
   if(!holdPieceData) return;
-  const donut = DONUTS[holdPieceData.donutIdx];
-  const cells = SHAPES[holdPieceData.shapeIdx];
-  const minX = Math.min(...cells.map(([dx])=>dx));
-  const maxX = Math.max(...cells.map(([dx])=>dx));
-  const minY = Math.min(...cells.map(([,dy])=>dy));
-  const maxY = Math.max(...cells.map(([,dy])=>dy));
-  const w = maxX-minX+1, h = maxY-minY+1;
-  const scale = Math.min(24, 100/Math.max(w,h));
-  const ox = 70 - ((minX+maxX)/2)*scale;
-  const oy = 50 - ((minY+maxY)/2)*scale;
-  holdCtx.globalAlpha = canHold ? 1 : 0.4;
-  cells.forEach(([dx,dy]) => {
-    drawDonut(holdCtx, ox+dx*scale-scale/2+1, oy+dy*scale-scale/2+1, scale-2, donut, 1, gameTime*0.1);
-  });
+  const donut=DONUTS[holdPieceData.donutIdx], cells=SHAPES[holdPieceData.shapeIdx];
+  const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
+  const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
+  const sc=Math.min(HOLD_H*0.4, (Math.min(HOLD_W,HOLD_H)-8)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=HOLD_W/2-((minX+maxX)/2)*sc, oy=HOLD_H/2-((minY+maxY)/2)*sc;
+  holdCtx.globalAlpha=canHold?1:.4;
+  cells.forEach(([dx,dy])=>drawDonut(holdCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
 }
 
-// ============================================================
+// ════════════════════════════════════════════════════════
 // UI UPDATES
-// ============================================================
+// ════════════════════════════════════════════════════════
 function updateUI() {
-  document.getElementById('score-display').textContent = score.toLocaleString();
-  document.getElementById('level-display').textContent = level;
-  document.getElementById('lines-display').textContent = lines;
-  const linesInLevel = lines % 10;
-  document.getElementById('level-bar').style.width = (linesInLevel*10)+'%';
+  document.getElementById('score-display').textContent=score.toLocaleString();
+  document.getElementById('level-display').textContent=level;
+  document.getElementById('lines-display').textContent=lines;
+  const lb=document.getElementById('level-bar');
+  if(lb) lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){
-    hiScore = score;
-    localStorage.setItem('donutHiScore', hiScore);
-    document.getElementById('hiscore-display').textContent = hiScore.toLocaleString();
+    hiScore=score; localStorage.setItem('donutHiScore',hiScore);
+    const h=document.getElementById('hiscore-display');
+    if(h) h.textContent=hiScore.toLocaleString();
   }
 }
 
-let comboTimeout = null;
+let comboTO=null;
 function showCombo(n) {
-  const el = document.getElementById('combo-display');
-  el.textContent = `${n}x COMBO! 🍩`;
-  el.style.opacity = '1';
-  clearTimeout(comboTimeout);
-  comboTimeout = setTimeout(()=>{el.style.opacity='0';},800);
+  const el=document.getElementById('combo-flash');
+  el.textContent=n+'x COMBO! 🍩'; el.style.opacity='1';
+  clearTimeout(comboTO); comboTO=setTimeout(()=>{el.style.opacity='0';},800);
 }
 
-let popupTimeout = null;
-const popupEl = document.getElementById('score-popup');
+let popupTO=null;
+const popupEl=document.getElementById('score-popup');
 function showScorePopup(pts) {
-  popupEl.textContent = '+'+pts.toLocaleString();
-  popupEl.style.opacity = '1';
-  popupEl.style.top = (canvas.getBoundingClientRect().top + 100) + 'px';
-  popupEl.style.left = (canvas.getBoundingClientRect().left + canvas.width/2 - 30) + 'px';
-  popupEl.style.transition = 'opacity 0.1s, transform 0.1s';
-  popupEl.style.transform = 'scale(1.2)';
-  clearTimeout(popupTimeout);
-  popupTimeout = setTimeout(()=>{
-    popupEl.style.opacity='0';
-    popupEl.style.transform='scale(1)';
-  }, 600);
+  popupEl.textContent='+'+pts.toLocaleString();
+  const rect=gameCanvas.getBoundingClientRect();
+  popupEl.style.top=(rect.top+100)+'px'; popupEl.style.left=(rect.left+CW/2-30)+'px';
+  popupEl.style.opacity='1'; popupEl.style.transform='scale(1.2)';
+  clearTimeout(popupTO);
+  popupTO=setTimeout(()=>{popupEl.style.opacity='0';popupEl.style.transform='scale(1)';},600);
 }
 
-// ============================================================
-// SCREEN SHAKE
-// ============================================================
-function applyShake() {
-  if(shakeTimer > 0){
-    const amt = shakeTimer * 0.5;
-    const dx = (Math.random()-0.5)*amt;
-    const dy = (Math.random()-0.5)*amt;
-    ctx.translate(dx, dy);
-    shakeTimer--;
-  }
-}
-
-// ============================================================
+// ════════════════════════════════════════════════════════
 // GAME LOOP
-// ============================================================
+// ════════════════════════════════════════════════════════
 function gameLoop(ts) {
   if(!gameRunning) return;
-  const dt = ts - lastTime;
-  lastTime = ts;
-  gameTime++;
-
-  // Background
+  const dt=ts-lastTime; lastTime=ts; gameTime++;
   drawBg();
-
-  // Game canvas
-  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
-  ctx.save();
-
+  ctx.clearRect(0,0,CW,CH); ctx.save();
   if(!gamePaused){
-    applyShake();
+    if(shakeTimer>0){const a=shakeTimer*.5;ctx.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
     if(currentPiece) currentPiece.time++;
-    dropTimer += dt;
-    if(dropTimer >= dropInterval){
-      dropTimer = 0;
-      if(currentPiece){
-        const moved = {...currentPiece, y:currentPiece.y+1};
-        if(!collides(moved)) currentPiece = moved;
-        else lockPiece(currentPiece);
-      }
+    dropTimer+=dt;
+    if(dropTimer>=dropInterval){
+      dropTimer=0;
+      if(currentPiece){const m={...currentPiece,y:currentPiece.y+1};if(!collides(m))currentPiece=m;else lockPiece(currentPiece);}
     }
   }
-
-  drawGrid();
-  drawCurrentPiece();
-  ctx.restore();
-
-  updateParticles();
-  drawParticles();
-  drawNext();
-
+  drawGrid(); drawCurrentPiece(); ctx.restore();
+  updateParticles(); drawParticles(); drawNext();
   requestAnimationFrame(gameLoop);
 }
 
-// ============================================================
-// INPUT
-// ============================================================
-const keys = {};
-document.addEventListener('keydown', e => {
+// ════════════════════════════════════════════════════════
+// KEYBOARD INPUT (always active)
+// ════════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
   if(!gameRunning) return;
-  const key = e.key;
-
-  if(key === 'p' || key === 'P') {
-    gamePaused = !gamePaused;
-    return;
-  }
-  if(key === 'm' || key === 'M') {
-    muted = !muted;
-    if(bgmGain) bgmGain.gain.value = muted ? 0 : 0.18;
-    return;
-  }
-
-  if(gamePaused) return;
-  if(!currentPiece) return;
-
+  if(e.key==='p'||e.key==='P'){gamePaused=!gamePaused;return;}
+  if(e.key==='m'||e.key==='M'){toggleMute();return;}
+  if(gamePaused||!currentPiece) return;
   e.preventDefault();
-
-  if(key === 'ArrowLeft') {
-    const m = {...currentPiece, x:currentPiece.x-1};
-    if(!collides(m)){ currentPiece=m; sfxMove(); }
-  } else if(key === 'ArrowRight') {
-    const m = {...currentPiece, x:currentPiece.x+1};
-    if(!collides(m)){ currentPiece=m; sfxMove(); }
-  } else if(key === 'ArrowDown') {
-    dropTimer = dropInterval; // force drop
-    score += 1;
-    updateUI();
-  } else if(key === 'ArrowUp') {
-    currentPiece = rotatePiece(currentPiece, 1);
-    sfxRotate();
-  } else if(key === 'z' || key === 'Z') {
-    currentPiece = rotatePiece(currentPiece, -1);
-    sfxRotate();
-  } else if(key === ' ') {
-    const dropped = hardDrop(currentPiece);
-    const dist = dropped.y - currentPiece.y;
-    score += dist * 2;
-    currentPiece = dropped;
-    lockPiece(currentPiece);
-    updateUI();
-  } else if(key === 'c' || key === 'C') {
-    holdPiece();
-  }
+  if(e.key==='ArrowLeft'){const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();}}
+  else if(e.key==='ArrowRight'){const m={...currentPiece,x:currentPiece.x+1};if(!collides(m)){currentPiece=m;sfxMove();}}
+  else if(e.key==='ArrowDown'){dropTimer=dropInterval;score+=1;updateUI();}
+  else if(e.key==='ArrowUp'){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
+  else if(e.key==='z'||e.key==='Z'){currentPiece=rotatePiece(currentPiece,-1);sfxRotate();}
+  else if(e.key===' '){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
+  else if(e.key==='c'||e.key==='C'){holdPiece();}
 });
 
-// ============================================================
+// ════════════════════════════════════════════════════════
+// MOBILE TOUCH & BUTTON CONTROLS
+// ════════════════════════════════════════════════════════
+if(isMobile) {
+  // Touch swipe on canvas
+  let tx0=0,ty0=0,txL=0,tMoved=false;
+  gameCanvas.addEventListener('touchstart',e=>{
+    if(!gameRunning||gamePaused)return;
+    const t=e.touches[0]; tx0=txL=t.clientX; ty0=t.clientY; tMoved=false;
+  },{passive:true});
+  gameCanvas.addEventListener('touchmove',e=>{
+    if(!gameRunning||gamePaused||!currentPiece)return;
+    e.preventDefault();
+    const t=e.touches[0],dx=t.clientX-txL,dy=t.clientY-ty0;
+    if(Math.abs(t.clientX-tx0)>12||Math.abs(dy)>12) tMoved=true;
+    if(Math.abs(dx)>CELL*.8){
+      const dir=dx>0?1:-1, m={...currentPiece,x:currentPiece.x+dir};
+      if(!collides(m)){currentPiece=m;sfxMove();} txL=t.clientX;
+    }
+    if(dy>30) dropTimer=dropInterval;
+  },{passive:false});
+  gameCanvas.addEventListener('touchend',e=>{
+    if(!gameRunning||gamePaused||!currentPiece)return;
+    if(!tMoved){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
+    const sy=e.changedTouches[0].clientY-ty0;
+    if(sy>70){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
+  },{passive:true});
+
+  // Button helpers
+  function btnPress(id,fn) {
+    const btn=document.getElementById(id); if(!btn)return;
+    let iv=null;
+    const start=()=>{fn();iv=setInterval(fn,150);btn.classList.add('active');};
+    const stop=()=>{clearInterval(iv);iv=null;btn.classList.remove('active');};
+    btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();start();},{passive:false});
+    btn.addEventListener('touchend',e=>{e.preventDefault();stop();},{passive:false});
+    btn.addEventListener('mousedown',()=>{initAudio();start();});
+    ['mouseup','mouseleave'].forEach(ev=>btn.addEventListener(ev,stop));
+  }
+  function btnTap(id,fn) {
+    const btn=document.getElementById(id); if(!btn)return;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();fn();btn.classList.add('active');},{passive:false});
+    btn.addEventListener('touchend',e=>{e.preventDefault();btn.classList.remove('active');},{passive:false});
+    btn.addEventListener('click',()=>{initAudio();fn();});
+  }
+
+  btnPress('btn-left', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();} });
+  btnPress('btn-right',()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x+1};if(!collides(m)){currentPiece=m;sfxMove();} });
+  btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
+  btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+  btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
+  btnTap('btn-extra',  ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+  btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
+  btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
+  btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
+  btnTap('btn-mute',   ()=>toggleMute());
+}
+
+// ════════════════════════════════════════════════════════
 // START / END
-// ============================================================
+// ════════════════════════════════════════════════════════
 function startGame() {
   initAudio();
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) grid[r][c]=null;
-  particles.length = 0;
-  score = 0;
-  lines = 0;
-  level = 1;
-  combo = 0;
-  dropInterval = 700;
-  dropTimer = 0;
-  gameTime = 0;
-  currentPiece = null;
-  nextPieceData = null;
-  holdPieceData = null;
-  canHold = true;
-  gamePaused = false;
-  shakeTimer = 0;
-  holdCtx.clearRect(0,0,140,100);
-
+  particles.length=0;
+  score=0;lines=0;level=1;combo=0;dropInterval=700;dropTimer=0;gameTime=0;
+  currentPiece=null;nextPieceData=null;holdPieceData=null;canHold=true;gamePaused=false;shakeTimer=0;
+  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
   updateUI();
-  document.getElementById('overlay').style.display = 'none';
-  gameRunning = true;
-  spawnPiece();
-  nextPieceData = newPieceData();
-  lastTime = performance.now();
+  document.getElementById('overlay').style.display='none';
+  gameRunning=true; spawnPiece(); nextPieceData=newPieceData();
+  lastTime=performance.now();
   requestAnimationFrame(gameLoop);
 }
 
 function endGame() {
-  gameRunning = false;
-  sfxGameOver();
-  if(score>hiScore){
-    hiScore=score;
-    localStorage.setItem('donutHiScore',hiScore);
-    document.getElementById('hiscore-display').textContent = hiScore.toLocaleString();
-  }
+  gameRunning=false; sfxGameOver();
+  if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
   setTimeout(()=>{
-    const ov = document.getElementById('overlay');
-    ov.style.display = 'flex';
-    ov.innerHTML = `
+    const ov=document.getElementById('overlay');
+    ov.style.display='flex';
+    ov.innerHTML=`
       <h1>🍩 GAME OVER!</h1>
       <div class="sub">
         スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
         ハイスコア: ${hiScore.toLocaleString()}<br>
-        レベル: ${level} / ライン: ${lines}
+        レベル ${level} / ${lines}ライン
       </div>
       <button class="btn" id="start-btn">🔄 もう一度！</button>
     `;
-    document.getElementById('start-btn').addEventListener('click', startGame);
-  }, 800);
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  },800);
 }
 
-document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('start-btn').addEventListener('click',startGame);
 
-// Start background animation immediately
-(function bgLoop() {
-  drawBg();
-  requestAnimationFrame(bgLoop);
-})();
+// Background loop (always running)
+(function bgLoop(){drawBg();requestAnimationFrame(bgLoop);})();
 </script>
 </body>
 </html>
