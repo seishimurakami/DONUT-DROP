@@ -94,6 +94,12 @@ body::before {
   pointer-events: none; z-index: 100; opacity: 0; transition: opacity 0.1s;
   white-space: nowrap;
 }
+#copyright {
+  position: fixed; bottom: 8px; right: 12px;
+  font-size: 10px; color: rgba(255,255,255,0.2);
+  pointer-events: none; z-index: 50; letter-spacing: 0.5px;
+}
+
 #score-popup {
   position: fixed; font-size: 22px; font-family: 'Fredoka One', cursive;
   color: var(--accent3); text-shadow: var(--glow-cyan);
@@ -248,6 +254,7 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
+<div id="copyright">© 2026 Seishi Murakami</div>
 
 <script>
 // ════════════════════════════════════════════════════════
