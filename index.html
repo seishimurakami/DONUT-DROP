@@ -228,6 +228,18 @@ body::before {
   box-shadow: 0 0 12px rgba(255,107,205,0.5); transform: scale(0.93);
 }
 [data-mode="mobile"] .ctrl-btn.large { font-size: 14px; color: rgba(255,255,255,0.9); }
+
+[data-mode="pc"] .icon-btn {
+  background: rgba(255,107,205,0.1); border: 1px solid rgba(255,107,205,0.3);
+  border-radius: 10px; width: 48px; height: 48px; font-size: 22px;
+  cursor: pointer; color: white; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+[data-mode="pc"] .icon-btn:hover {
+  background: rgba(255,107,205,0.25); box-shadow: 0 0 14px rgba(255,107,205,0.5);
+  transform: scale(1.08);
+}
+[data-mode="pc"] .icon-btn:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
@@ -306,7 +318,7 @@ if (isMobile) {
       <button class="ctrl-btn" id="btn-down">▼</button>
       <button class="ctrl-btn large" id="btn-drop">DROP</button>
       <button class="ctrl-btn" id="btn-right">▶</button>
-      <button class="ctrl-btn" id="btn-extra">🍩</button>
+      <button class="ctrl-btn" id="btn-reset">🔄</button>
     </div>
   `;
 } else {
@@ -326,7 +338,7 @@ if (isMobile) {
           <div class="controls">
             <b>← →</b> 移動<br><b>↑</b> 回転<br><b>↓</b> 加速<br>
             <b>SPACE</b> 一気落とし<br><b>Z</b> 逆回転<br><b>C</b> ホールド<br>
-            <b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート
+            <b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート<br><b>R</b> リセット
           </div>
         </div>
       </div>
@@ -347,6 +359,13 @@ if (isMobile) {
         </div>
         <div class="info-box"><div class="info-label">DONUTS</div><div class="donut-legend" id="donut-legend"></div></div>
         <div class="info-box"><div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div></div>
+        <div class="info-box">
+          <div class="info-label">MENU</div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:6px;">
+            <button class="icon-btn" id="btn-mute-pc" title="ミュート (M)">🔊</button>
+            <button class="icon-btn" id="btn-reset-pc" title="リセット (R)">🔄</button>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -471,8 +490,11 @@ function startBGM() {
 function toggleMute() {
   muted=!muted;
   if(bgmGain) bgmGain.gain.value=muted?0:0.18;
-  const btn=document.getElementById('btn-mute');
-  if(btn) btn.textContent=muted?'🔇':'🔊';
+  const icon = muted ? '🔇' : '🔊';
+  const btnMobile = document.getElementById('btn-mute');
+  if(btnMobile) btnMobile.textContent=icon;
+  const btnPc = document.getElementById('btn-mute-pc');
+  if(btnPc) btnPc.textContent=icon;
 }
 
 // ════════════════════════════════════════════════════════
@@ -799,6 +821,7 @@ document.addEventListener('keydown',e=>{
   if(!gameRunning) return;
   if(e.key==='p'||e.key==='P'){gamePaused=!gamePaused;return;}
   if(e.key==='m'||e.key==='M'){toggleMute();return;}
+  if(e.key==='r'||e.key==='R'){resetGame();return;}
   if(gamePaused||!currentPiece) return;
   e.preventDefault();
   if(e.key==='ArrowLeft'){const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();}}
@@ -861,16 +884,28 @@ if(isMobile) {
   btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
   btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
   btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
-  btnTap('btn-extra',  ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+  btnTap('btn-reset',  ()=>{ resetGame(); });
   btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
   btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
   btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
   btnTap('btn-mute',   ()=>toggleMute());
 }
 
+// PC用ボタン（モバイルのときはDOMが存在しないので、あれば登録する）
+const btnMutePc = document.getElementById('btn-mute-pc');
+if(btnMutePc) btnMutePc.addEventListener('click', ()=>{ toggleMute(); });
+
+const btnResetPc = document.getElementById('btn-reset-pc');
+if(btnResetPc) btnResetPc.addEventListener('click', ()=>{ resetGame(); });
+
 // ════════════════════════════════════════════════════════
 // START / END
 // ════════════════════════════════════════════════════════
+function resetGame() {
+  gameRunning=false;
+  startGame();
+}
+
 function startGame() {
   initAudio();
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) grid[r][c]=null;
