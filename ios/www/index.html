@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DONUT DROP 🍩</title>
+<style>
+:root {
+  --bg: #0a0015;
+  --accent: #ff6bcd;
+  --accent2: #ffcc00;
+  --accent3: #00f5d4;
+  --text: #fff5ff;
+  --glow-pink: 0 0 20px #ff6bcd88, 0 0 40px #ff6bcd44;
+  --glow-yellow: 0 0 20px #ffcc0088, 0 0 40px #ffcc0044;
+  --glow-cyan: 0 0 20px #00f5d488, 0 0 40px #00f5d444;
+  /* iPhoneのノッチ・ホームバーの高さ */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  /* iPhoneに入っている丸いフォントを使う */
+  font-family: ui-rounded, -apple-system, 'Hiragino Maru Gothic ProN', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, #2a004488 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, #00223388 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, #330044aa 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+#bg-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.4; pointer-events: none; }
+
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events: none; z-index: 50;
+}
+
+/* ── Shared overlay / button ── */
+#overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,10,0.88);
+  border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 20; backdrop-filter: blur(6px); gap: 18px;
+}
+#overlay h1 {
+  font-size: 34px; text-align: center; line-height: 1.2;
+  color: var(--accent); text-shadow: var(--glow-pink);
+  animation: overlayGlow 2s ease-in-out infinite;
+}
+@keyframes overlayGlow {
+  0%,100%{text-shadow:var(--glow-pink);}
+  50%{text-shadow:0 0 40px #ff6bcd,0 0 80px #ff6bcd88;}
+}
+#overlay .sub {
+  font-size: 13px; color: rgba(255,255,255,0.5);
+  text-align: center; line-height: 1.7;
+}
+.btn {
+  background: linear-gradient(135deg, var(--accent), #cc44aa);
+  border: none; border-radius: 50px; padding: 13px 38px;
+  font-family: ui-rounded, -apple-system, sans-serif; font-size: 19px;
+  color: white; cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,107,205,0.5), 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.2s; letter-spacing: 1px;
+  animation: btnPop 1.5s ease-in-out infinite;
+}
+.btn:hover { transform: scale(1.07); animation: none; }
+.btn:active { transform: scale(0.97); }
+@keyframes btnPop { 0%,100%{transform:scale(1);} 50%{transform:scale(1.03);} }
+
+/* ── Combo flash (shared) ── */
+#combo-flash {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 54px; color: var(--accent2);
+  text-shadow: 0 0 40px #ffcc00, 0 0 80px #ffcc0066;
+  pointer-events: none; z-index: 100; opacity: 0; transition: opacity 0.1s;
+  white-space: nowrap;
+}
+#score-popup {
+  position: fixed; font-size: 22px;
+  font-family: ui-rounded, -apple-system, sans-serif;
+  color: var(--accent3); text-shadow: var(--glow-cyan);
+  pointer-events: none; z-index: 100; opacity: 0;
+}
+
+/* ── Game canvas shared ── */
+#game-canvas {
+  display: block; image-rendering: pixelated;
+  border: 2px solid rgba(255,107,205,0.5); border-radius: 12px;
+  box-shadow: 0 0 30px rgba(255,107,205,0.3), 0 0 60px rgba(255,107,205,0.1), inset 0 0 30px rgba(0,0,0,0.5);
+}
+#particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; border-radius: 12px; }
+
+/* ════════════════════════════════════
+   MOBILE LAYOUT（iPhoneはこちら）
+════════════════════════════════════ */
+[data-mode="mobile"] #app {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  height: 100dvh; gap: 0;
+}
+
+[data-mode="mobile"] #topbar {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  /* iPhoneのノッチ分だけ上にスペースを足す */
+  padding: max(8px, var(--safe-top)) 12px 4px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,107,205,0.2);
+  flex-shrink: 0;
+}
+[data-mode="mobile"] #title-top {
+  font-size: 17px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
+}
+[data-mode="mobile"] .top-stats { display: flex; gap: 12px; align-items: center; }
+[data-mode="mobile"] .stat-mini { text-align: center; line-height: 1.1; }
+[data-mode="mobile"] .stat-mini .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 2px; display: block; }
+[data-mode="mobile"] .stat-mini .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.6); }
+
+[data-mode="mobile"] #game-area {
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
+}
+[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+[data-mode="mobile"] .mini-box {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
+  border-radius: 10px; padding: 6px 8px; text-align: center; min-width: 60px;
+}
+[data-mode="mobile"] .mini-box .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; display: block; margin-bottom: 2px; }
+[data-mode="mobile"] .mini-box .val { font-size: 17px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
+[data-mode="mobile"] #game-canvas { border-width: 1.5px; border-radius: 10px; }
+
+[data-mode="mobile"] #controls {
+  width: 100%; display: grid;
+  grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+  gap: 5px;
+  /* iPhoneのホームバー分だけ下にスペースを足す */
+  padding: 5px 8px max(10px, var(--safe-bottom));
+  flex-shrink: 0;
+}
+[data-mode="mobile"] .ctrl-btn {
+  background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; height: 50px; cursor: pointer; transition: all 0.1s; position: relative;
+}
+[data-mode="mobile"] .ctrl-btn.active {
+  background: rgba(255,107,205,0.25); border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(255,107,205,0.5); transform: scale(0.93);
+}
+[data-mode="mobile"] .ctrl-btn.large { font-size: 14px; color: rgba(255,255,255,0.9); }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="combo-flash"></div>
+<div id="score-popup"></div>
+<div id="app"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// DEVICE DETECTION（iPhoneアプリなので常にmobile）
+// ════════════════════════════════════════════════════════
+const isMobile = true;
+document.documentElement.setAttribute('data-mode', 'mobile');
+
+// ════════════════════════════════════════════════════════
+// LAYOUT CONSTANTS
+// ════════════════════════════════════════════════════════
+const COLS = 10, ROWS = 20;
+let CELL, CW, CH, NEXT_SIZE, HOLD_W, HOLD_H;
+
+const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top')) || 0;
+const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')) || 0;
+const topH = 58 + Math.max(0, safeTop - 8);
+const ctrlH = 122 + Math.max(0, safeBottom - 10);
+const pad = 18;
+const availH = window.innerHeight - topH - ctrlH - pad;
+const availW = window.innerWidth * 0.63;
+CELL = Math.max(18, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 30));
+NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
+
+CW = COLS * CELL;
+CH = ROWS * CELL;
+
+// ════════════════════════════════════════════════════════
+// DOM INJECTION
+// ════════════════════════════════════════════════════════
+const app = document.getElementById('app');
+
+app.innerHTML = `
+  <div id="topbar">
+    <div id="title-top">🍩 DONUT DROP</div>
+    <div class="top-stats">
+      <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
+      <div class="stat-mini"><span class="lbl">LEVEL</span><span class="val" id="level-display">1</span></div>
+      <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
+    </div>
+  </div>
+  <div id="game-area">
+    <div class="side-mini">
+      <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
+      <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
+      <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+    </div>
+    <div style="position:relative;flex-shrink:0;">
+      <canvas id="game-canvas"></canvas>
+      <canvas id="particle-canvas"></canvas>
+      <div id="overlay">
+        <h1>🍩<br>DONUT DROP</h1>
+        <div class="sub">ドーナツを並べてラインを消そう！<br><br>下のボタンまたはタッチで操作</div>
+        <button class="btn" id="start-btn">🎮 スタート！</button>
+      </div>
+    </div>
+  </div>
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-rotL">↺</button>
+    <button class="ctrl-btn" id="btn-rotR">↻</button>
+    <button class="ctrl-btn large" id="btn-hold">HOLD</button>
+    <button class="ctrl-btn" id="btn-mute">🔊</button>
+    <button class="ctrl-btn" id="btn-pause">⏸</button>
+    <button class="ctrl-btn" id="btn-left">◀</button>
+    <button class="ctrl-btn" id="btn-down">▼</button>
+    <button class="ctrl-btn large" id="btn-drop">DROP</button>
+    <button class="ctrl-btn" id="btn-right">▶</button>
+    <button class="ctrl-btn" id="btn-extra">🍩</button>
+  </div>
+`;
+
+// ════════════════════════════════════════════════════════
+// CANVAS REFERENCES
+// ════════════════════════════════════════════════════════
+const gameCanvas = document.getElementById('game-canvas');
+const pCanvas    = document.getElementById('particle-canvas');
+const nextCanvas = document.getElementById('next-canvas');
+const holdCanvas = document.getElementById('hold-canvas');
+const bgCanvas   = document.getElementById('bg-canvas');
+
+gameCanvas.width  = CW;   gameCanvas.height  = CH;
+pCanvas.width     = CW;   pCanvas.height     = CH;
+nextCanvas.width  = NEXT_SIZE; nextCanvas.height = NEXT_SIZE;
+holdCanvas.width  = HOLD_W;    holdCanvas.height = HOLD_H;
+
+const ctx     = gameCanvas.getContext('2d');
+const pCtx    = pCanvas.getContext('2d');
+const nextCtx = nextCanvas.getContext('2d');
+const holdCtx = holdCanvas.getContext('2d');
+const bgCtx   = bgCanvas.getContext('2d');
+
+// ════════════════════════════════════════════════════════
+// DONUT TYPES
+// ════════════════════════════════════════════════════════
+const DONUTS = [
+  { id:0, name:'ポンデリング',      emoji:'🍩', body:'#F5DEB3', glaze:'#DEB887', hole:'#8B4513', sprinkles:['#FF69B4','#4169E1','#32CD32'], special:'ring',      points:10 },
+  { id:1, name:'チョコリング',      emoji:'🍫', body:'#4A1C00', glaze:'#6B2D00', hole:'#2A0A00', sprinkles:['#FFD700','#FFFFFF'],            special:'choco',     points:12 },
+  { id:2, name:'ストロベリー',      emoji:'🍓', body:'#FFB6C1', glaze:'#FF69B4', hole:'#8B0030', sprinkles:['#FFFFFF','#FF1493','#FFD700'],  special:'strawberry',points:15 },
+  { id:3, name:'ハニーディップ',    emoji:'🍯', body:'#FFD700', glaze:'#FFA500', hole:'#8B6914', sprinkles:[],                               special:'honey',     points:10 },
+  { id:4, name:'オールドファッション',emoji:'🤎',body:'#C4813A', glaze:'#A0522D', hole:'#5C2A00', sprinkles:[],                               special:'crinkle',   points:8  },
+  { id:5, name:'ブルーベリー',      emoji:'🫐', body:'#7B68EE', glaze:'#6A5ACD', hole:'#2E1A6E', sprinkles:['#FFFFFF','#B0C4DE'],            special:'berry',     points:18 },
+  { id:6, name:'フレンチクルーラー',emoji:'💛', body:'#FFFACD', glaze:'#FFE66D', hole:'#B8860B', sprinkles:['#FF6347'],                      special:'cruller',   points:14 },
+  { id:7, name:'エンゼルクリーム',  emoji:'👼', body:'#FFF8DC', glaze:'#FFEAA7', hole:'#D4A017', sprinkles:['#FFD700','#FF69B4'],            special:'cream',     points:20 },
+];
+
+// ════════════════════════════════════════════════════════
+// PIECE SHAPES
+// ════════════════════════════════════════════════════════
+const SHAPES = [
+  [[0,-1],[1,0],[0,1],[-1,0]],
+  [[-2,0],[-1,0],[0,0],[1,0]],
+  [[0,-1],[0,0],[0,1],[1,1]],
+  [[0,-1],[0,0],[0,1],[-1,1]],
+  [[-1,0],[0,0],[1,0],[0,-1]],
+  [[0,0],[1,0],[0,1],[-1,1]],
+  [[-1,0],[0,0],[0,1],[1,1]],
+  [[0,0],[-1,0],[1,0],[0,-1],[0,1]],
+  [[0,-1],[0,0],[0,1],[0,2],[1,2]],
+  [[0,0]],
+  [[-1,-1],[0,0],[1,1]],
+  [[-1,0],[1,0],[-1,1],[0,1],[1,1]],
+  [[0,0],[1,0],[0,1]],
+];
+const SHAPE_WEIGHTS = [3,4,4,4,4,3,3,1,2,2,3,2,4];
+
+function weightedRandom(weights) {
+  let r = Math.random() * weights.reduce((a,b)=>a+b,0);
+  for(let i=0;i<weights.length;i++) { r-=weights[i]; if(r<=0) return i; }
+  return weights.length-1;
+}
+
+// ════════════════════════════════════════════════════════
+// AUDIO ENGINE
+// ════════════════════════════════════════════════════════
+let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
+
+function initAudio() {
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  bgmGain = audioCtx.createGain(); bgmGain.gain.value=0.18; bgmGain.connect(audioCtx.destination);
+  sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
+  startBGM();
+}
+
+function playTone(freq,type,dur,vol=1,start=0,dest=null) {
+  if(!audioCtx||muted) return;
+  const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+  osc.type=type; osc.frequency.value=freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime+start);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+start+dur);
+  osc.connect(g); g.connect(dest||sfxGain);
+  osc.start(audioCtx.currentTime+start); osc.stop(audioCtx.currentTime+start+dur);
+}
+
+function sfxMove()    { playTone(220,'sine',0.06,0.3); }
+function sfxRotate()  { playTone(330,'square',0.08,0.2); }
+function sfxDrop()    { playTone(110,'sawtooth',0.15,0.4); }
+function sfxLineClear(n) { [523,659,784,1047].slice(0,n).forEach((f,i)=>playTone(f,'square',0.2,0.4,i*0.05)); }
+function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'square',0.3,0.4,i*0.07)); }
+function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); }
+function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
+function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
+
+function startBGM() {
+  if(!audioCtx||bgmStarted) return;
+  bgmStarted=true;
+  const melody=[[392,0],[440,.3],[494,.6],[523,.9],[587,1.2],[659,1.5],[698,1.8],[784,2.1],[698,2.4],[659,2.7],[587,3],[523,3.3],[494,3.6],[440,3.9],[392,4.2],[330,4.5],[349,4.8],[392,5.1],[440,5.4],[494,5.7],[523,6],[587,6.3],[659,6.6],[784,6.9]];
+  const bass=[[130,0],[130,.6],[146,1.2],[146,1.8],[155,2.4],[155,3],[130,3.6],[130,4.2],[146,4.8],[146,5.4],[174,6],[174,6.6]];
+  const loopLen=7.2;
+  let loopStart=audioCtx.currentTime;
+  function sched(s) {
+    melody.forEach(([f,t])=>playTone(f*.5,'square',.28,.5,s+t-audioCtx.currentTime,bgmGain));
+    bass.forEach(([f,t])=>playTone(f,'sawtooth',.55,.4,s+t-audioCtx.currentTime,bgmGain));
+  }
+  function loop() {
+    if(!audioCtx||muted){bgmStarted=false;return;}
+    sched(loopStart); loopStart+=loopLen;
+    setTimeout(loop,(loopLen-0.5)*1000);
+  }
+  loop();
+}
+
+function toggleMute() {
+  muted=!muted;
+  if(bgmGain) bgmGain.gain.value=muted?0:0.18;
+  const btn=document.getElementById('btn-mute');
+  if(btn) btn.textContent=muted?'🔇':'🔊';
+}
+
+// ════════════════════════════════════════════════════════
+// PARTICLE SYSTEM
+// ════════════════════════════════════════════════════════
+const particles=[];
+
+function spawnParticles(x,y,color,count=12) {
+  for(let i=0;i<count;i++){
+    const a=(Math.PI*2/count)*i+Math.random()*.5, sp=2+Math.random()*4;
+    particles.push({
+      x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,
+      life:1,decay:.02+Math.random()*.03,size:4+Math.random()*6,
+      color, shape:Math.random()>.5?'circle':'donut',
+    });
+  }
+}
+function spawnLineParticles(row) {
+  for(let c=0;c<COLS;c++) spawnParticles(c*CELL+CELL/2,row*CELL+CELL/2,`hsl(${Math.random()*360},100%,70%)`,5);
+}
+function spawnDropParticles(x,y) {
+  for(let i=0;i<6;i++) particles.push({
+    x:x+CELL/2+(Math.random()-.5)*CELL, y:y+CELL/2,
+    vx:(Math.random()-.5)*3, vy:-Math.random()*4,
+    life:1, decay:.04, size:3+Math.random()*4, color:'#FFD700', shape:'star',
+  });
+}
+function updateParticles() {
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.vx*=0.97; p.life-=p.decay;
+    if(p.life<=0) particles.splice(i,1);
+  }
+}
+function drawParticles() {
+  pCtx.clearRect(0,0,CW,CH);
+  particles.forEach(p=>{
+    pCtx.save(); pCtx.globalAlpha=p.life; pCtx.fillStyle=p.color;
+    pCtx.translate(p.x,p.y);
+    if(p.shape==='donut'){
+      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.arc(0,0,p.size*.4,0,Math.PI*2,true); pCtx.fill();
+    } else if(p.shape==='star'){
+      drawStar(pCtx,0,0,4,p.size,p.size*.4);
+    } else {
+      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.fill();
+    }
+    pCtx.restore();
+  });
+}
+function drawStar(c,cx,cy,spikes,outerR,innerR){
+  let rot=(Math.PI/2)*3, step=Math.PI/spikes;
+  c.beginPath(); c.moveTo(cx,cy-outerR);
+  for(let i=0;i<spikes;i++){
+    c.lineTo(cx+Math.cos(rot)*outerR,cy+Math.sin(rot)*outerR); rot+=step;
+    c.lineTo(cx+Math.cos(rot)*innerR,cy+Math.sin(rot)*innerR); rot+=step;
+  }
+  c.lineTo(cx,cy-outerR); c.closePath(); c.fill();
+}
+
+// ════════════════════════════════════════════════════════
+// DONUT DRAWING
+// ════════════════════════════════════════════════════════
+function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
+  c.save(); c.globalAlpha=alpha; c.translate(x+sz/2,y+sz/2);
+  const r=sz*.42, hr=sz*.16;
+
+  if(donut.special==='ring'){
+    const bumpR=r*.28, bc=8;
+    c.beginPath(); c.arc(0,0,r*.72,0,Math.PI*2); c.arc(0,0,r*.38,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#FFF8E7'); g.addColorStop(.5,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+    for(let i=0;i<bc;i++){
+      const a=(Math.PI*2/bc)*i+time*.3, bx=Math.cos(a)*r*.56, by=Math.sin(a)*r*.56;
+      const g2=c.createRadialGradient(bx-bumpR*.3,by-bumpR*.3,0,bx,by,bumpR);
+      g2.addColorStop(0,'#FFF8E7'); g2.addColorStop(1,donut.body);
+      c.beginPath(); c.arc(bx,by,bumpR,0,Math.PI*2); c.fillStyle=g2; c.fill();
+    }
+  } else if(donut.special==='crinkle'){
+    c.beginPath();
+    const pts=16;
+    for(let i=0;i<=pts;i++){
+      const a=(Math.PI*2/pts)*i, rr=r*(1+.1*Math.sin(a*6));
+      if(i===0) c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
+    }
+    c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#D4A574'); g.addColorStop(.6,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+  } else {
+    c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.25,-r*.25,hr*.5,0,0,r);
+    g.addColorStop(0,'#FFFFFF55'); g.addColorStop(.3,donut.body+'EE'); g.addColorStop(1,donut.glaze+'CC');
+    c.fillStyle=g; c.fill();
+    c.beginPath(); c.arc(0,-r*.05,r*.75,Math.PI+.5,-.5); c.arc(0,-r*.05,hr*1.1,-.5,Math.PI+.5,true);
+    c.fillStyle=donut.glaze+'AA'; c.fill();
+  }
+
+  if(donut.sprinkles.length>0){
+    for(let i=0;i<8;i++){
+      const sa=(Math.PI*2/8)*i+time*.1, sr=hr+(r-hr)*.55+Math.sin(sa*3)*2;
+      c.save(); c.translate(Math.cos(sa)*sr,Math.sin(sa)*sr); c.rotate(sa+Math.PI/4);
+      c.fillStyle=donut.sprinkles[i%donut.sprinkles.length]; c.fillRect(-3,-1,6,2); c.restore();
+    }
+  }
+  c.beginPath(); c.arc(-r*.2,-r*.3,r*.18,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+  c.shadowColor=donut.glaze; c.shadowBlur=8;
+  c.beginPath(); c.arc(0,0,r*1.05,0,Math.PI*2); c.arc(0,0,hr*.9,0,Math.PI*2,true);
+  c.strokeStyle=donut.glaze+'44'; c.lineWidth=2; c.stroke();
+  c.restore();
+}
+
+// ════════════════════════════════════════════════════════
+// BACKGROUND ANIMATION
+// ════════════════════════════════════════════════════════
+let bgTime=0;
+const bgDonuts=Array.from({length:15},()=>({
+  x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+  r:20+Math.random()*50, speed:.2+Math.random()*.5,
+  donut:DONUTS[Math.floor(Math.random()*DONUTS.length)],
+  phase:Math.random()*Math.PI*2, alpha:.05+Math.random()*.12,
+}));
+
+function resizeBg(){bgCanvas.width=window.innerWidth;bgCanvas.height=window.innerHeight;}
+resizeBg(); window.addEventListener('resize',resizeBg);
+
+function drawBg(){
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); bgTime+=.005;
+  bgDonuts.forEach(d=>{
+    d.y-=d.speed; if(d.y<-100){d.y=bgCanvas.height+100;d.x=Math.random()*bgCanvas.width;}
+    bgCtx.save(); bgCtx.globalAlpha=d.alpha+.05*Math.sin(bgTime+d.phase);
+    bgCtx.translate(d.x,d.y); bgCtx.rotate(bgTime*.3*d.speed);
+    bgCtx.beginPath(); bgCtx.arc(0,0,d.r,0,Math.PI*2); bgCtx.arc(0,0,d.r*.38,0,Math.PI*2,true);
+    bgCtx.fillStyle=d.donut.body; bgCtx.fill(); bgCtx.restore();
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// GAME STATE
+// ════════════════════════════════════════════════════════
+const grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+let currentPiece=null, nextPieceData=null, holdPieceData=null, canHold=true;
+let score=0, lines=0, level=1, combo=0;
+let hiScore=parseInt(localStorage.getItem('donutHiScore')||'0');
+let gameRunning=false, gamePaused=false;
+let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
+
+// ════════════════════════════════════════════════════════
+// PIECE LOGIC
+// ════════════════════════════════════════════════════════
+function newPieceData() { return {shapeIdx:weightedRandom(SHAPE_WEIGHTS), donutIdx:Math.floor(Math.random()*DONUTS.length)}; }
+function createPiece(d) {
+  return {x:Math.floor(COLS/2),y:1, cells:SHAPES[d.shapeIdx].map(([dx,dy])=>({dx,dy})), donutIdx:d.donutIdx, shapeIdx:d.shapeIdx, time:0};
+}
+function collides(p) {
+  return p.cells.some(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&grid[ny][nx]!==null);});
+}
+function rotatePiece(p,dir=1) {
+  const rot=p.cells.map(({dx,dy})=>({dx:-dy*dir,dy:dx*dir}));
+  for(const kx of [0,-1,1,-2,2]) for(const ky of [0,-1,1]){
+    const k={...p,x:p.x+kx,y:p.y+ky,cells:rot};
+    if(!collides(k)) return k;
+  }
+  return p;
+}
+function hardDrop(p) { let q={...p,cells:[...p.cells]};while(!collides({...q,y:q.y+1}))q.y++;return q; }
+
+function spawnPiece() {
+  if(!nextPieceData) nextPieceData=newPieceData();
+  currentPiece=createPiece(nextPieceData); nextPieceData=newPieceData(); canHold=true;
+  if(collides(currentPiece)) endGame();
+}
+
+function lockPiece(p) {
+  p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)grid[ny][nx]=p.donutIdx;});
+  sfxDrop();
+  p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0)spawnDropParticles(nx*CELL,ny*CELL);});
+  checkLines(); spawnPiece();
+}
+
+function checkLines() {
+  const cleared=[];
+  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null)) cleared.push(r);
+  if(cleared.length){
+    cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
+    sfxLineClear(cleared.length);
+    combo++; if(combo>1) sfxCombo(combo);
+    shakeTimer=15;
+    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*level*combo;
+    score+=earned; lines+=cleared.length;
+    const nl=Math.floor(lines/10)+1;
+    if(nl>level){level=nl;dropInterval=Math.max(100,700-(level-1)*60);sfxLevelUp();}
+    if(combo>1) showCombo(combo);
+    updateUI();
+  } else { combo=0; }
+  const cb=document.getElementById('combo-display-box');
+  if(cb) cb.textContent=combo>0?combo+'x':'0x';
+}
+
+// ════════════════════════════════════════════════════════
+// HOLD
+// ════════════════════════════════════════════════════════
+function holdPiece() {
+  if(!canHold) return;
+  sfxHold(); canHold=false;
+  if(!holdPieceData){holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};spawnPiece();}
+  else{const t=holdPieceData;holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};currentPiece=createPiece(t);}
+  drawHold();
+}
+
+// ════════════════════════════════════════════════════════
+// RENDERING
+// ════════════════════════════════════════════════════════
+function drawGrid() {
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,CH);ctx.stroke();}
+  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(CW,r*CELL);ctx.stroke();}
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+    if(grid[r][c]!==null) drawDonut(ctx,c*CELL+1,r*CELL+1,CELL-2,DONUTS[grid[r][c]],1,gameTime*.05);
+}
+
+function drawCurrentPiece() {
+  if(!currentPiece) return;
+  const ghost=hardDrop(currentPiece), donut=DONUTS[currentPiece.donutIdx];
+  ghost.cells.forEach(({dx,dy})=>{
+    const nx=ghost.x+dx,ny=ghost.y+dy;
+    if(ny>=0){ctx.save();ctx.globalAlpha=0.2;ctx.beginPath();
+      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.38,0,Math.PI*2);
+      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.14,0,Math.PI*2,true);
+      ctx.strokeStyle=donut.glaze;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+  });
+  currentPiece.cells.forEach(({dx,dy})=>{
+    const nx=currentPiece.x+dx,ny=currentPiece.y+dy;
+    if(ny>=0) drawDonut(ctx,nx*CELL+1,ny*CELL+1,CELL-2,donut,1,gameTime*.1);
+  });
+}
+
+function drawNext() {
+  nextCtx.clearRect(0,0,NEXT_SIZE,NEXT_SIZE);
+  if(!nextPieceData) return;
+  const donut=DONUTS[nextPieceData.donutIdx], cells=SHAPES[nextPieceData.shapeIdx];
+  const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
+  const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
+  const sc=Math.min(NEXT_SIZE*0.2, (NEXT_SIZE-10)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=NEXT_SIZE/2-((minX+maxX)/2)*sc, oy=NEXT_SIZE/2-((minY+maxY)/2)*sc;
+  cells.forEach(([dx,dy])=>drawDonut(nextCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
+}
+
+function drawHold() {
+  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
+  if(!holdPieceData) return;
+  const donut=DONUTS[holdPieceData.donutIdx], cells=SHAPES[holdPieceData.shapeIdx];
+  const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
+  const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
+  const sc=Math.min(HOLD_H*0.4, (Math.min(HOLD_W,HOLD_H)-8)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=HOLD_W/2-((minX+maxX)/2)*sc, oy=HOLD_H/2-((minY+maxY)/2)*sc;
+  holdCtx.globalAlpha=canHold?1:.4;
+  cells.forEach(([dx,dy])=>drawDonut(holdCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
+}
+
+// ════════════════════════════════════════════════════════
+// UI UPDATES
+// ════════════════════════════════════════════════════════
+function updateUI() {
+  document.getElementById('score-display').textContent=score.toLocaleString();
+  document.getElementById('level-display').textContent=level;
+  document.getElementById('lines-display').textContent=lines;
+  if(score>hiScore){
+    hiScore=score; localStorage.setItem('donutHiScore',hiScore);
+  }
+}
+
+let comboTO=null;
+function showCombo(n) {
+  const el=document.getElementById('combo-flash');
+  el.textContent=n+'x COMBO! 🍩'; el.style.opacity='1';
+  clearTimeout(comboTO); comboTO=setTimeout(()=>{el.style.opacity='0';},800);
+}
+
+// ════════════════════════════════════════════════════════
+// GAME LOOP
+// ════════════════════════════════════════════════════════
+function gameLoop(ts) {
+  if(!gameRunning) return;
+  const dt=ts-lastTime; lastTime=ts; gameTime++;
+  drawBg();
+  ctx.clearRect(0,0,CW,CH); ctx.save();
+  if(!gamePaused){
+    if(shakeTimer>0){const a=shakeTimer*.5;ctx.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
+    if(currentPiece) currentPiece.time++;
+    dropTimer+=dt;
+    if(dropTimer>=dropInterval){
+      dropTimer=0;
+      if(currentPiece){const m={...currentPiece,y:currentPiece.y+1};if(!collides(m))currentPiece=m;else lockPiece(currentPiece);}
+    }
+  }
+  drawGrid(); drawCurrentPiece(); ctx.restore();
+  updateParticles(); drawParticles(); drawNext();
+  requestAnimationFrame(gameLoop);
+}
+
+// ════════════════════════════════════════════════════════
+// TOUCH & BUTTON CONTROLS
+// ════════════════════════════════════════════════════════
+let tx0=0,ty0=0,txL=0,tMoved=false;
+gameCanvas.addEventListener('touchstart',e=>{
+  if(!gameRunning||gamePaused)return;
+  const t=e.touches[0]; tx0=txL=t.clientX; ty0=t.clientY; tMoved=false;
+},{passive:true});
+gameCanvas.addEventListener('touchmove',e=>{
+  if(!gameRunning||gamePaused||!currentPiece)return;
+  e.preventDefault();
+  const t=e.touches[0],dx=t.clientX-txL,dy=t.clientY-ty0;
+  if(Math.abs(t.clientX-tx0)>12||Math.abs(dy)>12) tMoved=true;
+  if(Math.abs(dx)>CELL*.8){
+    const dir=dx>0?1:-1, m={...currentPiece,x:currentPiece.x+dir};
+    if(!collides(m)){currentPiece=m;sfxMove();} txL=t.clientX;
+  }
+  if(dy>30) dropTimer=dropInterval;
+},{passive:false});
+gameCanvas.addEventListener('touchend',e=>{
+  if(!gameRunning||gamePaused||!currentPiece)return;
+  if(!tMoved){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
+  const sy=e.changedTouches[0].clientY-ty0;
+  if(sy>70){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
+},{passive:true});
+
+function btnPress(id,fn) {
+  const btn=document.getElementById(id); if(!btn)return;
+  let iv=null;
+  const start=()=>{fn();iv=setInterval(fn,150);btn.classList.add('active');};
+  const stop=()=>{clearInterval(iv);iv=null;btn.classList.remove('active');};
+  btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();start();},{passive:false});
+  btn.addEventListener('touchend',e=>{e.preventDefault();stop();},{passive:false});
+  btn.addEventListener('mousedown',()=>{initAudio();start();});
+  ['mouseup','mouseleave'].forEach(ev=>btn.addEventListener(ev,stop));
+}
+function btnTap(id,fn) {
+  const btn=document.getElementById(id); if(!btn)return;
+  btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();fn();btn.classList.add('active');},{passive:false});
+  btn.addEventListener('touchend',e=>{e.preventDefault();btn.classList.remove('active');},{passive:false});
+  btn.addEventListener('click',()=>{initAudio();fn();});
+}
+
+btnPress('btn-left', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();} });
+btnPress('btn-right',()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x+1};if(!collides(m)){currentPiece=m;sfxMove();} });
+btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
+btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
+btnTap('btn-extra',  ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
+btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
+btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
+btnTap('btn-mute',   ()=>toggleMute());
+
+// ════════════════════════════════════════════════════════
+// START / END
+// ════════════════════════════════════════════════════════
+function startGame() {
+  initAudio();
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) grid[r][c]=null;
+  particles.length=0;
+  score=0;lines=0;level=1;combo=0;dropInterval=700;dropTimer=0;gameTime=0;
+  currentPiece=null;nextPieceData=null;holdPieceData=null;canHold=true;gamePaused=false;shakeTimer=0;
+  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
+  updateUI();
+  document.getElementById('overlay').style.display='none';
+  gameRunning=true; spawnPiece(); nextPieceData=newPieceData();
+  lastTime=performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  gameRunning=false; sfxGameOver();
+  if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
+  setTimeout(()=>{
+    const ov=document.getElementById('overlay');
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <h1>🍩 GAME OVER!</h1>
+      <div class="sub">
+        スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
+        ハイスコア: ${hiScore.toLocaleString()}<br>
+        レベル ${level} / ${lines}ライン
+      </div>
+      <button class="btn" id="start-btn">🔄 もう一度！</button>
+    `;
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  },800);
+}
+
+document.getElementById('start-btn').addEventListener('click',startGame);
+
+(function bgLoop(){drawBg();requestAnimationFrame(bgLoop);})();
+</script>
+</body>
+</html>

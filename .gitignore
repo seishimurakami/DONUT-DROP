@@ -1,1 +1,11 @@
 CLAUDE.md
+
+# macOS
+.DS_Store
+
+# Xcode - ユーザー固有のファイル（人によって違うので共有しない）
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.dSYM.zip
+*.dSYM
