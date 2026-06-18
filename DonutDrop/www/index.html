@@ -181,6 +181,67 @@ body::before {
   box-shadow: 0 0 12px rgba(255,107,205,0.5); transform: scale(0.93);
 }
 [data-mode="mobile"] .ctrl-btn.large { font-size: 14px; color: rgba(255,255,255,0.9); }
+
+/* ── Settings Modal ── */
+#settings-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,0,21,0.88); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+}
+#settings-card {
+  background: rgba(255,107,205,0.07);
+  border: 1.5px solid rgba(255,107,205,0.4);
+  border-radius: 22px; padding: 28px 22px;
+  width: min(320px, 88vw);
+  display: flex; flex-direction: column; gap: 22px;
+}
+.settings-title {
+  font-size: 13px; font-weight: bold; letter-spacing: 3px;
+  color: var(--accent3); text-align: center; text-transform: uppercase;
+}
+.settings-section { display: flex; flex-direction: column; gap: 10px; }
+.settings-lbl {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent3);
+}
+.slider-row { display: flex; align-items: center; gap: 10px; }
+#bgm-slider {
+  flex: 1; -webkit-appearance: none; height: 4px;
+  border-radius: 2px; background: rgba(255,255,255,0.18); outline: none;
+}
+#bgm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--accent); cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,107,205,0.7);
+}
+.bgm-val {
+  font-size: 11px; color: rgba(255,255,255,0.55);
+  width: 34px; text-align: right;
+}
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.toggle { position: relative; display: inline-block; width: 50px; height: 28px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0; border-radius: 14px;
+  background: rgba(255,255,255,0.18); transition: background 0.2s;
+}
+.toggle-track::before {
+  content: ''; position: absolute;
+  width: 22px; height: 22px; left: 3px; top: 3px;
+  border-radius: 50%; background: #fff; transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.toggle input:checked + .toggle-track { background: var(--accent); }
+.toggle input:checked + .toggle-track::before { transform: translateX(22px); }
+#settings-close {
+  background: rgba(255,107,205,0.15);
+  border: 1.5px solid rgba(255,107,205,0.45);
+  border-radius: 14px; color: rgba(255,255,255,0.9);
+  font-size: 14px; padding: 13px; cursor: pointer;
+  letter-spacing: 1px; width: 100%;
+}
 </style>
 </head>
 <body>
@@ -189,6 +250,29 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
+
+<div id="settings-overlay" style="display:none">
+  <div id="settings-card">
+    <div class="settings-title">⚙&nbsp; SETTINGS</div>
+    <div class="settings-section">
+      <div class="settings-lbl">BGM ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="bgm-slider" min="0" max="100" value="70">
+        <span class="bgm-val" id="bgm-val-label">70%</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="toggle-row">
+        <span class="settings-lbl">バイブレーション</span>
+        <label class="toggle">
+          <input type="checkbox" id="haptic-toggle" checked>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+    <button id="settings-close">閉じる</button>
+  </div>
+</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -256,7 +340,7 @@ app.innerHTML = `
     <button class="ctrl-btn" id="btn-down">▼</button>
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
-    <button class="ctrl-btn" id="btn-extra">🍩</button>
+    <button class="ctrl-btn" id="btn-settings">⚙</button>
     <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.0.0</div>
   </div>
 `;
@@ -329,7 +413,7 @@ let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
 function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  bgmGain = audioCtx.createGain(); bgmGain.gain.value=0.18; bgmGain.connect(audioCtx.destination);
+  bgmGain = audioCtx.createGain(); bgmGain.gain.value=bgmVolume*0.18; bgmGain.connect(audioCtx.destination);
   sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
   startBGM();
 }
@@ -353,8 +437,13 @@ function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
 
+// ── 設定（localStorage で保存） ──────────────────────────────
+let bgmVolume    = parseFloat(localStorage.getItem('bgmVolume')    ?? '0.7');
+let hapticEnabled = localStorage.getItem('hapticEnabled') !== 'false';
+
 // ── 触覚フィードバック（iOSのTaptic Engine連携） ──
 function haptic(type, extras) {
+  if (!hapticEnabled) return;
   try { window.webkit.messageHandlers.haptic.postMessage(Object.assign({type}, extras)); } catch(_) {}
 }
 
@@ -369,6 +458,48 @@ function checkDanger() {
     }
   }
 }
+
+// ── Settings モーダル ────────────────────────────────────────
+function openSettings() {
+  const ov = document.getElementById('settings-overlay');
+  if (!ov) return;
+  // スライダー・トグルを現在の設定値に合わせる
+  const slider = document.getElementById('bgm-slider');
+  const label  = document.getElementById('bgm-val-label');
+  const toggle = document.getElementById('haptic-toggle');
+  if (slider) { slider.value = Math.round(bgmVolume * 100); }
+  if (label)  { label.textContent = Math.round(bgmVolume * 100) + '%'; }
+  if (toggle) { toggle.checked = hapticEnabled; }
+  ov.style.display = 'flex';
+}
+function closeSettings() {
+  const ov = document.getElementById('settings-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
+// Settings が DOM に追加された後にイベントを登録
+(function initSettings() {
+  const slider = document.getElementById('bgm-slider');
+  const label  = document.getElementById('bgm-val-label');
+  const toggle = document.getElementById('haptic-toggle');
+  const closeBtn = document.getElementById('settings-close');
+
+  if (slider) {
+    slider.addEventListener('input', () => {
+      bgmVolume = slider.value / 100;
+      if (label) label.textContent = slider.value + '%';
+      if (bgmGain && !muted) bgmGain.gain.value = bgmVolume * 0.18;
+      localStorage.setItem('bgmVolume', bgmVolume);
+    });
+  }
+  if (toggle) {
+    toggle.addEventListener('change', () => {
+      hapticEnabled = toggle.checked;
+      localStorage.setItem('hapticEnabled', hapticEnabled);
+    });
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+})();
 
 function startBGM() {
   if(!audioCtx||bgmStarted) return;
@@ -391,7 +522,7 @@ function startBGM() {
 
 function toggleMute() {
   muted=!muted;
-  if(bgmGain) bgmGain.gain.value=muted?0:0.18;
+  if(bgmGain) bgmGain.gain.value=muted?0:bgmVolume*0.18;
   const btn=document.getElementById('btn-mute');
   if(btn) btn.textContent=muted?'🔇':'🔊';
 }
@@ -743,7 +874,7 @@ btnPress('btn-right',()=>{ if(!gameRunning||gamePaused||!currentPiece)return; co
 btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
 btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
 btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
-btnTap('btn-extra',  ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
+btnTap('btn-settings', ()=>{ openSettings(); });
 btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
 btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
 btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });

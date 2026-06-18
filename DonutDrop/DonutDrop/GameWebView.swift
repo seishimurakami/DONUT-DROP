@@ -98,12 +98,15 @@ struct GameWebView: UIViewRepresentable {
             }
         }
 
-        // コンボ: 連打、段々強くなる
+        // コンボ: コンボ数分だけ連打、数が多いほど間隔が長くなる
         private func hapticCombo(count: Int) {
             let gen = UIImpactFeedbackGenerator(style: .medium)
-            for i in 0..<min(count, 5) {
-                let intensity = CGFloat(min(0.5 + Double(i) * 0.12, 1.0))
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.07) {
+            let beats    = min(count, 8)
+            // コンボが増えるほど間隔を広げて「長い振動」に感じさせる
+            let interval: Double = count <= 3 ? 0.07 : count <= 5 ? 0.10 : 0.13
+            for i in 0..<beats {
+                let intensity = CGFloat(min(0.45 + Double(i) * 0.08, 1.0))
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * interval) {
                     gen.impactOccurred(intensity: intensity)
                 }
             }
