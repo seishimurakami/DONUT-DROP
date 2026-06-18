@@ -10,12 +10,13 @@ struct GameWebView: UIViewRepresentable {
         config.mediaTypesRequiringUserActionForPlayback = []
 
         let webView = WKWebView(frame: .zero, configuration: config)
-        // スクロールを無効にする（ゲームなので不要）
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.bounces = false
         webView.isOpaque = false
         webView.backgroundColor = .clear
         webView.scrollView.backgroundColor = .clear
+        // 外部リンク（サポートフォームなど）をSafariで開く
+        webView.navigationDelegate = context.coordinator
 
         // アプリの中に入っているindex.htmlを読み込む
         if let url = Bundle.main.url(forResource: "index", withExtension: "html") {
@@ -26,4 +27,21 @@ struct GameWebView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if let url = navigationAction.request.url, url.scheme != "file" {
+                UIApplication.shared.open(url)
+                decisionHandler(.cancel)
+            } else {
+                decisionHandler(.allow)
+            }
+        }
+    }
 }

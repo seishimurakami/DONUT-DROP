@@ -97,8 +97,12 @@ body::before {
 #copyright {
   position: fixed; bottom: 8px; right: 12px;
   font-size: 10px; color: rgba(255,255,255,0.2);
-  pointer-events: none; z-index: 50; letter-spacing: 0.5px;
+  z-index: 50; letter-spacing: 0.5px;
 }
+#copyright a {
+  color: rgba(255,255,255,0.35); text-decoration: none;
+}
+#copyright a:hover { color: rgba(255,255,255,0.7); }
 
 #score-popup {
   position: fixed; font-size: 22px; font-family: 'Fredoka One', cursive;
@@ -254,7 +258,7 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a></div>
 
 <script>
 // ════════════════════════════════════════════════════════
