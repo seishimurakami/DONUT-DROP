@@ -344,14 +344,31 @@ function playTone(freq,type,dur,vol=1,start=0,dest=null) {
   osc.start(audioCtx.currentTime+start); osc.stop(audioCtx.currentTime+start+dur);
 }
 
-function sfxMove()    { playTone(220,'sine',0.06,0.3); }
-function sfxRotate()  { playTone(330,'square',0.08,0.2); }
-function sfxDrop()    { playTone(110,'sawtooth',0.15,0.4); }
+function sfxMove()    { playTone(220,'sine',0.06,0.3);    haptic('move'); }
+function sfxRotate()  { playTone(330,'square',0.08,0.2); haptic('move'); }
+function sfxDrop()    { playTone(110,'sawtooth',0.15,0.4); haptic('drop'); }
 function sfxLineClear(n) { [523,659,784,1047].slice(0,n).forEach((f,i)=>playTone(f,'square',0.2,0.4,i*0.05)); }
-function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'square',0.3,0.4,i*0.07)); }
-function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); }
+function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'square',0.3,0.4,i*0.07)); haptic('levelUp'); }
+function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); haptic('gameOver'); }
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
+
+// ── 触覚フィードバック（iOSのTaptic Engine連携） ──
+function haptic(type, extras) {
+  try { window.webkit.messageHandlers.haptic.postMessage(Object.assign({type}, extras)); } catch(_) {}
+}
+
+// ピンチ警告: 上から6行以内にピースがあったらドクン
+let _lastWarning = 0;
+function checkDanger() {
+  for (let r = 0; r < 6; r++) {
+    if (grid[r].some(c => c !== null)) {
+      const now = Date.now();
+      if (now - _lastWarning > 1500) { haptic('warning'); _lastWarning = now; }
+      return;
+    }
+  }
+}
 
 function startBGM() {
   if(!audioCtx||bgmStarted) return;
@@ -553,7 +570,7 @@ function lockPiece(p) {
   p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)grid[ny][nx]=p.donutIdx;});
   sfxDrop();
   p.cells.forEach(({dx,dy})=>{const nx=p.x+dx,ny=p.y+dy;if(ny>=0)spawnDropParticles(nx*CELL,ny*CELL);});
-  checkLines(); spawnPiece();
+  checkLines(); spawnPiece(); checkDanger();
 }
 
 function checkLines() {
@@ -562,7 +579,8 @@ function checkLines() {
   if(cleared.length){
     cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
     sfxLineClear(cleared.length);
-    combo++; if(combo>1) sfxCombo(combo);
+    haptic('lineClear', {count: cleared.length});
+    combo++; if(combo>1) { sfxCombo(combo); haptic('combo', {count: combo}); }
     shakeTimer=15;
     const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*level*combo;
     score+=earned; lines+=cleared.length;
