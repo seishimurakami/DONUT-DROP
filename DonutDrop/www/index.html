@@ -155,11 +155,21 @@ body::before {
 
 [data-mode="mobile"] #controls {
   width: 100%; display: grid;
-  grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 50px) auto;
   gap: 5px;
-  /* iPhoneのホームバー分だけ下にスペースを足す */
   padding: 5px 8px max(10px, var(--safe-bottom));
   flex-shrink: 0;
+}
+[data-mode="mobile"] #copyright {
+  position: static;
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 9px; padding: 2px 0 0;
+  color: rgba(255,255,255,0.2); letter-spacing: 0.5px;
+}
+[data-mode="mobile"] #copyright a {
+  color: rgba(255,255,255,0.3); text-decoration: none;
 }
 [data-mode="mobile"] .ctrl-btn {
   background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
@@ -179,7 +189,6 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.0.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -197,7 +206,7 @@ let CELL, CW, CH, NEXT_SIZE, HOLD_W, HOLD_H;
 const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top')) || 0;
 const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')) || 0;
 const topH = 58 + Math.max(0, safeTop - 8);
-const ctrlH = 122 + Math.max(0, safeBottom - 10);
+const ctrlH = 142 + Math.max(0, safeBottom - 10);
 const pad = 18;
 const availH = window.innerHeight - topH - ctrlH - pad;
 const availW = window.innerWidth * 0.63;
@@ -248,6 +257,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
     <button class="ctrl-btn" id="btn-extra">🍩</button>
+    <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.0.0</div>
   </div>
 `;
 
