@@ -296,6 +296,32 @@ body::before {
   font-size: 14px; padding: 13px; cursor: pointer;
   letter-spacing: 1px; width: 100%;
 }
+/* 対戦結果フルスクリーンオーバーレイ */
+#battle-result {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(10,5,20,0.92);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; text-align: center; padding: 28px;
+}
+#battle-result h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.2rem, 10vw, 3rem);
+  color: var(--accent2); text-shadow: 0 0 30px rgba(255,204,0,0.6); margin: 0;
+}
+#battle-result .sub {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 14px; line-height: 2.1; color: rgba(255,255,255,0.75); margin: 0;
+}
+#battle-result .btn-row {
+  display: flex; flex-direction: column; gap: 12px;
+  align-items: center; width: min(280px,90vw);
+}
+#battle-result .btn-menu {
+  background: transparent; border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 50px; padding: 12px 0; width: 100%;
+  font-size: 14px; font-family: 'Kosugi Maru', sans-serif;
+  color: rgba(255,255,255,0.65); cursor: pointer; transition: all .2s;
+}
 </style>
 </head>
 <body>
@@ -304,6 +330,15 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
+
+<div id="battle-result">
+  <h1 id="battle-result-title"></h1>
+  <div class="sub" id="battle-result-sub"></div>
+  <div class="btn-row">
+    <button class="btn" id="battle-result-retry">🔄 もう一度！</button>
+    <button class="btn-menu" id="battle-result-menu">🏠 トップへもどる</button>
+  </div>
+</div>
 
 <div id="settings-overlay" style="display:none">
   <div id="settings-card">
@@ -366,7 +401,7 @@ app.innerHTML = `
     <div id="title-top">🍩 DONUT DROP</div>
     <div class="top-stats">
       <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-      <div class="stat-mini"><span class="lbl">LEVEL</span><span class="val" id="level-display">1</span></div>
+      <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
       <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
     </div>
   </div>
@@ -747,7 +782,7 @@ function comLockAndProcess(bx,bCells,by){
   const next=comNextData||{shapeIdx:weightedRandom(SHAPE_WEIGHTS),donutIdx:Math.floor(Math.random()*DONUTS.length)};
   comCurrentPiece={x:Math.floor(COLS/2),y:1,cells:SHAPES[next.shapeIdx].map(([dx,dy])=>({dx,dy})),donutIdx:next.donutIdx,shapeIdx:next.shapeIdx};
   comNextData={shapeIdx:weightedRandom(SHAPE_WEIGHTS),donutIdx:Math.floor(Math.random()*DONUTS.length)};
-  if(collidesOnGrid(comCurrentPiece,comGrid)){comRunning=false;setTimeout(()=>endGame(),100);return;}
+  if(collidesOnGrid(comCurrentPiece,comGrid)){comRunning=false;setTimeout(()=>endGame(true),100);return;}
   if(pendingGarbageForCom>0){addGarbageToGrid(comGrid,pendingGarbageForCom);pendingGarbageForCom=0;}
 }
 
@@ -1117,44 +1152,41 @@ function startGame() {
   requestAnimationFrame(gameLoop);
 }
 
-function endGame() {
-  gameRunning=false; comRunning=false; sfxGameOver();
+function endGame(playerWon=false) {
+  gameRunning=false; comRunning=false;
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
-  setTimeout(()=>{
-    const ov=document.getElementById('overlay');
-    ov.style.display='flex';
-    if(gameMode==='battle'){
-      const won=score>=comScore;
-      const newUnlock=won?tryUnlockNextLv(comLv):false;
-      haptic(won?'levelUp':'gameOver');
+  if(gameMode==='battle'){
+    const won=playerWon;
+    const newUnlock=won?tryUnlockNextLv(comLv):false;
+    if(won) sfxLevelUp(); else sfxGameOver();
+    haptic(won?'levelUp':'gameOver');
+    setTimeout(()=>{
       const unlockMsg=newUnlock?`<br><span style="color:#00f5d4;font-size:0.82em;">🔓 Lv.${comLv+1} が解放されました！</span>`:(won&&comLv===9?`<br><span style="color:#ffcc00;font-size:0.82em;">👑 全レベル制覇！</span>`:'');
-      ov.innerHTML=`
-        <h1>${won?'🎉 YOU WIN!':'😢 GAME OVER...'}</h1>
-        <div class="sub" style="text-align:center;line-height:1.8;">
-          ${won?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！`:`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…`}<br>
-          あなた: <b style="color:#ffcc00;font-size:1.3em">${score.toLocaleString()}</b><br>
-          COM: ${comScore.toLocaleString()}${unlockMsg}
-        </div>
-        <button class="btn" id="start-btn">🔄 もう一度！</button>
-        <button class="btn-back-lv" id="btn-top">🏠 トップへもどる</button>
-      `;
-      document.getElementById('start-btn').addEventListener('click',()=>startBattleMode(comLv));
-      document.getElementById('btn-top').addEventListener('click',resetToTop);
-    } else {
+      document.getElementById('battle-result-title').textContent=won?'🏆 YOU WIN!':'😭 GAME OVER...';
+      document.getElementById('battle-result-sub').innerHTML=won
+        ?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}${unlockMsg}`
+        :`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}`;
+      document.getElementById('battle-result').style.display='flex';
+    },800);
+  } else {
+    sfxGameOver();
+    setTimeout(()=>{
+      const ov=document.getElementById('overlay');
+      ov.style.display='flex';
       ov.innerHTML=`
         <h1>🍩 GAME OVER!</h1>
         <div class="sub">
           スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
           ハイスコア: ${hiScore.toLocaleString()}<br>
-          レベル ${level} / ${lines}ライン
+          スピード ${level} / ${lines}ライン
         </div>
         <button class="btn" id="start-btn">🔄 もう一度！</button>
         <button class="btn-back-lv" id="btn-top">🏠 トップへもどる</button>
       `;
       document.getElementById('start-btn').addEventListener('click',startGame);
       document.getElementById('btn-top').addEventListener('click',resetToTop);
-    }
-  },800);
+    },800);
+  }
 }
 
 function resetToTop(){
@@ -1168,7 +1200,7 @@ function resetToTop(){
     <div id="title-top">🍩 DONUT DROP</div>
     <div class="top-stats">
       <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-      <div class="stat-mini"><span class="lbl">LEVEL</span><span class="val" id="level-display">1</span></div>
+      <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
       <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
     </div>`;
   const comArea=document.getElementById('com-board-area');if(comArea)comArea.remove();
@@ -1176,6 +1208,7 @@ function resetToTop(){
   const gameArea=document.getElementById('game-area');
   if(gameArea) gameArea.classList.remove('battle-mode');
   document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
+  document.getElementById('battle-result').style.display='none';
   showTopOverlay();
 }
 
@@ -1291,6 +1324,16 @@ function startBattleMode(lv){
 // 初期レベルグリッドを描画
 const _initGrid=document.getElementById('com-level-grid');
 if(_initGrid) _initGrid.innerHTML=buildLevelBtnsHTML();
+
+// 対戦結果ボタン
+document.getElementById('battle-result-retry')?.addEventListener('click',()=>{
+  document.getElementById('battle-result').style.display='none';
+  startBattleMode(comLv);
+});
+document.getElementById('battle-result-menu')?.addEventListener('click',()=>{
+  document.getElementById('battle-result').style.display='none';
+  resetToTop();
+});
 
 bindModeSelectEvents();
 

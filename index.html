@@ -267,6 +267,24 @@ body::before {
   display: flex; align-items: flex-start; justify-content: center;
   gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
 }
+[data-mode="mobile"] #game-area.battle-mode {
+  align-items: center; justify-content: center; gap: 12px;
+}
+.mobile-battle-vs {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: var(--accent); font-size: 18px; flex-shrink: 0;
+}
+.mobile-battle-vs .vs-label {
+  font-size: 8px; color: rgba(255,255,255,0.35); letter-spacing: 2px;
+}
+.battle-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 0 4px;
+}
+.battle-stat { display: flex; flex-direction: column; }
+.battle-lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; }
+.battle-val { font-size: 17px; color: var(--accent2); font-family: 'Fredoka One', cursive; }
+.battle-topbar .battle-vs { font-size: 18px; }
 [data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
 [data-mode="mobile"] .mini-box {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
@@ -414,7 +432,7 @@ if (isMobile) {
       <div id="title-top">🍩 DONUT DROP</div>
       <div class="top-stats">
         <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-        <div class="stat-mini"><span class="lbl">LEVEL</span><span class="val" id="level-display">1</span></div>
+        <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
         <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
       </div>
     </div>
@@ -429,8 +447,16 @@ if (isMobile) {
         <canvas id="particle-canvas"></canvas>
         <div id="overlay">
           <h1>🍩<br>DONUT DROP</h1>
-          <div class="sub">ドーナツを並べてラインを消そう！<br><br>下のボタンまたはタッチで操作</div>
-          <button class="btn" id="start-btn">🎮 スタート！</button>
+          <div id="mode-btn-row" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+            <div class="sub" style="font-size:12px;margin-bottom:4px;">甘いドーナツを並べてラインを消そう！</div>
+            <button class="btn" id="start-btn">🎮 ひとりプレイ</button>
+            <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+          </div>
+          <div id="com-select" style="display:none;width:min(300px,88vw);">
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;">COMのつよさをえらんでね！</div>
+            <div class="com-level-grid" id="com-level-grid"></div>
+            <button class="btn-back" id="back-to-mode">← もどる</button>
+          </div>
         </div>
       </div>
     </div>
@@ -444,7 +470,7 @@ if (isMobile) {
       <button class="ctrl-btn" id="btn-down">▼</button>
       <button class="ctrl-btn large" id="btn-drop">DROP</button>
       <button class="ctrl-btn" id="btn-right">▶</button>
-      <button class="ctrl-btn" id="btn-reset">🔄</button>
+      <button class="ctrl-btn" id="btn-settings-m">⚙</button>
     </div>
   `;
 } else {
@@ -454,7 +480,7 @@ if (isMobile) {
       <div class="side-panel">
         <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="score-display">0</div></div>
         <div class="info-box">
-          <div class="info-label">LEVEL</div><div class="info-value" id="level-display">1</div>
+          <div class="info-label">SPEED</div><div class="info-value" id="level-display">1</div>
           <div id="level-bar-wrapper"><div id="level-bar" style="width:0%"></div></div>
         </div>
         <div class="info-box">
@@ -488,7 +514,7 @@ if (isMobile) {
         <canvas id="particle-canvas"></canvas>
         <div id="overlay">
           <h1>🍩<br>DONUT DROP</h1>
-          <div class="sub">ミスタードーナツのドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
+          <div class="sub">甘いドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
           <div class="btn-row" id="mode-btn-row">
             <button class="btn" id="start-btn">🎮 ソロ</button>
             <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
@@ -1203,10 +1229,34 @@ function showBattleResult(win){
 
 function returnToModeSelect(){
   gameMode='solo'; gameRunning=false; comRunning=false;
-  document.getElementById('battle-wrapper').style.display='none';
-  document.getElementById('game-wrapper').style.display='';
   if(!isMobile){
+    document.getElementById('battle-wrapper').style.display='none';
+    document.getElementById('game-wrapper').style.display='';
     CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
+    gameCanvas.width=CW; gameCanvas.height=CH;
+    pCanvas.width=CW; pCanvas.height=CH;
+  } else {
+    // モバイル: 対戦レイアウトを元に戻す
+    document.getElementById('mobile-battle-vs-el')?.remove();
+    document.getElementById('mobile-com-board')?.remove();
+    const gameArea=document.getElementById('game-area');
+    if(gameArea) gameArea.classList.remove('battle-mode');
+    document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
+    // トップバーを元に戻す
+    const topbar=document.getElementById('topbar');
+    if(topbar) topbar.innerHTML=`
+      <div id="title-top">🍩 DONUT DROP</div>
+      <div class="top-stats">
+        <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
+        <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
+        <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
+      </div>`;
+    // キャンバスサイズをソロ用に戻す
+    const topH=58,ctrlH=122,pad=18;
+    const availH=window.innerHeight-topH-ctrlH-pad;
+    const availW=window.innerWidth*0.63;
+    CELL=Math.max(18,Math.min(Math.floor(availH/ROWS),Math.floor(availW/COLS),30));
+    BATTLE_CELL=22; CW=COLS*CELL; CH=ROWS*CELL;
     gameCanvas.width=CW; gameCanvas.height=CH;
     pCanvas.width=CW; pCanvas.height=CH;
   }
@@ -1216,6 +1266,9 @@ function returnToModeSelect(){
   if(comSel) comSel.style.display='none';
   const ov=document.getElementById('overlay');
   ov.style.display='flex';
+  // レベルグリッドを再描画
+  const g=document.getElementById('com-level-grid');
+  if(g) g.innerHTML=buildLevelBtnsHTML();
 }
 
 function comEndGame(){
@@ -1485,6 +1538,12 @@ if(btnSettingsPc && settingsOverlay){
   });
 }
 
+// モバイル設定ボタン
+const btnSettingsM = document.getElementById('btn-settings-m');
+if(btnSettingsM && settingsOverlay){
+  btnSettingsM.addEventListener('click',()=>{ settingsOverlay.style.display='flex'; });
+}
+
 // ════════════════════════════════════════════════════════
 // OVERLAY ボタンイベント (モード選択)
 // ════════════════════════════════════════════════════════
@@ -1550,13 +1609,21 @@ function setupOverlayButtons(){
 function resetGame() {
   if(gameMode==='battle'){
     comRunning=false;
-    // battle-wrapperを隠してgame-wrapperを戻す
-    const bw=document.getElementById('battle-wrapper');
-    const gw=document.getElementById('game-wrapper');
-    if(bw) bw.style.display='none';
-    if(gw) gw.style.display='flex';
-    // CELLを元に戻す
-    if(!isMobile){ CELL=30; CW=COLS*CELL; CH=ROWS*CELL; gameCanvas.width=CW; gameCanvas.height=CH; pCanvas.width=CW; pCanvas.height=CH; }
+    if(!isMobile){
+      const bw=document.getElementById('battle-wrapper');
+      const gw=document.getElementById('game-wrapper');
+      if(bw) bw.style.display='none';
+      if(gw) gw.style.display='flex';
+      CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
+      gameCanvas.width=CW; gameCanvas.height=CH;
+      pCanvas.width=CW; pCanvas.height=CH;
+    } else {
+      document.getElementById('mobile-battle-vs-el')?.remove();
+      document.getElementById('mobile-com-board')?.remove();
+      const gameArea=document.getElementById('game-area');
+      if(gameArea) gameArea.classList.remove('battle-mode');
+      document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
+    }
     gameMode='solo';
   }
   gameRunning=false;
@@ -1589,21 +1656,51 @@ function startBattleMode(lv){
     const bw=document.getElementById('battle-wrapper');
     if(gw) gw.style.display='none';
     if(bw) bw.style.display='flex';
-
-    // 両ボードをBATTLE_CELLサイズにリサイズ
-    CELL=BATTLE_CELL;
-    CW=COLS*CELL; CH=ROWS*CELL;
-
-    // battle-game-canvasのサイズ設定
+    CELL=BATTLE_CELL; CW=COLS*CELL; CH=ROWS*CELL;
     if(battleGameCanvas){ battleGameCanvas.width=CW; battleGameCanvas.height=CH; }
     if(battlePCanvas){ battlePCanvas.width=CW; battlePCanvas.height=CH; }
-
     const cc=document.getElementById('com-canvas');
     if(cc){ cc.width=CW; cc.height=CH; }
-
-    // COM名前を表示
     const cn=document.getElementById('com-name-display');
     if(cn) cn.textContent=COM_INFO[lv].emoji+' '+COM_INFO[lv].name;
+  } else {
+    // モバイル: ゲームエリアに対戦レイアウトを構築
+    const mbc=Math.max(14,Math.min(19,Math.floor((window.innerWidth-24)/(COLS*2+1))));
+    BATTLE_CELL=mbc; CELL=mbc; CW=COLS*mbc; CH=ROWS*mbc;
+    gameCanvas.width=CW; gameCanvas.height=CH;
+    pCanvas.width=CW; pCanvas.height=CH;
+    document.querySelectorAll('.side-mini').forEach(el=>el.style.display='none');
+    // トップバーを対戦用に
+    const topbar=document.getElementById('topbar');
+    if(topbar) topbar.innerHTML=`
+      <div class="battle-topbar">
+        <div class="battle-stat">
+          <span class="battle-lbl">YOU</span>
+          <span class="battle-val" id="score-display">0</span>
+        </div>
+        <div class="battle-vs">⚔️</div>
+        <div class="battle-stat" style="text-align:right;">
+          <span class="battle-lbl">${COM_INFO[lv].emoji} ${COM_INFO[lv].name}</span>
+          <span class="battle-val" id="com-battle-score">0</span>
+        </div>
+      </div>`;
+    // ゲームエリアにVSコラムとCOMキャンバスを追加
+    document.getElementById('mobile-battle-vs-el')?.remove();
+    document.getElementById('mobile-com-board')?.remove();
+    const gameArea=document.getElementById('game-area');
+    if(gameArea){
+      gameArea.classList.add('battle-mode');
+      const vsEl=document.createElement('div');
+      vsEl.className='mobile-battle-vs'; vsEl.id='mobile-battle-vs-el';
+      vsEl.innerHTML='⚔️<span class="vs-label">VS</span>';
+      const comDiv=document.createElement('div');
+      comDiv.id='mobile-com-board'; comDiv.style.cssText='position:relative;flex-shrink:0;';
+      const comCvs=document.createElement('canvas');
+      comCvs.id='com-canvas'; comCvs.width=CW; comCvs.height=CH;
+      comDiv.appendChild(comCvs);
+      gameArea.appendChild(vsEl);
+      gameArea.appendChild(comDiv);
+    }
   }
 
   // COMグリッド初期化
@@ -1638,7 +1735,7 @@ function endGame() {
         <div class="sub">
           スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
           ハイスコア: ${hiScore.toLocaleString()}<br>
-          レベル ${level} / ${lines}ライン
+          スピード ${level} / ${lines}ライン
         </div>
         <button class="btn" id="start-btn">🔄 もう一度！</button>
       `;
@@ -1651,8 +1748,10 @@ function endGame() {
 const initStartBtn=document.getElementById('start-btn');
 if(initStartBtn) initStartBtn.addEventListener('click',()=>{ initAudio(); sfxSelect(); startGame(); });
 
-// オーバーレイボタン初期セットアップ（PC版）
-if(!isMobile) setupOverlayButtons();
+// オーバーレイボタン初期セットアップ（PC・モバイル共通）
+setupOverlayButtons();
+// モバイルの初期レベルグリッドを描画
+if(isMobile){ const g=document.getElementById('com-level-grid'); if(g) g.innerHTML=buildLevelBtnsHTML(); }
 
 // Background loop (always running)
 (function bgLoop(){drawBg();requestAnimationFrame(bgLoop);})();
