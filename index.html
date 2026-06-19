@@ -100,23 +100,28 @@ body::before {
 .btn-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
 /* COM level selection */
+.com-level-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; width: 100%; margin-bottom: 12px;
+}
 .com-level-btn {
   background: rgba(255,255,255,0.06);
   border: 2px solid rgba(255,107,205,0.4);
-  border-radius: 16px; padding: 14px 20px;
-  font-family: 'Fredoka One', cursive; font-size: 15px;
+  border-radius: 12px; padding: 8px 6px;
+  font-family: 'Fredoka One', cursive; font-size: 13px;
   color: white; cursor: pointer; text-align: center;
-  transition: all 0.2s; min-width: 130px;
+  transition: all 0.2s;
 }
 .com-level-btn:hover {
   background: rgba(255,107,205,0.15);
   border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(255,107,205,0.5);
+  box-shadow: 0 0 14px rgba(255,107,205,0.5);
   transform: scale(1.05);
 }
-.com-level-btn .lv-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
-.com-level-btn .lv-name { display: block; font-size: 13px; margin-bottom: 3px; }
-.com-level-btn .lv-diff { display: block; font-size: 10px; color: rgba(255,255,255,0.45); font-family: 'Kosugi Maru', sans-serif; }
+.com-level-btn .lv-num  { display: block; font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+.com-level-btn .lv-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+.com-level-btn .lv-name { display: block; font-size: 11px; margin-bottom: 2px; }
+.com-level-btn .lv-diff { display: block; font-size: 9px; color: rgba(255,255,255,0.45); font-family: 'Kosugi Maru', sans-serif; }
 
 .btn-back {
   background: none; border: 1px solid rgba(255,255,255,0.25);
@@ -366,7 +371,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.5.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.6.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -484,10 +489,16 @@ if (isMobile) {
           </div>
           <div id="com-select" style="display:none;width:100%;text-align:center;">
             <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;font-family:'Kosugi Maru',sans-serif;margin-bottom:12px;">COMのつよさをえらんでね！</div>
-            <div class="btn-row" style="margin-bottom:14px;">
-              <button class="com-level-btn" data-lv="1"><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">弱 (かんたん)</span></button>
-              <button class="com-level-btn" data-lv="2"><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">中 (ふつう)</span></button>
-              <button class="com-level-btn" data-lv="3"><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">強 (むずかしい)</span></button>
+            <div class="com-level-grid">
+              <button class="com-level-btn" data-lv="1"><span class="lv-num">Lv.1</span><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">★☆☆ かんたん</span></button>
+              <button class="com-level-btn" data-lv="2"><span class="lv-num">Lv.2</span><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">★☆☆ かんたん</span></button>
+              <button class="com-level-btn" data-lv="3"><span class="lv-num">Lv.3</span><span class="lv-emoji">🍯</span><span class="lv-name">はちみつグレーズ</span><span class="lv-diff">★★☆ ふつう</span></button>
+              <button class="com-level-btn" data-lv="4"><span class="lv-num">Lv.4</span><span class="lv-emoji">🍫</span><span class="lv-name">チョコリング</span><span class="lv-diff">★★☆ ふつう</span></button>
+              <button class="com-level-btn" data-lv="5"><span class="lv-num">Lv.5</span><span class="lv-emoji">🫐</span><span class="lv-name">ブルーベリー</span><span class="lv-diff">★★★ むずかしい</span></button>
+              <button class="com-level-btn" data-lv="6"><span class="lv-num">Lv.6</span><span class="lv-emoji">🥐</span><span class="lv-name">フレンチクルーラー</span><span class="lv-diff">★★★ むずかしい</span></button>
+              <button class="com-level-btn" data-lv="7"><span class="lv-num">Lv.7</span><span class="lv-emoji">🍪</span><span class="lv-name">オールドファッション</span><span class="lv-diff">💀 かなりきつい</span></button>
+              <button class="com-level-btn" data-lv="8"><span class="lv-num">Lv.8</span><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">💀 かなりきつい</span></button>
+              <button class="com-level-btn" data-lv="9"><span class="lv-num">Lv.9</span><span class="lv-emoji">👑</span><span class="lv-name">ゴールデンキング</span><span class="lv-diff">💀💀 むちゃくちゃ</span></button>
             </div>
             <button class="btn-back" id="back-to-mode">← もどる</button>
           </div>
@@ -825,9 +836,15 @@ if(hsd) hsd.textContent=hiScore.toLocaleString();
 let gameMode = 'solo'; // 'solo' | 'battle'
 let comLv = 1;
 const COM_INFO = {
-  1: { name: 'もちもちリング', emoji: '🍩', interval: 1500 },
-  2: { name: 'ストロベリー',   emoji: '🍓', interval: 900  },
-  3: { name: 'クリームボール', emoji: '👼', interval: 500  },
+  1: { name: 'もちもちリング',     emoji: '🍩', interval: 2000 },
+  2: { name: 'ストロベリー',       emoji: '🍓', interval: 1500 },
+  3: { name: 'はちみつグレーズ',   emoji: '🍯', interval: 1100 },
+  4: { name: 'チョコリング',       emoji: '🍫', interval: 800  },
+  5: { name: 'ブルーベリー',       emoji: '🫐', interval: 600  },
+  6: { name: 'フレンチクルーラー', emoji: '🥐', interval: 450  },
+  7: { name: 'オールドファッション',emoji: '🍪', interval: 300  },
+  8: { name: 'クリームボール',     emoji: '👼', interval: 200  },
+  9: { name: 'ゴールデンキング',   emoji: '👑', interval: 120  },
 };
 let comGrid = [];
 let comCurrentPiece = null;
@@ -1175,27 +1192,26 @@ function comDoMove(){
   let best;
   const rand=Math.random();
 
-  if(comLv===1){
-    // 50%ベスト、50%全候補からランダム（回転も含む）
+  if(comLv<=5){
     const moves=comAllMoves(comCurrentPiece);
     if(!moves.length) return;
-    if(rand<0.5){
+    // Lv1-5: レベルに応じてベスト手を選ぶ確率が上がる
+    const bestProb=[0,0.20,0.40,0.65,0.82,0.92][comLv];
+    if(rand<bestProb){
       best=moves.reduce((a,b)=>a.score>b.score?a:b);
     } else {
-      best=moves[Math.floor(Math.random()*moves.length)];
+      // Lv4以上は上位5手、Lv5は上位3手からランダム（惜しいミス）
+      const topN=comLv>=5?3:comLv>=4?5:moves.length;
+      const pool=moves.sort((a,b)=>b.score-a.score).slice(0,topN);
+      best=pool[Math.floor(Math.random()*pool.length)];
     }
-  } else if(comLv===2){
-    // 85%ベスト、15%上位5手からランダム（惜しいミス）
+  } else if(comLv<=7){
+    // Lv6-7: 100%完璧な1手読み（速度が違う）
     const moves=comAllMoves(comCurrentPiece);
     if(!moves.length) return;
-    if(rand<0.85){
-      best=moves.reduce((a,b)=>a.score>b.score?a:b);
-    } else {
-      const top5=moves.sort((a,b)=>b.score-a.score).slice(0,5);
-      best=top5[Math.floor(Math.random()*top5.length)];
-    }
+    best=moves.reduce((a,b)=>a.score>b.score?a:b);
   } else {
-    // Lv3: 2手先読み
+    // Lv8-9: 2手先読み
     best=comBestMoveLv3(comCurrentPiece, comNextData);
   }
   comLockAndProcess(best.x, best.cells, best.y);
