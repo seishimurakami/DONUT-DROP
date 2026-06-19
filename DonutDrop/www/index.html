@@ -167,20 +167,30 @@ body::before {
 [data-mode="mobile"] #controls {
   width: 100%; display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(2, 50px) auto;
+  grid-template-rows: repeat(2, 50px) 32px;
   gap: 5px;
-  padding: 5px 8px max(10px, var(--safe-bottom));
+  padding: 5px 8px max(26px, calc(var(--safe-bottom) + 2px));
   flex-shrink: 0;
 }
-[data-mode="mobile"] #copyright {
-  position: static;
-  grid-column: 1 / -1;
+#copyright {
+  position: fixed; bottom: 6px; left: 0; right: 0;
   text-align: center;
-  font-size: 10px; padding: 2px 0 0;
-  color: rgba(255,255,255,0.4); letter-spacing: 0.5px;
+  font-size: 10px; color: rgba(255,255,255,0.4);
+  z-index: 50; letter-spacing: 0.5px;
+  pointer-events: none;
 }
-[data-mode="mobile"] #copyright a {
-  color: rgba(255,255,255,0.7); text-decoration: none;
+#copyright a { color: rgba(255,255,255,0.7); text-decoration: none; pointer-events: auto; }
+[data-mode="mobile"] #btn-menu-ctrl {
+  grid-column: 1 / -1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  font-size: 13px; color: rgba(255,255,255,0.55);
+  font-family: ui-rounded,-apple-system,sans-serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+[data-mode="mobile"] #btn-menu-ctrl:active {
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
 }
 [data-mode="mobile"] .ctrl-btn {
   background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
@@ -334,6 +344,7 @@ body::before {
 <div id="battle-result">
   <h1 id="battle-result-title"></h1>
   <div class="sub" id="battle-result-sub"></div>
+  <button class="btn" id="battle-result-next" style="display:none;"></button>
   <div class="btn-row">
     <button class="btn" id="battle-result-retry">🔄 もう一度！</button>
     <button class="btn-menu" id="battle-result-menu">🏠 トップへもどる</button>
@@ -388,8 +399,9 @@ NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
 
 CW = COLS * CELL;
 CH = ROWS * CELL;
-const BATTLE_CELL = Math.max(14, Math.min(19, Math.floor((window.innerWidth - 24) / (COLS * 2 + 1))));
-const BCW = COLS * BATTLE_CELL, BCH = ROWS * BATTLE_CELL;
+// BATTLE_CELLはNEXT/HOLDパネル幅(52px)を考慮して計算
+let BATTLE_CELL = Math.max(12, Math.min(16, Math.floor((window.innerWidth - 24 - 52) / (COLS * 2 + 1))));
+let BCW = COLS * BATTLE_CELL, BCH = ROWS * BATTLE_CELL;
 
 // ════════════════════════════════════════════════════════
 // DOM INJECTION
@@ -440,8 +452,9 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
     <button class="ctrl-btn" id="btn-settings">⚙</button>
-    <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.8.0</div>
+    <button id="btn-menu-ctrl">🏠 メニューにもどる</button>
   </div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.8.0</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1019,24 +1032,26 @@ function drawCurrentPiece() {
 }
 
 function drawNext() {
-  nextCtx.clearRect(0,0,NEXT_SIZE,NEXT_SIZE);
+  const NW=nextCanvas.width, NH=nextCanvas.height;
+  nextCtx.clearRect(0,0,NW,NH);
   if(!nextPieceData) return;
   const donut=DONUTS[nextPieceData.donutIdx], cells=SHAPES[nextPieceData.shapeIdx];
   const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
   const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
-  const sc=Math.min(NEXT_SIZE*0.2, (NEXT_SIZE-10)/Math.max(maxX-minX+1,maxY-minY+1));
-  const ox=NEXT_SIZE/2-((minX+maxX)/2)*sc, oy=NEXT_SIZE/2-((minY+maxY)/2)*sc;
+  const sc=Math.min(NW*0.2, (NW-10)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=NW/2-((minX+maxX)/2)*sc, oy=NH/2-((minY+maxY)/2)*sc;
   cells.forEach(([dx,dy])=>drawDonut(nextCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
 }
 
 function drawHold() {
-  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
+  const HW=holdCanvas.width, HH=holdCanvas.height;
+  holdCtx.clearRect(0,0,HW,HH);
   if(!holdPieceData) return;
   const donut=DONUTS[holdPieceData.donutIdx], cells=SHAPES[holdPieceData.shapeIdx];
   const minX=Math.min(...cells.map(([dx])=>dx)), maxX=Math.max(...cells.map(([dx])=>dx));
   const minY=Math.min(...cells.map(([,dy])=>dy)), maxY=Math.max(...cells.map(([,dy])=>dy));
-  const sc=Math.min(HOLD_H*0.4, (Math.min(HOLD_W,HOLD_H)-8)/Math.max(maxX-minX+1,maxY-minY+1));
-  const ox=HOLD_W/2-((minX+maxX)/2)*sc, oy=HOLD_H/2-((minY+maxY)/2)*sc;
+  const sc=Math.min(HH*0.4, (Math.min(HW,HH)-8)/Math.max(maxX-minX+1,maxY-minY+1));
+  const ox=HW/2-((minX+maxX)/2)*sc, oy=HH/2-((minY+maxY)/2)*sc;
   holdCtx.globalAlpha=canHold?1:.4;
   cells.forEach(([dx,dy])=>drawDonut(holdCtx,ox+dx*sc-sc/2+1,oy+dy*sc-sc/2+1,sc-2,donut,1,gameTime*.1));
 }
@@ -1085,11 +1100,12 @@ function gameLoop(ts) {
 // TOUCH & BUTTON CONTROLS
 // ════════════════════════════════════════════════════════
 let tx0=0,ty0=0,txL=0,tMoved=false;
-gameCanvas.addEventListener('touchstart',e=>{
+const touchTarget=document.getElementById('game-area');
+touchTarget.addEventListener('touchstart',e=>{
   if(!gameRunning||gamePaused)return;
   const t=e.touches[0]; tx0=txL=t.clientX; ty0=t.clientY; tMoved=false;
 },{passive:true});
-gameCanvas.addEventListener('touchmove',e=>{
+touchTarget.addEventListener('touchmove',e=>{
   if(!gameRunning||gamePaused||!currentPiece)return;
   e.preventDefault();
   const t=e.touches[0],dx=t.clientX-txL,dy=t.clientY-ty0;
@@ -1100,7 +1116,7 @@ gameCanvas.addEventListener('touchmove',e=>{
   }
   if(dy>30) dropTimer=dropInterval;
 },{passive:false});
-gameCanvas.addEventListener('touchend',e=>{
+touchTarget.addEventListener('touchend',e=>{
   if(!gameRunning||gamePaused||!currentPiece)return;
   if(!tMoved){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
   const sy=e.changedTouches[0].clientY-ty0;
@@ -1135,6 +1151,18 @@ btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
 btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
 btnTap('btn-mute',   ()=>toggleMute());
 
+// MENU ボタン（ゲーム中にトップへもどる）
+const menuCtrlBtn=document.getElementById('btn-menu-ctrl');
+if(menuCtrlBtn){
+  menuCtrlBtn.addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});
+  menuCtrlBtn.addEventListener('touchend',e=>{
+    e.preventDefault();
+    sfxGameOver();
+    resetToTop();
+  },{passive:false});
+  menuCtrlBtn.addEventListener('click',()=>{ sfxGameOver(); resetToTop(); });
+}
+
 // ════════════════════════════════════════════════════════
 // START / END
 // ════════════════════════════════════════════════════════
@@ -1144,7 +1172,7 @@ function startGame() {
   particles.length=0;
   score=0;lines=0;level=1;combo=0;dropInterval=700;dropTimer=0;gameTime=0;
   currentPiece=null;nextPieceData=null;holdPieceData=null;canHold=true;gamePaused=false;shakeTimer=0;
-  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
+  holdCtx.clearRect(0,0,holdCanvas.width,holdCanvas.height);
   updateUI();
   document.getElementById('overlay').style.display='none';
   gameRunning=true; spawnPiece(); nextPieceData=newPieceData();
@@ -1166,6 +1194,14 @@ function endGame(playerWon=false) {
       document.getElementById('battle-result-sub').innerHTML=won
         ?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}${unlockMsg}`
         :`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}`;
+      const nextBtn=document.getElementById('battle-result-next');
+      if(nextBtn){
+        const nextLv=comLv+1;
+        if(won && nextLv<=9 && nextLv<=getUnlockedLv()){
+          nextBtn.textContent=`⚔️ 次の Lv.${nextLv} ${COM_INFO[nextLv].emoji}${COM_INFO[nextLv].name} へチャレンジ！`;
+          nextBtn.style.display='';
+        } else { nextBtn.style.display='none'; }
+      }
       document.getElementById('battle-result').style.display='flex';
     },800);
   } else {
@@ -1207,7 +1243,7 @@ function resetToTop(){
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea) gameArea.classList.remove('battle-mode');
-  document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
+  document.querySelectorAll('.mini-box').forEach(el=>el.style.display='');
   document.getElementById('battle-result').style.display='none';
   showTopOverlay();
 }
@@ -1271,8 +1307,11 @@ function startBattleMode(lv){
   gameCanvas.width=CW;gameCanvas.height=CH;
   pCanvas.width=CW;pCanvas.height=CH;
 
-  // side-miniを隠す
-  document.querySelectorAll('.side-mini').forEach(el=>el.style.display='none');
+  // 対戦時: NEXT/HOLDは表示、COMBOボックスだけ隠す
+  document.querySelectorAll('.mini-box').forEach(el=>{
+    const lbl=el.querySelector('.lbl');
+    if(lbl&&lbl.textContent==='COMBO') el.style.display='none';
+  });
 
   // トップバーを対戦用に変更
   const topbar=document.getElementById('topbar');
@@ -1329,6 +1368,10 @@ if(_initGrid) _initGrid.innerHTML=buildLevelBtnsHTML();
 document.getElementById('battle-result-retry')?.addEventListener('click',()=>{
   document.getElementById('battle-result').style.display='none';
   startBattleMode(comLv);
+});
+document.getElementById('battle-result-next')?.addEventListener('click',()=>{
+  document.getElementById('battle-result').style.display='none';
+  startBattleMode(comLv+1);
 });
 document.getElementById('battle-result-menu')?.addEventListener('click',()=>{
   document.getElementById('battle-result').style.display='none';
