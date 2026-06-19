@@ -366,7 +366,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.4.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.5.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -815,8 +815,8 @@ let gameMode = 'solo'; // 'solo' | 'battle'
 let comLv = 1;
 const COM_INFO = {
   1: { name: 'もちもちリング', emoji: '🍩', interval: 1500 },
-  2: { name: 'ストロベリー',   emoji: '🍓', interval: 750  },
-  3: { name: 'クリームボール', emoji: '👼', interval: 300  },
+  2: { name: 'ストロベリー',   emoji: '🍓', interval: 900  },
+  3: { name: 'クリームボール', emoji: '👼', interval: 500  },
 };
 let comGrid = [];
 let comCurrentPiece = null;
@@ -953,8 +953,8 @@ function clearLinesOnGrid(grid){
   }
   return cleared;
 }
-// 消去ライン数→スコア（2乗ボーナス: 1=10, 2=40, 3=90, 4=160）
-function lineBonus(n){ return [0,1,4,9,16][Math.min(n,4)]*10; }
+// 消去ライン数→ボーナス（2ライン以上を爆発的に優遇: 1=5, 2=40, 3=100, 4=200）
+function lineBonus(n){ return [0,5,40,100,200][Math.min(n,4)]; }
 // 4回転分のセル配列を返す
 function getRotations(cells){
   const res=[cells]; let c=cells;
@@ -962,22 +962,70 @@ function getRotations(cells){
   return res;
 }
 
-// 盤面の構造評価（ライン消去後のグリッドを渡すこと）
+// 盤面の構造評価（Dellacherie 6特徴 + 危険域ペナルティ）
+// ライン消去後のグリッドを渡すこと
 function comEvalBoard(g){
+  // ── 列高さ ──
   const colH=Array(COLS).fill(0);
+  for(let c=0;c<COLS;c++)
+    for(let r=0;r<ROWS;r++)
+      if(g[r][c]!==null){ colH[c]=ROWS-r; break; }
+
+  // ── 穴：上に埋まったセルがある空きマス ──
   let holes=0;
   for(let c=0;c<COLS;c++){
-    let found=false;
+    let inCol=false;
     for(let r=0;r<ROWS;r++){
-      if(g[r][c]!==null){
-        if(!found){colH[c]=ROWS-r; found=true;}
-        else holes++;
-      }
+      if(g[r][c]!==null) inCol=true;
+      else if(inCol) holes++;
     }
   }
+
+  // ── 行方向切り替わり数（Row Transitions） ──
+  let rowTrans=0;
+  for(let r=0;r<ROWS;r++){
+    let prev=1; // 左壁=埋まり
+    for(let c=0;c<COLS;c++){
+      const cur=g[r][c]!==null?1:0;
+      if(cur!==prev) rowTrans++;
+      prev=cur;
+    }
+    if(prev===0) rowTrans++; // 右壁との切り替わり
+  }
+
+  // ── 列方向切り替わり数（Column Transitions） ──
+  let colTrans=0;
+  for(let c=0;c<COLS;c++){
+    let prev=1; // 底壁=埋まり
+    for(let r=ROWS-1;r>=0;r--){
+      const cur=g[r][c]!==null?1:0;
+      if(cur!==prev) colTrans++;
+      prev=cur;
+    }
+  }
+
+  // ── ウェル：両側が塞がれた縦穴の累積深さ ──
+  // 深さkのウェルは1+2+...+k のコストを加算
+  let wells=0;
+  for(let c=0;c<COLS;c++){
+    let depth=0;
+    for(let r=0;r<ROWS;r++){
+      if(g[r][c]===null){
+        const lFull=c===0||g[r][c-1]!==null;
+        const rFull=c===COLS-1||g[r][c+1]!==null;
+        if(lFull&&rFull){ depth++; wells+=depth; }
+        else depth=0;
+      } else depth=0;
+    }
+  }
+
   const aggH=colH.reduce((s,h)=>s+h,0);
-  const bumpy=colH.slice(0,-1).reduce((s,h,i)=>s+Math.abs(h-colH[i+1]),0);
-  return -aggH*0.5 - holes*3.0 - bumpy*0.35;
+  const maxH=Math.max(0,...colH);
+
+  // 高さが危険域(>12)に近づくほど急激にペナルティ増加
+  const danger=maxH>12?(maxH-12)*2.5:0;
+
+  return -aggH*0.4 - maxH*0.5 - danger - holes*4.0 - rowTrans*0.8 - colTrans*0.5 - wells*0.35;
 }
 
 function comBestMove(piece){
