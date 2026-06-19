@@ -304,6 +304,23 @@ body::before {
 #com-canvas { border:2px solid rgba(255,107,205,.5); border-radius:12px; box-shadow:0 0 20px rgba(255,107,205,.2); display:block; image-rendering:pixelated; }
 #battle-game-canvas { display:block; image-rendering:pixelated; border:2px solid rgba(255,107,205,0.5); border-radius:12px; box-shadow:0 0 30px rgba(255,107,205,0.3); }
 #battle-particle-canvas { position:absolute; inset:0; pointer-events:none; z-index:10; border-radius:12px; }
+/* Settings modal */
+#settings-overlay {
+  display:none; position:fixed; inset:0; z-index:400;
+  background:rgba(10,5,20,0.80); align-items:center; justify-content:center;
+}
+#settings-card {
+  background:rgba(30,15,50,0.97); border:1px solid rgba(255,107,205,0.35);
+  border-radius:18px; padding:28px 32px; min-width:280px; display:flex;
+  flex-direction:column; gap:18px;
+}
+.settings-title { font-family:'Fredoka One',cursive; font-size:18px; color:var(--accent2); letter-spacing:2px; text-align:center; }
+.settings-lbl { font-family:'Kosugi Maru',sans-serif; font-size:12px; color:rgba(255,255,255,.5); letter-spacing:1px; }
+.slider-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
+.slider-row input[type=range] { flex:1; accent-color:var(--accent); }
+.bgm-val { font-size:12px; color:var(--accent2); min-width:36px; text-align:right; font-family:'Fredoka One',cursive; }
+#settings-close { background:rgba(255,107,205,0.15); border:1px solid rgba(255,107,205,0.35); border-radius:10px; padding:8px 0; font-family:'Kosugi Maru',sans-serif; font-size:13px; color:rgba(255,255,255,.7); cursor:pointer; transition:all .2s; }
+#settings-close:hover { background:rgba(255,107,205,0.3); color:#fff; }
 #battle-result {
   display:none; position:fixed; inset:0; z-index:500;
   background:rgba(10,5,20,0.92);
@@ -322,6 +339,19 @@ body::before {
 <canvas id="bg-canvas"></canvas>
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
+<div id="settings-overlay">
+  <div id="settings-card">
+    <div class="settings-title">⚙ SETTINGS</div>
+    <div>
+      <div class="settings-lbl">BGM ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="bgm-slider" min="0" max="100" value="70">
+        <span class="bgm-val" id="bgm-val-label">70%</span>
+      </div>
+    </div>
+    <button id="settings-close">閉じる</button>
+  </div>
+</div>
 <div id="battle-result">
   <h1 id="battle-result-title"></h1>
   <div class="sub" id="battle-result-sub"></div>
@@ -459,6 +489,7 @@ if (isMobile) {
           <div class="info-label">MENU</div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:6px;">
             <button class="icon-btn" id="btn-mute-pc" title="ミュート (M)">🔊</button>
+            <button class="icon-btn" id="btn-settings-pc" title="設定">⚙</button>
             <button class="icon-btn" id="btn-reset-pc" title="リセット (R)">🔄</button>
           </div>
         </div>
@@ -564,11 +595,12 @@ function weightedRandom(weights) {
 // AUDIO ENGINE
 // ════════════════════════════════════════════════════════
 let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
+let bgmVolume=parseFloat(localStorage.getItem('donutBgmVolume')?? '0.7');
 
 function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  bgmGain = audioCtx.createGain(); bgmGain.gain.value=0.18; bgmGain.connect(audioCtx.destination);
+  bgmGain = audioCtx.createGain(); bgmGain.gain.value=bgmVolume*0.18; bgmGain.connect(audioCtx.destination);
   sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
   startBGM();
 }
@@ -613,7 +645,7 @@ function startBGM() {
 
 function toggleMute() {
   muted=!muted;
-  if(bgmGain) bgmGain.gain.value=muted?0:0.18;
+  if(bgmGain) bgmGain.gain.value=muted?0:bgmVolume*0.18;
   const icon = muted ? '🔇' : '🔊';
   const btnMobile = document.getElementById('btn-mute');
   if(btnMobile) btnMobile.textContent=icon;
@@ -1320,6 +1352,34 @@ if(btnMutePc) btnMutePc.addEventListener('click', ()=>{ toggleMute(); });
 
 const btnResetPc = document.getElementById('btn-reset-pc');
 if(btnResetPc) btnResetPc.addEventListener('click', ()=>{ resetGame(); });
+
+// Settings
+const btnSettingsPc = document.getElementById('btn-settings-pc');
+const settingsOverlay = document.getElementById('settings-overlay');
+const bgmSlider = document.getElementById('bgm-slider');
+const bgmValLabel = document.getElementById('bgm-val-label');
+if(btnSettingsPc && settingsOverlay){
+  // スライダーの初期値をlocalStorageから復元
+  const initPct = Math.round(bgmVolume*100);
+  bgmSlider.value = initPct;
+  bgmValLabel.textContent = initPct+'%';
+
+  btnSettingsPc.addEventListener('click',()=>{
+    settingsOverlay.style.display='flex';
+  });
+  document.getElementById('settings-close').addEventListener('click',()=>{
+    settingsOverlay.style.display='none';
+  });
+  settingsOverlay.addEventListener('click', e=>{
+    if(e.target===settingsOverlay) settingsOverlay.style.display='none';
+  });
+  bgmSlider.addEventListener('input',()=>{
+    bgmVolume = bgmSlider.value/100;
+    localStorage.setItem('donutBgmVolume', bgmVolume);
+    bgmValLabel.textContent = bgmSlider.value+'%';
+    if(bgmGain && !muted) bgmGain.gain.value = bgmVolume*0.18;
+  });
+}
 
 // ════════════════════════════════════════════════════════
 // OVERLAY ボタンイベント (モード選択)
