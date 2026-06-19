@@ -371,7 +371,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.6.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.7.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -474,6 +474,10 @@ if (isMobile) {
             <button class="icon-btn" id="btn-mute-pc" title="ミュート (M)">🔊</button>
             <button class="icon-btn" id="btn-settings-pc" title="設定">⚙</button>
             <button class="icon-btn" id="btn-reset-pc" title="リセット (R)">🔄</button>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+            <a href="help.html" target="_blank" style="display:block;color:rgba(255,255,255,0.6);font-family:'Kosugi Maru',sans-serif;font-size:11px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:5px 8px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)';this.style.color='white'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.6)'">❓ ヘルプページ</a>
+            <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank" style="display:block;color:rgba(255,255,255,0.6);font-family:'Kosugi Maru',sans-serif;font-size:11px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:5px 8px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)';this.style.color='white'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.6)'">📩 サポート</a>
           </div>
         </div>
       </div>
@@ -908,10 +912,9 @@ function checkLines() {
     if(combo>1) showCombo(combo);
     if(!isMobile) showScorePopup(earned);
     updateUI();
-    // バトルモード時: ゴミラインをCOMへ送る
+    // バトルモード時: 消した行数分だけゴミラインをCOMへ送る
     if(gameMode==='battle'){
-      const garbage=[0,0,1,2,4][Math.min(cleared.length,4)];
-      if(garbage>0) pendingGarbageForCom+=garbage;
+      pendingGarbageForCom+=cleared.length;
       updateGarbageIndicator();
     }
   } else { combo=0; }
@@ -1104,9 +1107,8 @@ function comLockAndProcess(finalX, finalCells, finalY){
     comScore+=earned; comLines_count+=cleared.length;
     const nl=Math.floor(comLines_count/10)+1;
     if(nl>comLevel) comLevel=nl;
-    // ゴミラインをプレイヤーへ送る
-    const garbage=[0,0,1,2,4][Math.min(cleared.length,4)];
-    if(garbage>0) pendingGarbageForPlayer+=garbage;
+    // 消した行数分だけゴミラインをプレイヤーへ送る
+    if(cleared.length>0) pendingGarbageForPlayer+=cleared.length;
     const cbs=document.getElementById('com-battle-score');
     if(cbs) cbs.textContent=comScore.toLocaleString();
   } else { comCombo=0; }

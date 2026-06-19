@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DONUT DROP - ヘルプ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0a0015; --accent:#ff6bcd; --accent2:#ffcc00; --accent3:#00f5d4; --text:#fff5ff; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:'Kosugi Maru', sans-serif;
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, #2a004488 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, #00223388 0%, transparent 50%);
+  padding:30px 16px 60px;
+}
+.container { max-width:680px; margin:0 auto; }
+h1 {
+  font-family:'Fredoka One', cursive;
+  font-size:2rem; color:var(--accent);
+  text-shadow:0 0 20px #ff6bcd88; margin-bottom:6px;
+  text-align:center;
+}
+.subtitle { text-align:center; font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:28px; }
+.back-btn {
+  display:inline-block; margin-bottom:24px;
+  background:rgba(255,107,205,0.12);
+  border:1px solid rgba(255,107,205,0.4);
+  border-radius:50px; padding:8px 22px;
+  color:rgba(255,255,255,0.7); text-decoration:none;
+  font-size:13px; transition:all .2s;
+}
+.back-btn:hover { background:rgba(255,107,205,0.22); color:white; }
+section { margin-bottom:24px; }
+.section-title {
+  font-family:'Fredoka One', cursive;
+  font-size:1rem; color:var(--accent3);
+  letter-spacing:2px; text-transform:uppercase;
+  border-bottom:1px solid rgba(0,245,212,0.3);
+  padding-bottom:6px; margin-bottom:12px;
+}
+.card {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,107,205,0.25);
+  border-radius:14px; padding:14px 16px;
+  font-size:13px; line-height:2;
+}
+.card table { width:100%; border-collapse:collapse; }
+.card td { padding:3px 6px; }
+.card td:first-child { color:var(--accent2); font-weight:bold; min-width:100px; }
+.key {
+  display:inline-block;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:5px; padding:1px 8px;
+  font-size:12px; font-family:'Fredoka One', cursive;
+}
+.donut-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.donut-item {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:10px 12px;
+  font-size:12px;
+}
+.donut-item .emoji { font-size:20px; margin-right:6px; }
+.donut-item .pts { color:var(--accent2); font-size:11px; }
+.badge {
+  display:inline-block;
+  background:rgba(255,107,205,0.15);
+  border:1px solid rgba(255,107,205,0.4);
+  border-radius:6px; padding:2px 8px; font-size:11px;
+  color:var(--accent);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← ゲームにもどる</a>
+  <h1>🍩 DONUT DROP</h1>
+  <p class="subtitle">ヘルプページ</p>
+
+  <section>
+    <div class="section-title">🎮 基本ルール</div>
+    <div class="card">
+      ドーナツのブロックを動かして、横一列をうめるとラインが消えてスコアが入ります。<br>
+      たくさんのラインを一度に消すほど、たくさんのスコアが入ります。<br>
+      ブロックが上まで積みあがったら<b style="color:var(--accent)">ゲームオーバー</b>！
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">⌨️ キーボード操作</div>
+    <div class="card">
+      <table>
+        <tr><td><span class="key">←</span> <span class="key">→</span></td><td>左右に動かす</td></tr>
+        <tr><td><span class="key">↑</span></td><td>右回転</td></tr>
+        <tr><td><span class="key">Z</span></td><td>左回転（逆向き）</td></tr>
+        <tr><td><span class="key">↓</span></td><td>下に速く落とす</td></tr>
+        <tr><td><span class="key">SPACE</span></td><td>一気に落とす（ハードドロップ）</td></tr>
+        <tr><td><span class="key">C</span></td><td>ホールド（ためておく）</td></tr>
+        <tr><td><span class="key">P</span></td><td>ポーズ（一時停止）</td></tr>
+        <tr><td><span class="key">M</span></td><td>音のON/OFF</td></tr>
+        <tr><td><span class="key">R</span></td><td>リセット（最初からやりなおし）</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">📱 スマホ操作</div>
+    <div class="card">
+      <table>
+        <tr><td>タップ</td><td>ブロックを回転</td></tr>
+        <tr><td>横スワイプ</td><td>左右に動かす</td></tr>
+        <tr><td>下スワイプ</td><td>速く落とす</td></tr>
+        <tr><td>大きく下スワイプ</td><td>一気に落とす</td></tr>
+        <tr><td><b>◀ ▶ ボタン</b></td><td>左右移動</td></tr>
+        <tr><td><b>▼ ボタン</b></td><td>下に落とす</td></tr>
+        <tr><td><b>DROP ボタン</b></td><td>一気に落とす</td></tr>
+        <tr><td><b>HOLD ボタン</b></td><td>ホールド</td></tr>
+        <tr><td><b>↺ ↻ ボタン</b></td><td>左回転・右回転</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">💡 テクニック</div>
+    <div class="card">
+      <b style="color:var(--accent2)">ホールド</b>：今のブロックをためておいて、あとで使えます。<span class="badge">C キー</span><br>
+      <b style="color:var(--accent2)">コンボ</b>：続けてラインを消すとコンボになり、スコアがどんどん上がります！<br>
+      <b style="color:var(--accent2)">ゴーストピース</b>：うすく見えるのが、ブロックが落ちる場所の目安です。<br>
+      <b style="color:var(--accent2)">レベルアップ</b>：10ライン消すたびにレベルが上がり、速くなります。
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">⚔️ 対戦モード</div>
+    <div class="card">
+      COMと一対一でテトリスの対戦ができます！<br><br>
+      <b style="color:var(--accent)">ガベージライン</b>：ラインを消すと、消した行数と同じだけのジャマなブロック（灰色）が<b>相手のフィールドの下から出てきます</b>。<br><br>
+      先にゲームオーバーになった方が負け。スコアが高い方が勝ち！<br><br>
+      <b>Lv.1〜9</b> の9段階の難しさを選べます：<br>
+      ★☆☆ かんたん（Lv.1〜2）<br>
+      ★★☆ ふつう（Lv.3〜4）<br>
+      ★★★ むずかしい（Lv.5〜6）<br>
+      💀 かなりきつい（Lv.7〜8）<br>
+      💀💀 むちゃくちゃ（Lv.9）
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🍩 ドーナツの種類</div>
+    <div class="donut-grid">
+      <div class="donut-item"><span class="emoji">🍩</span>もちもちリング<br><span class="pts">10pt</span></div>
+      <div class="donut-item"><span class="emoji">🍫</span>チョコリング<br><span class="pts">12pt</span></div>
+      <div class="donut-item"><span class="emoji">🍓</span>ストロベリー<br><span class="pts">15pt</span></div>
+      <div class="donut-item"><span class="emoji">🍯</span>はちみつグレーズ<br><span class="pts">10pt</span></div>
+      <div class="donut-item"><span class="emoji">🤎</span>オールドファッション<br><span class="pts">8pt</span></div>
+      <div class="donut-item"><span class="emoji">🫐</span>ブルーベリー<br><span class="pts">18pt</span></div>
+      <div class="donut-item"><span class="emoji">💛</span>フレンチクルーラー<br><span class="pts">14pt</span></div>
+      <div class="donut-item"><span class="emoji">👼</span>クリームボール<br><span class="pts">20pt</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">📊 スコアの計算</div>
+    <div class="card">
+      <table>
+        <tr><td>1ライン消し</td><td>100点 × レベル × コンボ</td></tr>
+        <tr><td>2ライン消し</td><td>300点 × レベル × コンボ</td></tr>
+        <tr><td>3ライン消し</td><td>600点 × レベル × コンボ</td></tr>
+        <tr><td>4ライン消し</td><td>1000点 × レベル × コンボ</td></tr>
+        <tr><td>ハードドロップ</td><td>落とした段数 × 2点</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div style="text-align:center;margin-top:32px;">
+    <a href="index.html" class="back-btn">← ゲームにもどる</a>
+  </div>
+  <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.3);margin-top:20px;">© 2026 Seishi Murakami</p>
+</div>
+</body>
+</html>
