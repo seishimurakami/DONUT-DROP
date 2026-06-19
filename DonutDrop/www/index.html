@@ -817,6 +817,17 @@ function comDrawBoard(){
 // DONUT DRAWING
 // ════════════════════════════════════════════════════════
 function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
+  // 小さいサイズはグラデーションを使わずシンプルに描画（対戦モード対応）
+  if(sz<24){
+    c.save(); c.globalAlpha=alpha;
+    const cx=x+sz/2, cy=y+sz/2, r=sz*.42, hr=sz*.16;
+    c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2); c.arc(cx,cy,hr,0,Math.PI*2,true);
+    c.fillStyle=donut.body; c.fill();
+    c.strokeStyle=donut.glaze; c.lineWidth=2; c.stroke();
+    c.beginPath(); c.arc(cx-r*.2,cy-r*.3,r*.18,0,Math.PI*2);
+    c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+    c.restore(); return;
+  }
   c.save(); c.globalAlpha=alpha; c.translate(x+sz/2,y+sz/2);
   const r=sz*.42, hr=sz*.16;
 
