@@ -931,6 +931,38 @@ function comRotatePiece(p,dir=1){
   return p;
 }
 
+// ── 任意グリッド用ヘルパー（先読みで使用） ──────────────
+function collidesOnGrid(p, grid){
+  return p.cells.some(({dx,dy})=>{
+    const nx=p.x+dx, ny=p.y+dy;
+    return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&grid[ny][nx]!==null);
+  });
+}
+function hardDropOnGrid(p, grid){
+  let q={...p, cells:p.cells.map(c=>({...c}))};
+  while(!collidesOnGrid({...q,y:q.y+1},grid)) q.y++;
+  return q;
+}
+// グリッドを in-place でライン消去し、消去数を返す
+function clearLinesOnGrid(grid){
+  let cleared=0;
+  for(let r=ROWS-1;r>=0;r--){
+    if(grid[r].every(c=>c!==null&&c!=='G')){
+      grid.splice(r,1); grid.unshift(Array(COLS).fill(null)); r++; cleared++;
+    }
+  }
+  return cleared;
+}
+// 消去ライン数→スコア（2乗ボーナス: 1=10, 2=40, 3=90, 4=160）
+function lineBonus(n){ return [0,1,4,9,16][Math.min(n,4)]*10; }
+// 4回転分のセル配列を返す
+function getRotations(cells){
+  const res=[cells]; let c=cells;
+  for(let i=0;i<3;i++){ c=c.map(({dx,dy})=>({dx:-dy,dy:dx})); res.push(c); }
+  return res;
+}
+
+// 盤面の構造評価（ライン消去後のグリッドを渡すこと）
 function comEvalBoard(g){
   const colH=Array(COLS).fill(0);
   let holes=0;
@@ -945,13 +977,7 @@ function comEvalBoard(g){
   }
   const aggH=colH.reduce((s,h)=>s+h,0);
   const bumpy=colH.slice(0,-1).reduce((s,h,i)=>s+Math.abs(h-colH[i+1]),0);
-
-  let cleared=0;
-  for(let r=0;r<ROWS;r++) if(g[r].every(c=>c!==null&&c!=='G')) cleared++;
-
-  // ライン消去を2乗ボーナスで強く優先（1消=10、2消=40、3消=90、4消=160）
-  const lineScore=[0,1,4,9,16][cleared]*10;
-  return lineScore - aggH*0.5 - holes*3.0 - bumpy*0.35;
+  return -aggH*0.5 - holes*3.0 - bumpy*0.35;
 }
 
 function comBestMove(piece){
@@ -962,13 +988,13 @@ function comBestMove(piece){
       const candidate={...p, x};
       if(comCollides(candidate)) continue;
       const dropped=comHardDrop(candidate);
-      // テスト用グリッドにロック
       const testGrid=comGrid.map(row=>[...row]);
       dropped.cells.forEach(({dx,dy})=>{
         const nx=dropped.x+dx, ny=dropped.y+dy;
-        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx;
+        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx??0;
       });
-      const sc=comEvalBoard(testGrid);
+      const n=clearLinesOnGrid(testGrid);
+      const sc=lineBonus(n)+comEvalBoard(testGrid);
       if(sc>bestScore){
         bestScore=sc; bestX=dropped.x; bestCells=dropped.cells.map(c=>({...c})); bestY=dropped.y;
       }
@@ -1012,6 +1038,57 @@ function comLockAndProcess(finalX, finalCells, finalY){
   comSpawnPiece();
 }
 
+// Lv3 専用: 2手先読みで最良手を選ぶ
+function comBestMoveLv3(piece, nextData){
+  if(!nextData) return comBestMove(piece); // フォールバック
+  const nextCells=SHAPES[nextData.shapeIdx].map(([dx,dy])=>({dx,dy}));
+  const nextDonut=nextData.donutIdx;
+  let bestScore=-Infinity, bestMove=null;
+
+  for(const rCells of getRotations(piece.cells)){
+    for(let x=0;x<COLS;x++){
+      const p={...piece, x, cells:rCells};
+      if(collidesOnGrid(p, comGrid)) continue;
+      const d=hardDropOnGrid(p, comGrid);
+
+      // 1手目を置く
+      const g1=comGrid.map(r=>[...r]);
+      rCells.forEach(({dx,dy})=>{
+        const nx=d.x+dx, ny=d.y+dy;
+        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) g1[ny][nx]=piece.donutIdx??0;
+      });
+      const n1=clearLinesOnGrid(g1);
+      const sc1=lineBonus(n1)+comEvalBoard(g1);
+
+      // 2手目（次のピース）で最高スコアを探す
+      let bestNext=-Infinity;
+      for(const r2 of getRotations(nextCells)){
+        for(let x2=0;x2<COLS;x2++){
+          const p2={x:x2, y:0, cells:r2};
+          if(collidesOnGrid(p2, g1)) continue;
+          const d2=hardDropOnGrid(p2, g1);
+          const g2=g1.map(r=>[...r]);
+          r2.forEach(({dx,dy})=>{
+            const nx=d2.x+dx, ny=d2.y+dy;
+            if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) g2[ny][nx]=nextDonut;
+          });
+          const n2=clearLinesOnGrid(g2);
+          const sc=lineBonus(n2)+comEvalBoard(g2);
+          if(sc>bestNext) bestNext=sc;
+        }
+      }
+
+      // 1手目評価 × 0.2 + 2手目最良評価 × 0.8
+      const total=sc1*0.2+(bestNext===-Infinity?sc1:bestNext)*0.8;
+      if(total>bestScore){
+        bestScore=total;
+        bestMove={x:d.x, cells:rCells.map(c=>({...c})), y:d.y};
+      }
+    }
+  }
+  return bestMove??comBestMove(piece);
+}
+
 // 全候補手をスコア付きで列挙する
 function comAllMoves(piece){
   const moves=[];
@@ -1026,7 +1103,8 @@ function comAllMoves(piece){
         const nx=dropped.x+dx, ny=dropped.y+dy;
         if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx??0;
       });
-      moves.push({x:dropped.x, cells:dropped.cells, y:dropped.y, score:comEvalBoard(testGrid)});
+      const n=clearLinesOnGrid(testGrid);
+      moves.push({x:dropped.x, cells:dropped.cells, y:dropped.y, score:lineBonus(n)+comEvalBoard(testGrid)});
     }
     p=comRotatePiece(p,1);
   }
@@ -1058,8 +1136,8 @@ function comDoMove(){
       best=top5[Math.floor(Math.random()*top5.length)];
     }
   } else {
-    // Lv3: 100%ベスト
-    best=comBestMove(comCurrentPiece);
+    // Lv3: 2手先読み
+    best=comBestMoveLv3(comCurrentPiece, comNextData);
   }
   comLockAndProcess(best.x, best.cells, best.y);
 }
