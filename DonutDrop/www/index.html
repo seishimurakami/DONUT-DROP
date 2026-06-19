@@ -145,6 +145,16 @@ body::before {
   display: flex; align-items: flex-start; justify-content: center;
   gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
 }
+[data-mode="mobile"] #game-area.battle-mode {
+  align-items: center; justify-content: center; gap: 12px;
+}
+.battle-vs-col {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: var(--accent); font-size: 18px; line-height: 1; flex-shrink: 0;
+}
+.battle-vs-col .vs-label {
+  font-size: 8px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase;
+}
 [data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
 [data-mode="mobile"] .mini-box {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
@@ -166,7 +176,7 @@ body::before {
   position: static;
   grid-column: 1 / -1;
   text-align: center;
-  font-size: 9px; padding: 2px 0 0;
+  font-size: 10px; padding: 2px 0 0;
   color: rgba(255,255,255,0.4); letter-spacing: 0.5px;
 }
 [data-mode="mobile"] #copyright a {
@@ -204,6 +214,7 @@ body::before {
   color:white; cursor:pointer; text-align:center;
 }
 .com-level-btn:active { background:rgba(255,107,205,0.2); transform:scale(0.95); }
+.com-level-locked { opacity:0.25 !important; cursor:default !important; pointer-events:none !important; }
 .com-level-btn .lv-num  { display:block; font-size:8px; color:rgba(255,255,255,0.4); margin-bottom:2px; }
 .com-level-btn .lv-emoji { font-size:17px; display:block; margin-bottom:3px; }
 .com-level-btn .lv-name { display:block; font-size:9px; margin-bottom:2px; line-height:1.2; }
@@ -377,17 +388,7 @@ app.innerHTML = `
         </div>
         <div id="com-select" style="display:none;width:min(300px,88vw);">
           <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;font-family:ui-rounded,-apple-system,sans-serif;">COMのつよさをえらんでね！</div>
-          <div class="com-level-grid">
-            <button class="com-level-btn" data-lv="1"><span class="lv-num">Lv.1</span><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">★☆☆ かんたん</span></button>
-            <button class="com-level-btn" data-lv="2"><span class="lv-num">Lv.2</span><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">★☆☆ かんたん</span></button>
-            <button class="com-level-btn" data-lv="3"><span class="lv-num">Lv.3</span><span class="lv-emoji">🍯</span><span class="lv-name">はちみつグレーズ</span><span class="lv-diff">★★☆ ふつう</span></button>
-            <button class="com-level-btn" data-lv="4"><span class="lv-num">Lv.4</span><span class="lv-emoji">🍫</span><span class="lv-name">チョコリング</span><span class="lv-diff">★★☆ ふつう</span></button>
-            <button class="com-level-btn" data-lv="5"><span class="lv-num">Lv.5</span><span class="lv-emoji">🫐</span><span class="lv-name">ブルーベリー</span><span class="lv-diff">★★★ むずかしい</span></button>
-            <button class="com-level-btn" data-lv="6"><span class="lv-num">Lv.6</span><span class="lv-emoji">🥐</span><span class="lv-name">フレンチクルーラー</span><span class="lv-diff">★★★ むずかしい</span></button>
-            <button class="com-level-btn" data-lv="7"><span class="lv-num">Lv.7</span><span class="lv-emoji">🍪</span><span class="lv-name">オールドファッション</span><span class="lv-diff">💀 かなりきつい</span></button>
-            <button class="com-level-btn" data-lv="8"><span class="lv-num">Lv.8</span><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">💀 かなりきつい</span></button>
-            <button class="com-level-btn" data-lv="9"><span class="lv-num">Lv.9</span><span class="lv-emoji">👑</span><span class="lv-name">ゴールデンキング</span><span class="lv-diff">💀💀 むちゃくちゃ</span></button>
-          </div>
+          <div class="com-level-grid" id="com-level-grid"></div>
           <button class="btn-back-lv" id="back-to-mode">← もどる</button>
         </div>
       </div>
@@ -404,7 +405,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
     <button class="ctrl-btn" id="btn-settings">⚙</button>
-    <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.7.0</div>
+    <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.8.0</div>
   </div>
 `;
 
@@ -651,16 +652,31 @@ function drawStar(c,cx,cy,spikes,outerR,innerR){
 // ════════════════════════════════════════════════════════
 let gameMode='solo';
 const COM_INFO={
-  1:{name:'もちもちリング',     emoji:'🍩',interval:2000},
-  2:{name:'ストロベリー',       emoji:'🍓',interval:1500},
-  3:{name:'はちみつグレーズ',   emoji:'🍯',interval:1100},
-  4:{name:'チョコリング',       emoji:'🍫',interval:800 },
-  5:{name:'ブルーベリー',       emoji:'🫐',interval:600 },
-  6:{name:'フレンチクルーラー', emoji:'🥐',interval:450 },
-  7:{name:'オールドファッション',emoji:'🍪',interval:300 },
-  8:{name:'クリームボール',     emoji:'👼',interval:200 },
-  9:{name:'ゴールデンキング',   emoji:'👑',interval:120 },
+  1:{name:'もちもちリング',      emoji:'🍩',interval:2000,diff:'★☆☆ かんたん'   },
+  2:{name:'ストロベリー',        emoji:'🍓',interval:1500,diff:'★☆☆ かんたん'   },
+  3:{name:'はちみつグレーズ',    emoji:'🍯',interval:1100,diff:'★★☆ ふつう'     },
+  4:{name:'チョコリング',        emoji:'🍫',interval:800, diff:'★★☆ ふつう'     },
+  5:{name:'ブルーベリー',        emoji:'🫐',interval:600, diff:'★★★ むずかしい' },
+  6:{name:'フレンチクルーラー',  emoji:'🥐',interval:450, diff:'★★★ むずかしい' },
+  7:{name:'オールドファッション', emoji:'🍪',interval:300, diff:'💀 かなりきつい' },
+  8:{name:'クリームボール',      emoji:'👼',interval:200, diff:'💀 かなりきつい' },
+  9:{name:'ゴールデンキング',    emoji:'👑',interval:120, diff:'💀💀 むちゃくちゃ'},
 };
+
+function getUnlockedLv(){return parseInt(localStorage.getItem('unlockedBattleLv')||'1');}
+function tryUnlockNextLv(lv){
+  if(lv>=9)return false;
+  if(lv+1>getUnlockedLv()){localStorage.setItem('unlockedBattleLv',lv+1);return true;}
+  return false;
+}
+function buildLevelBtnsHTML(){
+  const unlocked=getUnlockedLv();
+  return Array.from({length:9},(_,i)=>{
+    const lv=i+1,info=COM_INFO[lv];
+    if(lv<=unlocked) return `<button class="com-level-btn" data-lv="${lv}"><span class="lv-num">Lv.${lv}</span><span class="lv-emoji">${info.emoji}</span><span class="lv-name">${info.name}</span><span class="lv-diff">${info.diff}</span></button>`;
+    return `<button class="com-level-btn com-level-locked" disabled><span class="lv-num">Lv.${lv}</span><span class="lv-emoji">🔒</span></button>`;
+  }).join('');
+}
 let comLv=1;
 let comGrid=[];
 let comCurrentPiece=null,comNextData=null;
@@ -719,42 +735,6 @@ function comAllMoves(piece){
   return results;
 }
 
-function comBestMoveLv3(piece,nextData){
-  const rot1=[piece.cells];
-  let cur={...piece,cells:piece.cells.map(c=>({...c}))};
-  for(let i=0;i<3;i++){const r=cur.cells.map(({dx,dy})=>({dx:-dy,dy:dx}));rot1.push(r);cur={...cur,cells:r};}
-  let best=null,bestSc=-Infinity;
-  const seen=new Set();
-  rot1.forEach(rCells=>{
-    const key=JSON.stringify(rCells);if(seen.has(key))return;seen.add(key);
-    for(let x=0;x<COLS;x++){
-      const p={...piece,x,cells:rCells};if(collidesOnGrid(p,comGrid))continue;
-      const d=hardDropOnGrid(p,comGrid);
-      const g1=comGrid.map(r=>[...r]);
-      rCells.forEach(({dx,dy})=>{const nx=d.x+dx,ny=d.y+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)g1[ny][nx]=piece.donutIdx??0;});
-      const n1=clearLinesOnGrid(g1),sc1=lineBonus(n1);
-      if(!nextData){if(sc1+comEvalBoard(g1)>bestSc){bestSc=sc1+comEvalBoard(g1);best={x:d.x,cells:rCells,y:d.y};}}
-      else{
-        const np={x:Math.floor(COLS/2),y:1,cells:SHAPES[nextData.shapeIdx].map(([dx,dy])=>({dx,dy})),donutIdx:nextData.donutIdx,shapeIdx:nextData.shapeIdx};
-        const rot2=[np.cells];let cur2={...np,cells:np.cells.map(c=>({...c}))};
-        for(let i=0;i<3;i++){const r=cur2.cells.map(({dx,dy})=>({dx:-dy,dy:dx}));rot2.push(r);cur2={...cur2,cells:r};}
-        const seen2=new Set();
-        rot2.forEach(r2=>{
-          const k2=JSON.stringify(r2);if(seen2.has(k2))return;seen2.add(k2);
-          for(let x2=0;x2<COLS;x2++){
-            const p2={...np,x:x2,cells:r2};const tmpG=g1.map(r=>[...r]);if(collidesOnGrid(p2,tmpG))return;
-            const d2=hardDropOnGrid(p2,tmpG);const g2=tmpG.map(r=>[...r]);
-            r2.forEach(({dx,dy})=>{const nx=d2.x+dx,ny=d2.y+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)g2[ny][nx]=nextData.donutIdx??0;});
-            const n2=clearLinesOnGrid(g2),sc=sc1+lineBonus(n2)+comEvalBoard(g2);
-            if(sc>bestSc){bestSc=sc;best={x:d.x,cells:rCells,y:d.y};}
-          }
-        });
-      }
-    }
-  });
-  return best??{x:Math.floor(COLS/2),cells:piece.cells,y:1};
-}
-
 function comLockAndProcess(bx,bCells,by){
   bCells.forEach(({dx,dy})=>{const nx=bx+dx,ny=by+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)comGrid[ny][nx]=comCurrentPiece.donutIdx??0;});
   const n=clearLinesOnGrid(comGrid);
@@ -776,18 +756,17 @@ function comTick(dt){
   comDropTimer+=dt;
   if(comDropTimer>=comDropInterval){
     comDropTimer=0;
-    const rand=Math.random();let best=null;
-    if(comLv<=5){
-      const moves=comAllMoves(comCurrentPiece);if(!moves.length)return;
-      const bestProb=[0,0.20,0.40,0.65,0.82,0.92][comLv];
-      if(rand<bestProb){best=moves.reduce((a,b)=>a.score>b.score?a:b);}
-      else{const topN=comLv>=5?3:comLv>=4?5:moves.length;const pool=moves.sort((a,b)=>b.score-a.score).slice(0,topN);best=pool[Math.floor(Math.random()*pool.length)];}
-    } else if(comLv<=7){
-      const moves=comAllMoves(comCurrentPiece);if(!moves.length)return;
-      best=moves.reduce((a,b)=>a.score>b.score?a:b);
-    } else {
-      best=comBestMoveLv3(comCurrentPiece,comNextData);
-    }
+    const moves=comAllMoves(comCurrentPiece);if(!moves.length)return;
+    moves.sort((a,b)=>b.score-a.score);
+    // Lv1-7: ベスト手の確率とプール幅で難易度調整 / Lv8-9: 常に最良手（速度差のみ）
+    const cfg=[null,
+      {prob:0.15,pool:999},{prob:0.30,pool:8},{prob:0.47,pool:6},
+      {prob:0.62,pool:5  },{prob:0.75,pool:4},{prob:0.87,pool:3},
+      {prob:0.95,pool:2  },{prob:1.00,pool:1},{prob:1.00,pool:1},
+    ][comLv];
+    let best;
+    if(Math.random()<cfg.prob){best=moves[0];}
+    else{const pool=moves.slice(0,Math.min(cfg.pool,moves.length));best=pool[Math.floor(Math.random()*pool.length)];}
     if(best)comLockAndProcess(best.x,best.cells,best.y);
     if(pendingGarbageForPlayer>0){addGarbageToGrid(grid,pendingGarbageForPlayer);pendingGarbageForPlayer=0;}
   }
@@ -1146,13 +1125,15 @@ function endGame() {
     ov.style.display='flex';
     if(gameMode==='battle'){
       const won=score>=comScore;
+      const newUnlock=won?tryUnlockNextLv(comLv):false;
       haptic(won?'levelUp':'gameOver');
+      const unlockMsg=newUnlock?`<br><span style="color:#00f5d4;font-size:0.82em;">🔓 Lv.${comLv+1} が解放されました！</span>`:(won&&comLv===9?`<br><span style="color:#ffcc00;font-size:0.82em;">👑 全レベル制覇！</span>`:'');
       ov.innerHTML=`
         <h1>${won?'🎉 YOU WIN!':'😢 GAME OVER...'}</h1>
         <div class="sub" style="text-align:center;line-height:1.8;">
           ${won?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！`:`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…`}<br>
           あなた: <b style="color:#ffcc00;font-size:1.3em">${score.toLocaleString()}</b><br>
-          COM: ${comScore.toLocaleString()}
+          COM: ${comScore.toLocaleString()}${unlockMsg}
         </div>
         <button class="btn" id="start-btn">🔄 もう一度！</button>
         <button class="btn-back-lv" id="btn-top">🏠 トップへもどる</button>
@@ -1168,8 +1149,10 @@ function endGame() {
           レベル ${level} / ${lines}ライン
         </div>
         <button class="btn" id="start-btn">🔄 もう一度！</button>
+        <button class="btn-back-lv" id="btn-top">🏠 トップへもどる</button>
       `;
       document.getElementById('start-btn').addEventListener('click',startGame);
+      document.getElementById('btn-top').addEventListener('click',resetToTop);
     }
   },800);
 }
@@ -1189,6 +1172,9 @@ function resetToTop(){
       <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
     </div>`;
   const comArea=document.getElementById('com-board-area');if(comArea)comArea.remove();
+  document.getElementById('battle-vs-el')?.remove();
+  const gameArea=document.getElementById('game-area');
+  if(gameArea) gameArea.classList.remove('battle-mode');
   document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
   showTopOverlay();
 }
@@ -1205,17 +1191,7 @@ function showTopOverlay(){
     </div>
     <div id="com-select" style="display:none;width:min(300px,88vw);">
       <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;font-family:ui-rounded,-apple-system,sans-serif;">COMのつよさをえらんでね！</div>
-      <div class="com-level-grid">
-        <button class="com-level-btn" data-lv="1"><span class="lv-num">Lv.1</span><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">★☆☆ かんたん</span></button>
-        <button class="com-level-btn" data-lv="2"><span class="lv-num">Lv.2</span><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">★☆☆ かんたん</span></button>
-        <button class="com-level-btn" data-lv="3"><span class="lv-num">Lv.3</span><span class="lv-emoji">🍯</span><span class="lv-name">はちみつグレーズ</span><span class="lv-diff">★★☆ ふつう</span></button>
-        <button class="com-level-btn" data-lv="4"><span class="lv-num">Lv.4</span><span class="lv-emoji">🍫</span><span class="lv-name">チョコリング</span><span class="lv-diff">★★☆ ふつう</span></button>
-        <button class="com-level-btn" data-lv="5"><span class="lv-num">Lv.5</span><span class="lv-emoji">🫐</span><span class="lv-name">ブルーベリー</span><span class="lv-diff">★★★ むずかしい</span></button>
-        <button class="com-level-btn" data-lv="6"><span class="lv-num">Lv.6</span><span class="lv-emoji">🥐</span><span class="lv-name">フレンチクルーラー</span><span class="lv-diff">★★★ むずかしい</span></button>
-        <button class="com-level-btn" data-lv="7"><span class="lv-num">Lv.7</span><span class="lv-emoji">🍪</span><span class="lv-name">オールドファッション</span><span class="lv-diff">💀 かなりきつい</span></button>
-        <button class="com-level-btn" data-lv="8"><span class="lv-num">Lv.8</span><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">💀 かなりきつい</span></button>
-        <button class="com-level-btn" data-lv="9"><span class="lv-num">Lv.9</span><span class="lv-emoji">👑</span><span class="lv-name">ゴールデンキング</span><span class="lv-diff">💀💀 むちゃくちゃ</span></button>
-      </div>
+      <div class="com-level-grid" id="com-level-grid"></div>
       <button class="btn-back-lv" id="back-to-mode">← もどる</button>
     </div>
   `;
@@ -1229,6 +1205,8 @@ function bindModeSelectEvents(){
   if(btnSolo) btnSolo.addEventListener('click',startGame);
   if(btnBattle) btnBattle.addEventListener('click',()=>{
     initAudio();
+    const grid=document.getElementById('com-level-grid');
+    if(grid) grid.innerHTML=buildLevelBtnsHTML();
     document.getElementById('mode-select').style.display='none';
     document.getElementById('com-select').style.display='block';
   });
@@ -1236,11 +1214,11 @@ function bindModeSelectEvents(){
     document.getElementById('com-select').style.display='none';
     document.getElementById('mode-select').style.display='flex';
   });
-  document.querySelectorAll('.com-level-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const lv=parseInt(btn.dataset.lv);
-      startBattleMode(lv);
-    });
+  const lvGrid=document.getElementById('com-level-grid');
+  if(lvGrid) lvGrid.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-lv]');
+    if(!btn) return;
+    startBattleMode(parseInt(btn.dataset.lv));
   });
 }
 
@@ -1280,14 +1258,20 @@ function startBattleMode(lv){
 
   // COMボードキャンバスを追加
   const old=document.getElementById('com-board-area');if(old)old.remove();
+  document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea){
+    gameArea.classList.add('battle-mode');
+    const vsEl=document.createElement('div');
+    vsEl.className='battle-vs-col'; vsEl.id='battle-vs-el';
+    vsEl.innerHTML='⚔️<span class="vs-label">VS</span>';
     const comDiv=document.createElement('div');
     comDiv.id='com-board-area';
     comDiv.style.cssText='position:relative;flex-shrink:0;';
     const comCvs=document.createElement('canvas');
     comCvs.id='com-canvas';comCvs.width=BCW;comCvs.height=BCH;
     comDiv.appendChild(comCvs);
+    gameArea.appendChild(vsEl);
     gameArea.appendChild(comDiv);
     cCtx=comCvs.getContext('2d');
   }
@@ -1303,6 +1287,10 @@ function startBattleMode(lv){
   lastTime=performance.now();
   requestAnimationFrame(gameLoop);
 }
+
+// 初期レベルグリッドを描画
+const _initGrid=document.getElementById('com-level-grid');
+if(_initGrid) _initGrid.innerHTML=buildLevelBtnsHTML();
 
 bindModeSelectEvents();
 

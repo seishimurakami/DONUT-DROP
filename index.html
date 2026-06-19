@@ -122,6 +122,7 @@ body::before {
 .com-level-btn .lv-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
 .com-level-btn .lv-name { display: block; font-size: 11px; margin-bottom: 2px; }
 .com-level-btn .lv-diff { display: block; font-size: 9px; color: rgba(255,255,255,0.45); font-family: 'Kosugi Maru', sans-serif; }
+.com-level-locked { opacity: 0.25 !important; cursor: default !important; pointer-events: none !important; }
 
 .btn-back {
   background: none; border: 1px solid rgba(255,255,255,0.25);
@@ -372,7 +373,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.7.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -494,17 +495,7 @@ if (isMobile) {
           </div>
           <div id="com-select" style="display:none;width:100%;text-align:center;">
             <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;font-family:'Kosugi Maru',sans-serif;margin-bottom:12px;">COMのつよさをえらんでね！</div>
-            <div class="com-level-grid">
-              <button class="com-level-btn" data-lv="1"><span class="lv-num">Lv.1</span><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">★☆☆ かんたん</span></button>
-              <button class="com-level-btn" data-lv="2"><span class="lv-num">Lv.2</span><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">★☆☆ かんたん</span></button>
-              <button class="com-level-btn" data-lv="3"><span class="lv-num">Lv.3</span><span class="lv-emoji">🍯</span><span class="lv-name">はちみつグレーズ</span><span class="lv-diff">★★☆ ふつう</span></button>
-              <button class="com-level-btn" data-lv="4"><span class="lv-num">Lv.4</span><span class="lv-emoji">🍫</span><span class="lv-name">チョコリング</span><span class="lv-diff">★★☆ ふつう</span></button>
-              <button class="com-level-btn" data-lv="5"><span class="lv-num">Lv.5</span><span class="lv-emoji">🫐</span><span class="lv-name">ブルーベリー</span><span class="lv-diff">★★★ むずかしい</span></button>
-              <button class="com-level-btn" data-lv="6"><span class="lv-num">Lv.6</span><span class="lv-emoji">🥐</span><span class="lv-name">フレンチクルーラー</span><span class="lv-diff">★★★ むずかしい</span></button>
-              <button class="com-level-btn" data-lv="7"><span class="lv-num">Lv.7</span><span class="lv-emoji">🍪</span><span class="lv-name">オールドファッション</span><span class="lv-diff">💀 かなりきつい</span></button>
-              <button class="com-level-btn" data-lv="8"><span class="lv-num">Lv.8</span><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">💀 かなりきつい</span></button>
-              <button class="com-level-btn" data-lv="9"><span class="lv-num">Lv.9</span><span class="lv-emoji">👑</span><span class="lv-name">ゴールデンキング</span><span class="lv-diff">💀💀 むちゃくちゃ</span></button>
-            </div>
+            <div class="com-level-grid" id="com-level-grid"></div>
             <button class="btn-back" id="back-to-mode">← もどる</button>
           </div>
         </div>
@@ -841,16 +832,32 @@ if(hsd) hsd.textContent=hiScore.toLocaleString();
 let gameMode = 'solo'; // 'solo' | 'battle'
 let comLv = 1;
 const COM_INFO = {
-  1: { name: 'もちもちリング',     emoji: '🍩', interval: 2000 },
-  2: { name: 'ストロベリー',       emoji: '🍓', interval: 1500 },
-  3: { name: 'はちみつグレーズ',   emoji: '🍯', interval: 1100 },
-  4: { name: 'チョコリング',       emoji: '🍫', interval: 800  },
-  5: { name: 'ブルーベリー',       emoji: '🫐', interval: 600  },
-  6: { name: 'フレンチクルーラー', emoji: '🥐', interval: 450  },
-  7: { name: 'オールドファッション',emoji: '🍪', interval: 300  },
-  8: { name: 'クリームボール',     emoji: '👼', interval: 200  },
-  9: { name: 'ゴールデンキング',   emoji: '👑', interval: 120  },
+  1: { name: 'もちもちリング',      emoji: '🍩', interval: 2000, diff: '★☆☆ かんたん'    },
+  2: { name: 'ストロベリー',        emoji: '🍓', interval: 1500, diff: '★☆☆ かんたん'    },
+  3: { name: 'はちみつグレーズ',    emoji: '🍯', interval: 1100, diff: '★★☆ ふつう'      },
+  4: { name: 'チョコリング',        emoji: '🍫', interval: 800,  diff: '★★☆ ふつう'      },
+  5: { name: 'ブルーベリー',        emoji: '🫐', interval: 600,  diff: '★★★ むずかしい'  },
+  6: { name: 'フレンチクルーラー',  emoji: '🥐', interval: 450,  diff: '★★★ むずかしい'  },
+  7: { name: 'オールドファッション', emoji: '🍪', interval: 300,  diff: '💀 かなりきつい'  },
+  8: { name: 'クリームボール',      emoji: '👼', interval: 200,  diff: '💀 かなりきつい'  },
+  9: { name: 'ゴールデンキング',    emoji: '👑', interval: 120,  diff: '💀💀 むちゃくちゃ' },
 };
+
+// ── レベル解放システム ──────────────────────────────────
+function getUnlockedLv(){ return parseInt(localStorage.getItem('unlockedBattleLv')||'1'); }
+function tryUnlockNextLv(lv){
+  if(lv>=9) return false;
+  if(lv+1>getUnlockedLv()){ localStorage.setItem('unlockedBattleLv',lv+1); return true; }
+  return false;
+}
+function buildLevelBtnsHTML(){
+  const unlocked=getUnlockedLv();
+  return Array.from({length:9},(_,i)=>{
+    const lv=i+1, info=COM_INFO[lv];
+    if(lv<=unlocked) return `<button class="com-level-btn" data-lv="${lv}"><span class="lv-num">Lv.${lv}</span><span class="lv-emoji">${info.emoji}</span><span class="lv-name">${info.name}</span><span class="lv-diff">${info.diff}</span></button>`;
+    return `<button class="com-level-btn com-level-locked" disabled><span class="lv-num">Lv.${lv}</span><span class="lv-emoji">🔒</span></button>`;
+  }).join('');
+}
 let comGrid = [];
 let comCurrentPiece = null;
 let comNextData = null;
@@ -963,18 +970,6 @@ function comRotatePiece(p,dir=1){
   return p;
 }
 
-// ── 任意グリッド用ヘルパー（先読みで使用） ──────────────
-function collidesOnGrid(p, grid){
-  return p.cells.some(({dx,dy})=>{
-    const nx=p.x+dx, ny=p.y+dy;
-    return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&grid[ny][nx]!==null);
-  });
-}
-function hardDropOnGrid(p, grid){
-  let q={...p, cells:p.cells.map(c=>({...c}))};
-  while(!collidesOnGrid({...q,y:q.y+1},grid)) q.y++;
-  return q;
-}
 // グリッドを in-place でライン消去し、消去数を返す
 function clearLinesOnGrid(grid){
   let cleared=0;
@@ -987,12 +982,6 @@ function clearLinesOnGrid(grid){
 }
 // 消去ライン数→ボーナス（2ライン以上を爆発的に優遇: 1=5, 2=40, 3=100, 4=200）
 function lineBonus(n){ return [0,5,40,100,200][Math.min(n,4)]; }
-// 4回転分のセル配列を返す
-function getRotations(cells){
-  const res=[cells]; let c=cells;
-  for(let i=0;i<3;i++){ c=c.map(({dx,dy})=>({dx:-dy,dy:dx})); res.push(c); }
-  return res;
-}
 
 // 盤面の構造評価（Dellacherie 6特徴 + 危険域ペナルティ）
 // ライン消去後のグリッドを渡すこと
@@ -1060,30 +1049,6 @@ function comEvalBoard(g){
   return -aggH*0.4 - maxH*0.5 - danger - holes*4.0 - rowTrans*0.8 - colTrans*0.5 - wells*0.35;
 }
 
-function comBestMove(piece){
-  let bestScore=-Infinity, bestX=piece.x, bestCells=piece.cells, bestY=piece.y;
-  let p={...piece, cells:piece.cells.map(c=>({...c}))};
-  for(let rot=0;rot<4;rot++){
-    for(let x=0;x<COLS;x++){
-      const candidate={...p, x};
-      if(comCollides(candidate)) continue;
-      const dropped=comHardDrop(candidate);
-      const testGrid=comGrid.map(row=>[...row]);
-      dropped.cells.forEach(({dx,dy})=>{
-        const nx=dropped.x+dx, ny=dropped.y+dy;
-        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx??0;
-      });
-      const n=clearLinesOnGrid(testGrid);
-      const sc=lineBonus(n)+comEvalBoard(testGrid);
-      if(sc>bestScore){
-        bestScore=sc; bestX=dropped.x; bestCells=dropped.cells.map(c=>({...c})); bestY=dropped.y;
-      }
-    }
-    p=comRotatePiece(p,1);
-  }
-  return {x:bestX, cells:bestCells, y:bestY};
-}
-
 function comSpawnPiece(){
   if(!comNextData) comNextData=newPieceData();
   comCurrentPiece=createPiece(comNextData);
@@ -1117,57 +1082,6 @@ function comLockAndProcess(finalX, finalCells, finalY){
   comSpawnPiece();
 }
 
-// Lv3 専用: 2手先読みで最良手を選ぶ
-function comBestMoveLv3(piece, nextData){
-  if(!nextData) return comBestMove(piece); // フォールバック
-  const nextCells=SHAPES[nextData.shapeIdx].map(([dx,dy])=>({dx,dy}));
-  const nextDonut=nextData.donutIdx;
-  let bestScore=-Infinity, bestMove=null;
-
-  for(const rCells of getRotations(piece.cells)){
-    for(let x=0;x<COLS;x++){
-      const p={...piece, x, cells:rCells};
-      if(collidesOnGrid(p, comGrid)) continue;
-      const d=hardDropOnGrid(p, comGrid);
-
-      // 1手目を置く
-      const g1=comGrid.map(r=>[...r]);
-      rCells.forEach(({dx,dy})=>{
-        const nx=d.x+dx, ny=d.y+dy;
-        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) g1[ny][nx]=piece.donutIdx??0;
-      });
-      const n1=clearLinesOnGrid(g1);
-      const sc1=lineBonus(n1)+comEvalBoard(g1);
-
-      // 2手目（次のピース）で最高スコアを探す
-      let bestNext=-Infinity;
-      for(const r2 of getRotations(nextCells)){
-        for(let x2=0;x2<COLS;x2++){
-          const p2={x:x2, y:0, cells:r2};
-          if(collidesOnGrid(p2, g1)) continue;
-          const d2=hardDropOnGrid(p2, g1);
-          const g2=g1.map(r=>[...r]);
-          r2.forEach(({dx,dy})=>{
-            const nx=d2.x+dx, ny=d2.y+dy;
-            if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) g2[ny][nx]=nextDonut;
-          });
-          const n2=clearLinesOnGrid(g2);
-          const sc=lineBonus(n2)+comEvalBoard(g2);
-          if(sc>bestNext) bestNext=sc;
-        }
-      }
-
-      // 1手目評価 × 0.2 + 2手目最良評価 × 0.8
-      const total=sc1*0.2+(bestNext===-Infinity?sc1:bestNext)*0.8;
-      if(total>bestScore){
-        bestScore=total;
-        bestMove={x:d.x, cells:rCells.map(c=>({...c})), y:d.y};
-      }
-    }
-  }
-  return bestMove??comBestMove(piece);
-}
-
 // 全候補手をスコア付きで列挙する
 function comAllMoves(piece){
   const moves=[];
@@ -1192,30 +1106,31 @@ function comAllMoves(piece){
 
 function comDoMove(){
   if(!comCurrentPiece||!comRunning) return;
-  let best;
-  const rand=Math.random();
+  const moves=comAllMoves(comCurrentPiece);
+  if(!moves.length) return;
+  moves.sort((a,b)=>b.score-a.score);
 
-  if(comLv<=5){
-    const moves=comAllMoves(comCurrentPiece);
-    if(!moves.length) return;
-    // Lv1-5: レベルに応じてベスト手を選ぶ確率が上がる
-    const bestProb=[0,0.20,0.40,0.65,0.82,0.92][comLv];
-    if(rand<bestProb){
-      best=moves.reduce((a,b)=>a.score>b.score?a:b);
-    } else {
-      // Lv4以上は上位5手、Lv5は上位3手からランダム（惜しいミス）
-      const topN=comLv>=5?3:comLv>=4?5:moves.length;
-      const pool=moves.sort((a,b)=>b.score-a.score).slice(0,topN);
-      best=pool[Math.floor(Math.random()*pool.length)];
-    }
-  } else if(comLv<=7){
-    // Lv6-7: 100%完璧な1手読み（速度が違う）
-    const moves=comAllMoves(comCurrentPiece);
-    if(!moves.length) return;
-    best=moves.reduce((a,b)=>a.score>b.score?a:b);
+  // Lv1-7: ベスト手を選ぶ確率とプール幅で難易度を調整
+  // Lv8-9: 常に最良手（インターバルの速度差だけで難易度が変わる）
+  const cfg=[
+    null,
+    {prob:0.15, pool:999}, // Lv1 ほぼランダム
+    {prob:0.30, pool:8  }, // Lv2
+    {prob:0.47, pool:6  }, // Lv3
+    {prob:0.62, pool:5  }, // Lv4
+    {prob:0.75, pool:4  }, // Lv5
+    {prob:0.87, pool:3  }, // Lv6
+    {prob:0.95, pool:2  }, // Lv7
+    {prob:1.00, pool:1  }, // Lv8 完璧・速い
+    {prob:1.00, pool:1  }, // Lv9 完璧・最速
+  ][comLv];
+
+  let best;
+  if(Math.random()<cfg.prob){
+    best=moves[0];
   } else {
-    // Lv8-9: 2手先読み
-    best=comBestMoveLv3(comCurrentPiece, comNextData);
+    const pool=moves.slice(0,Math.min(cfg.pool,moves.length));
+    best=pool[Math.floor(Math.random()*pool.length)];
   }
   comLockAndProcess(best.x, best.cells, best.y);
 }
@@ -1273,12 +1188,14 @@ function comDrawBoard(){
 
 function showBattleResult(win){
   comRunning=false; gameRunning=false;
+  const newUnlock = win ? tryUnlockNextLv(comLv) : false;
   if(win) sfxLevelUp(); else sfxGameOver();
   setTimeout(()=>{
     const br=document.getElementById('battle-result');
     document.getElementById('battle-result-title').textContent=win?'🏆 YOU WIN!':'😭 GAME OVER...';
+    const unlockMsg = newUnlock ? `<br><span style="color:#00f5d4;font-size:0.85em;">🔓 Lv.${comLv+1} が解放されました！</span>` : (win&&comLv===9?`<br><span style="color:#ffcc00;font-size:0.85em;">👑 全レベル制覇！</span>`:'');
     document.getElementById('battle-result-sub').innerHTML=win
-      ?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}`
+      ?`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}${unlockMsg}`
       :`${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…<br>あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>COMのスコア: ${comScore.toLocaleString()}`;
     br.style.display='flex';
   },800);
@@ -1581,6 +1498,8 @@ function setupOverlayButtons(){
       const subEl=document.querySelector('#overlay .sub');
       const h1El=document.querySelector('#overlay h1');
       const comSel=document.getElementById('com-select');
+      const grid=document.getElementById('com-level-grid');
+      if(grid) grid.innerHTML=buildLevelBtnsHTML();
       if(modeRow) modeRow.style.display='none';
       if(subEl) subEl.style.display='none';
       if(h1El) h1El.style.display='none';
@@ -1603,15 +1522,16 @@ function setupOverlayButtons(){
     });
   }
 
-  // COMレベル選択ボタン
-  const lvBtns=document.querySelectorAll('.com-level-btn');
-  lvBtns.forEach(btn=>{
-    btn.addEventListener('click',()=>{
+  // COMレベル選択ボタン（イベント委譲）
+  const lvGrid=document.getElementById('com-level-grid');
+  if(lvGrid){
+    lvGrid.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-lv]');
+      if(!btn) return;
       initAudio(); sfxSelect();
-      const lv=parseInt(btn.dataset.lv);
-      startBattleMode(lv);
+      startBattleMode(parseInt(btn.dataset.lv));
     });
-  });
+  }
 
   // バトル結果オーバーレイのボタン
   document.getElementById('battle-result-retry').addEventListener('click',()=>{
