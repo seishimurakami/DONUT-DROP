@@ -246,6 +246,23 @@ body::before {
   box-shadow:0 0 20px rgba(100,200,255,0.2);
 }
 
+/* ── トップへもどる確認 ── */
+#esc-overlay {
+  display: none; position: fixed; inset: 0; z-index: 450;
+  background: rgba(10,0,21,0.88); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center;
+}
+#esc-card {
+  background: rgba(255,107,205,0.07); border: 1.5px solid rgba(255,107,205,0.4);
+  border-radius: 22px; padding: 28px 22px; width: min(300px, 88vw);
+  display: flex; flex-direction: column; gap: 16px; text-align: center;
+}
+#esc-card .esc-title { font-family:'Fredoka One',cursive; font-size:20px; color:var(--accent2); }
+#esc-card p { font-size:13px; color:rgba(255,255,255,0.65); line-height:1.9; margin:0; }
+.esc-btn-row { display:flex; flex-direction:column; gap:10px; }
+#esc-cancel { background:var(--accent); border:none; border-radius:14px; padding:13px; font-family:'Fredoka One',cursive; font-size:15px; color:#fff; cursor:pointer; letter-spacing:1px; }
+#esc-yes { background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.2); border-radius:14px; padding:12px; font-size:13px; color:rgba(255,255,255,0.65); cursor:pointer; }
+
 /* ── Settings Modal ── */
 #settings-overlay {
   position: fixed; inset: 0; z-index: 200;
@@ -353,6 +370,16 @@ body::before {
 <div id="score-popup"></div>
 <div id="app"></div>
 
+<div id="esc-overlay">
+  <div id="esc-card">
+    <div class="esc-title">⏸ ゲームを中断しますか？</div>
+    <p>トップにもどると、今のゲームは終了します。</p>
+    <div class="esc-btn-row">
+      <button id="esc-cancel">▶ ゲームにもどる</button>
+      <button id="esc-yes">🏠 トップへもどる</button>
+    </div>
+  </div>
+</div>
 <div id="battle-result">
   <h1 id="battle-result-title"></h1>
   <div class="sub" id="battle-result-sub"></div>
@@ -485,7 +512,7 @@ app.innerHTML = `
     <button class="ctrl-btn" id="btn-settings">⚙</button>
     <button id="btn-menu-ctrl">🏠 メニューにもどる</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.8.0</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6">[サポート]</a> &nbsp;·&nbsp; v1.8.1</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1228,16 +1255,17 @@ btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const
 btnTap('btn-mute',   ()=>toggleMute());
 
 // MENU ボタン（ゲーム中にトップへもどる）
+// MENU ボタン → 確認ダイアログを表示
 const menuCtrlBtn=document.getElementById('btn-menu-ctrl');
+const escOverlay=document.getElementById('esc-overlay');
+function showEscDialog(){ if(escOverlay){ gamePaused=true; escOverlay.style.display='flex'; } }
 if(menuCtrlBtn){
   menuCtrlBtn.addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});
-  menuCtrlBtn.addEventListener('touchend',e=>{
-    e.preventDefault();
-    sfxGameOver();
-    resetToTop();
-  },{passive:false});
-  menuCtrlBtn.addEventListener('click',()=>{ sfxGameOver(); resetToTop(); });
+  menuCtrlBtn.addEventListener('touchend',e=>{ e.preventDefault(); showEscDialog(); },{passive:false});
+  menuCtrlBtn.addEventListener('click',()=>{ showEscDialog(); });
 }
+document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; });
+document.getElementById('esc-yes')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; sfxGameOver(); resetToTop(); });
 
 // ════════════════════════════════════════════════════════
 // START / END

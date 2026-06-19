@@ -339,6 +339,22 @@ body::before {
   display:none; position:fixed; inset:0; z-index:400;
   background:rgba(10,5,20,0.80); align-items:center; justify-content:center;
 }
+#esc-overlay {
+  display:none; position:fixed; inset:0; z-index:450;
+  background:rgba(10,5,20,0.85); align-items:center; justify-content:center;
+}
+#esc-card {
+  background:rgba(30,15,50,0.97); border:1px solid rgba(255,107,205,0.35);
+  border-radius:18px; padding:28px 32px; min-width:280px; max-width:340px;
+  display:flex; flex-direction:column; gap:16px; text-align:center;
+}
+#esc-card .esc-title { font-family:'Fredoka One',cursive; font-size:18px; color:var(--accent2); }
+#esc-card p { font-family:'Kosugi Maru',sans-serif; font-size:13px; color:rgba(255,255,255,0.65); line-height:1.8; margin:0; }
+.esc-btn-row { display:flex; flex-direction:column; gap:8px; }
+#esc-yes { background:rgba(255,107,205,0.15); border:1px solid rgba(255,107,205,0.45); border-radius:10px; padding:10px 0; font-family:'Kosugi Maru',sans-serif; font-size:13px; color:rgba(255,255,255,0.85); cursor:pointer; transition:all .2s; }
+#esc-yes:hover { background:rgba(255,107,205,0.3); color:#fff; }
+#esc-cancel { background:var(--accent); border:none; border-radius:10px; padding:10px 0; font-family:'Fredoka One',cursive; font-size:14px; color:#fff; cursor:pointer; transition:all .2s; letter-spacing:1px; }
+#esc-cancel:hover { filter:brightness(1.15); }
 #settings-card {
   background:rgba(30,15,50,0.97); border:1px solid rgba(255,107,205,0.35);
   border-radius:18px; padding:28px 32px; min-width:280px; display:flex;
@@ -411,6 +427,16 @@ body::before {
     <button id="settings-close">閉じる</button>
   </div>
 </div>
+<div id="esc-overlay">
+  <div id="esc-card">
+    <div class="esc-title">⏸ ゲームを中断しますか？</div>
+    <p>トップにもどると、今のゲームは終了します。</p>
+    <div class="esc-btn-row">
+      <button id="esc-cancel">▶ ゲームにもどる</button>
+      <button id="esc-yes">🏠 トップへもどる</button>
+    </div>
+  </div>
+</div>
 <div id="battle-result">
   <h1 id="battle-result-title"></h1>
   <div class="sub" id="battle-result-sub"></div>
@@ -421,7 +447,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.1</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -531,7 +557,6 @@ if (isMobile) {
           <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
             <button class="icon-btn" id="btn-mute-pc" title="ミュート (M)">🔊</button>
             <button class="icon-btn" id="btn-settings-pc" title="設定">⚙</button>
-            <button class="icon-btn" id="btn-reset-pc" title="リセット (R)">🔄</button>
           </div>
           <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
             <a href="help.html" target="_blank" style="display:block;color:rgba(255,255,255,0.6);font-family:'Kosugi Maru',sans-serif;font-size:11px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:5px 8px;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)';this.style.color='white'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.6)'">❓ ヘルプページ</a>
@@ -1485,10 +1510,16 @@ function gameLoop(ts) {
 // KEYBOARD INPUT (always active)
 // ════════════════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const eo=document.getElementById('esc-overlay');
+    if(!eo) return;
+    if(eo.style.display==='flex'){ eo.style.display='none'; gamePaused=false; return; }
+    if(gameRunning){ gamePaused=true; eo.style.display='flex'; }
+    return;
+  }
   if(!gameRunning) return;
   if(e.key==='p'||e.key==='P'){gamePaused=!gamePaused;return;}
   if(e.key==='m'||e.key==='M'){toggleMute();return;}
-  if(e.key==='r'||e.key==='R'){resetGame();return;}
   if(gamePaused||!currentPiece) return;
   e.preventDefault();
   if(e.key==='ArrowLeft'){const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();}}
@@ -1551,7 +1582,6 @@ if(isMobile) {
   btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
   btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
   btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
-  btnTap('btn-reset',  ()=>{ resetGame(); });
   btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
   btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
   btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
@@ -1562,8 +1592,12 @@ if(isMobile) {
 const btnMutePc = document.getElementById('btn-mute-pc');
 if(btnMutePc) btnMutePc.addEventListener('click', ()=>{ toggleMute(); });
 
-const btnResetPc = document.getElementById('btn-reset-pc');
-if(btnResetPc) btnResetPc.addEventListener('click', ()=>{ resetGame(); });
+// Esc ポップアップのボタン
+(()=>{
+  const eo=document.getElementById('esc-overlay');
+  document.getElementById('esc-cancel')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; });
+  document.getElementById('esc-yes')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; returnToModeSelect(); });
+})();
 
 // Settings
 const btnSettingsPc = document.getElementById('btn-settings-pc');
