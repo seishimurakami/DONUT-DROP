@@ -350,8 +350,8 @@ body::before {
     <div>
       <div class="settings-lbl">BGM ボリューム</div>
       <div class="slider-row">
-        <input type="range" id="bgm-slider" min="0" max="100" value="70">
-        <span class="bgm-val" id="bgm-val-label">70%</span>
+        <input type="range" id="bgm-slider" min="0" max="100" value="30">
+        <span class="bgm-val" id="bgm-val-label">30%</span>
       </div>
     </div>
     <button id="settings-close">閉じる</button>
@@ -600,7 +600,7 @@ function weightedRandom(weights) {
 // AUDIO ENGINE
 // ════════════════════════════════════════════════════════
 let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
-let bgmVolume=parseFloat(localStorage.getItem('donutBgmVolume')?? '0.7');
+let bgmVolume=parseFloat(localStorage.getItem('donutBgmVolume')?? '0.3');
 
 function initAudio() {
   if(audioCtx) return;
