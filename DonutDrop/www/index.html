@@ -306,6 +306,18 @@ body::before {
   font-size: 14px; padding: 13px; cursor: pointer;
   letter-spacing: 1px; width: 100%;
 }
+.settings-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 0; }
+#btn-reset-data {
+  background: rgba(255,60,60,0.1); border: 1.5px solid rgba(255,80,80,0.4);
+  border-radius: 12px; padding: 11px; width: 100%;
+  font-size: 13px; color: rgba(255,130,130,0.9); cursor: pointer;
+  letter-spacing: 0.5px;
+}
+#reset-confirm { display: none; background: rgba(255,30,30,0.08); border: 1px solid rgba(255,80,80,0.3); border-radius: 12px; padding: 14px 12px; }
+#reset-confirm p { font-size: 12px; color: rgba(255,180,180,0.9); margin: 0 0 12px; text-align: center; line-height: 1.8; }
+.reset-btn-row { display: flex; gap: 8px; }
+#btn-reset-yes { flex: 1; background: rgba(255,40,40,0.28); border: 1px solid rgba(255,80,80,0.55); border-radius: 10px; padding: 9px 0; font-size: 13px; color: #ff9999; cursor: pointer; }
+#btn-reset-cancel { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; padding: 9px 0; font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; }
 /* 対戦結果フルスクリーンオーバーレイ */
 #battle-result {
   display: none; position: fixed; inset: 0; z-index: 500;
@@ -368,6 +380,18 @@ body::before {
           <input type="checkbox" id="haptic-toggle" checked>
           <span class="toggle-track"></span>
         </label>
+      </div>
+    </div>
+    <hr class="settings-divider">
+    <div class="settings-section">
+      <div class="settings-lbl">データ管理</div>
+      <button id="btn-reset-data">🗑 データ初期化</button>
+      <div id="reset-confirm">
+        <p>ハイスコアと対戦レベルの<br>解放状況をすべてリセットします。<br>もとに戻せません。</p>
+        <div class="reset-btn-row">
+          <button id="btn-reset-yes">リセットする</button>
+          <button id="btn-reset-cancel">キャンセル</button>
+        </div>
       </div>
     </div>
     <button id="settings-close">閉じる</button>
@@ -611,6 +635,35 @@ function closeSettings() {
     });
   }
   if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+
+  // データ初期化
+  const btnResetData = document.getElementById('btn-reset-data');
+  const resetConfirm = document.getElementById('reset-confirm');
+  const btnResetYes  = document.getElementById('btn-reset-yes');
+  const btnResetCancel = document.getElementById('btn-reset-cancel');
+  if (btnResetData) {
+    btnResetData.addEventListener('click', () => {
+      resetConfirm.style.display = 'block';
+      btnResetData.style.display = 'none';
+    });
+    btnResetCancel.addEventListener('click', () => {
+      resetConfirm.style.display = 'none';
+      btnResetData.style.display = '';
+    });
+    btnResetYes.addEventListener('click', () => {
+      localStorage.removeItem('donutHiScore');
+      localStorage.removeItem('unlockedBattleLv');
+      hiScore = 0;
+      const hel = document.getElementById('hiscore-display'); if (hel) hel.textContent = '0';
+      const grid = document.getElementById('com-level-grid');
+      if (grid) grid.innerHTML = buildLevelBtnsHTML();
+      resetConfirm.style.display = 'none';
+      btnResetData.style.display = '';
+      closeSettings();
+      sfxLevelUp();
+      haptic('levelUp');
+    });
+  }
 })();
 
 function startBGM() {
