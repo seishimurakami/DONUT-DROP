@@ -447,7 +447,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.3</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.4</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -502,17 +502,20 @@ if (isMobile) {
         <canvas id="game-canvas"></canvas>
         <canvas id="particle-canvas"></canvas>
         <div id="overlay">
-          <h1>🍩<br>DONUT DROP</h1>
-          <div id="mode-btn-row" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
-            <div class="sub" style="font-size:12px;margin-bottom:4px;">甘いドーナツを並べてラインを消そう！</div>
-            <button class="btn" id="start-btn">🎮 ひとりプレイ</button>
-            <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+          <div id="top-section">
+            <h1>🍩<br>DONUT DROP</h1>
+            <div id="mode-btn-row" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+              <div class="sub" style="font-size:12px;margin-bottom:4px;">甘いドーナツを並べてラインを消そう！</div>
+              <button class="btn" id="start-btn">🎮 ひとりプレイ</button>
+              <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+            </div>
+            <div id="com-select" style="display:none;width:min(300px,88vw);">
+              <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;">COMのつよさをえらんでね！</div>
+              <div class="com-level-grid" id="com-level-grid"></div>
+              <button class="btn-back" id="back-to-mode">← もどる</button>
+            </div>
           </div>
-          <div id="com-select" style="display:none;width:min(300px,88vw);">
-            <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;">COMのつよさをえらんでね！</div>
-            <div class="com-level-grid" id="com-level-grid"></div>
-            <button class="btn-back" id="back-to-mode">← もどる</button>
-          </div>
+          <div id="gameover-section" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -549,7 +552,7 @@ if (isMobile) {
           <div class="info-label">CONTROLS</div>
           <div class="controls">
             <b>← →</b> 移動&nbsp;&nbsp;<b>↑</b> 回転<br><b>↓</b> 加速&nbsp;&nbsp;<b>SPACE</b> 一気落とし<br>
-            <b>Z</b> 逆回転&nbsp;&nbsp;<b>C</b> ホールド<br><b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート&nbsp;&nbsp;<b>R</b> リセット
+            <b>Z</b> 逆回転&nbsp;&nbsp;<b>C</b> ホールド<br><b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート&nbsp;&nbsp;<b>ESC</b> トップへもどる
           </div>
         </div>
         <div class="info-box">
@@ -568,17 +571,20 @@ if (isMobile) {
         <canvas id="game-canvas"></canvas>
         <canvas id="particle-canvas"></canvas>
         <div id="overlay">
-          <h1>🍩<br>DONUT DROP</h1>
-          <div class="sub">甘いドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
-          <div class="btn-row" id="mode-btn-row">
-            <button class="btn" id="start-btn">🎮 ソロ</button>
-            <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+          <div id="top-section">
+            <h1>🍩<br>DONUT DROP</h1>
+            <div class="sub">甘いドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
+            <div class="btn-row" id="mode-btn-row">
+              <button class="btn" id="start-btn">🎮 ソロ</button>
+              <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+            </div>
+            <div id="com-select" style="display:none;width:100%;text-align:center;">
+              <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;font-family:'Kosugi Maru',sans-serif;margin-bottom:12px;">COMのつよさをえらんでね！</div>
+              <div class="com-level-grid" id="com-level-grid"></div>
+              <button class="btn-back" id="back-to-mode">← もどる</button>
+            </div>
           </div>
-          <div id="com-select" style="display:none;width:100%;text-align:center;">
-            <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;font-family:'Kosugi Maru',sans-serif;margin-bottom:12px;">COMのつよさをえらんでね！</div>
-            <div class="com-level-grid" id="com-level-grid"></div>
-            <button class="btn-back" id="back-to-mode">← もどる</button>
-          </div>
+          <div id="gameover-section" style="display:none;"></div>
         </div>
       </div>
       <div class="side-panel" id="right-panel">
@@ -1338,9 +1344,14 @@ function returnToModeSelect(){
     gameCanvas.width=CW; gameCanvas.height=CH;
     pCanvas.width=CW; pCanvas.height=CH;
   }
+  // ゲームオーバー画面を隠してトップ選択画面を復元
+  const gos=document.getElementById('gameover-section');
+  const ts=document.getElementById('top-section');
+  if(gos){ gos.style.display='none'; gos.innerHTML=''; }
+  if(ts) ts.style.display='';
   const modeBtnRow=document.getElementById('mode-btn-row');
   const comSel=document.getElementById('com-select');
-  if(modeBtnRow) modeBtnRow.style.display='flex';
+  if(modeBtnRow) modeBtnRow.style.display='';
   if(comSel) comSel.style.display='none';
   const ov=document.getElementById('overlay');
   ov.style.display='flex';
@@ -1884,17 +1895,27 @@ function endGame() {
   } else {
     setTimeout(()=>{
       const ov=document.getElementById('overlay');
+      const ts=document.getElementById('top-section');
+      const gos=document.getElementById('gameover-section');
+      if(ts) ts.style.display='none';
+      if(gos){
+        gos.innerHTML=`
+          <h1>🍩 GAME OVER!</h1>
+          <div class="sub">
+            スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
+            ハイスコア: ${hiScore.toLocaleString()}<br>
+            スピード ${level} / ${lines}ライン
+          </div>
+          <div class="btn-row" style="flex-direction:column;gap:8px;">
+            <button class="btn" id="gameover-retry-btn">🔄 もう一度！</button>
+            <button class="btn-menu" id="gameover-menu-btn">🏠 トップへもどる</button>
+          </div>
+        `;
+        gos.style.display='';
+        document.getElementById('gameover-retry-btn')?.addEventListener('click',startGame);
+        document.getElementById('gameover-menu-btn')?.addEventListener('click',returnToModeSelect);
+      }
       ov.style.display='flex';
-      ov.innerHTML=`
-        <h1>🍩 GAME OVER!</h1>
-        <div class="sub">
-          スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
-          ハイスコア: ${hiScore.toLocaleString()}<br>
-          スピード ${level} / ${lines}ライン
-        </div>
-        <button class="btn" id="start-btn">🔄 もう一度！</button>
-      `;
-      document.getElementById('start-btn').addEventListener('click',startGame);
     },800);
   }
 }
