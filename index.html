@@ -581,7 +581,7 @@ if (isMobile) {
           </div>
         </div>
       </div>
-      <div class="side-panel">
+      <div class="side-panel" id="right-panel">
         <div class="info-box"><div class="info-label">NEXT</div><canvas id="next-canvas"></canvas></div>
         <div class="info-box"><div class="info-label">HOLD</div><canvas id="hold-canvas"></canvas></div>
         <div class="info-box"><div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div></div>
@@ -1298,8 +1298,8 @@ function returnToModeSelect(){
   gameMode='solo'; gameRunning=false; comRunning=false;
   if(!isMobile){
     document.getElementById('battle-wrapper').style.display='none';
-    // NEXT/HOLDキャンバスをside-panelに戻す
-    const sidePanel=document.querySelector('#game-wrapper .side-panel');
+    // NEXT/HOLDキャンバスを右side-panelに戻す
+    const sidePanel=document.getElementById('right-panel');
     const nextBox=nextCanvas?.parentElement; const holdBox=holdCanvas?.parentElement;
     if(sidePanel&&nextBox&&holdBox){
       const firstBox=sidePanel.querySelector('.info-box');
