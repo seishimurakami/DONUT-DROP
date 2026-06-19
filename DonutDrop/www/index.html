@@ -374,6 +374,13 @@ body::before {
       </div>
     </div>
     <div class="settings-section">
+      <div class="settings-lbl">効果音 ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="sfx-slider" min="0" max="100" value="50">
+        <span class="bgm-val" id="sfx-val-label">50%</span>
+      </div>
+    </div>
+    <div class="settings-section">
       <div class="toggle-row">
         <span class="settings-lbl">バイブレーション</span>
         <label class="toggle">
@@ -550,7 +557,7 @@ function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   bgmGain = audioCtx.createGain(); bgmGain.gain.value=bgmVolume*0.18; bgmGain.connect(audioCtx.destination);
-  sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
+  sfxGain = audioCtx.createGain(); sfxGain.gain.value=sfxVolume; sfxGain.connect(audioCtx.destination);
   startBGM();
 }
 
@@ -575,6 +582,7 @@ function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
 
 // ── 設定（localStorage で保存） ──────────────────────────────
 let bgmVolume    = parseFloat(localStorage.getItem('bgmVolume')    ?? '0.7');
+let sfxVolume    = parseFloat(localStorage.getItem('sfxVolume')    ?? '0.5');
 let hapticEnabled = localStorage.getItem('hapticEnabled') !== 'false';
 
 // ── 触覚フィードバック（iOSのTaptic Engine連携） ──
@@ -605,6 +613,10 @@ function openSettings() {
   const toggle = document.getElementById('haptic-toggle');
   if (slider) { slider.value = Math.round(bgmVolume * 100); }
   if (label)  { label.textContent = Math.round(bgmVolume * 100) + '%'; }
+  const sfxSlider = document.getElementById('sfx-slider');
+  const sfxLabel  = document.getElementById('sfx-val-label');
+  if (sfxSlider) { sfxSlider.value = Math.round(sfxVolume * 100); }
+  if (sfxLabel)  { sfxLabel.textContent = Math.round(sfxVolume * 100) + '%'; }
   if (toggle) { toggle.checked = hapticEnabled; }
   ov.style.display = 'flex';
 }
@@ -627,6 +639,17 @@ function closeSettings() {
       if (bgmGain && !muted) bgmGain.gain.value = bgmVolume * 0.18;
       localStorage.setItem('bgmVolume', bgmVolume);
     });
+  }
+  const sfxSliderEl = document.getElementById('sfx-slider');
+  const sfxLabelEl  = document.getElementById('sfx-val-label');
+  if (sfxSliderEl) {
+    sfxSliderEl.addEventListener('input', () => {
+      sfxVolume = sfxSliderEl.value / 100;
+      if (sfxLabelEl) sfxLabelEl.textContent = sfxSliderEl.value + '%';
+      if (sfxGain) sfxGain.gain.value = sfxVolume;
+      localStorage.setItem('sfxVolume', sfxVolume);
+    });
+    sfxSliderEl.addEventListener('change', () => { initAudio(); sfxMove(); });
   }
   if (toggle) {
     toggle.addEventListener('change', () => {

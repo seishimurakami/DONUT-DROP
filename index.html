@@ -389,6 +389,13 @@ body::before {
         <span class="bgm-val" id="bgm-val-label">30%</span>
       </div>
     </div>
+    <div>
+      <div class="settings-lbl">効果音 ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="sfx-slider" min="0" max="100" value="50">
+        <span class="bgm-val" id="sfx-val-label">50%</span>
+      </div>
+    </div>
     <hr class="settings-divider">
     <div>
       <div class="settings-lbl" style="margin-bottom:8px;">データ管理</div>
@@ -660,12 +667,13 @@ function weightedRandom(weights) {
 // ════════════════════════════════════════════════════════
 let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false;
 let bgmVolume=parseFloat(localStorage.getItem('donutBgmVolume')?? '0.3');
+let sfxVolume=parseFloat(localStorage.getItem('donutSfxVolume')?? '0.5');
 
 function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   bgmGain = audioCtx.createGain(); bgmGain.gain.value=bgmVolume*0.18; bgmGain.connect(audioCtx.destination);
-  sfxGain = audioCtx.createGain(); sfxGain.gain.value=0.5;  sfxGain.connect(audioCtx.destination);
+  sfxGain = audioCtx.createGain(); sfxGain.gain.value=sfxVolume; sfxGain.connect(audioCtx.destination);
   startBGM();
 }
 
@@ -1562,11 +1570,14 @@ const btnSettingsPc = document.getElementById('btn-settings-pc');
 const settingsOverlay = document.getElementById('settings-overlay');
 const bgmSlider = document.getElementById('bgm-slider');
 const bgmValLabel = document.getElementById('bgm-val-label');
+const sfxSlider = document.getElementById('sfx-slider');
+const sfxValLabel = document.getElementById('sfx-val-label');
 if(btnSettingsPc && settingsOverlay){
   // スライダーの初期値をlocalStorageから復元
-  const initPct = Math.round(bgmVolume*100);
-  bgmSlider.value = initPct;
-  bgmValLabel.textContent = initPct+'%';
+  const initBgm = Math.round(bgmVolume*100);
+  bgmSlider.value = initBgm; bgmValLabel.textContent = initBgm+'%';
+  const initSfx = Math.round(sfxVolume*100);
+  if(sfxSlider){ sfxSlider.value = initSfx; sfxValLabel.textContent = initSfx+'%'; }
 
   btnSettingsPc.addEventListener('click',()=>{
     settingsOverlay.style.display='flex';
@@ -1583,6 +1594,15 @@ if(btnSettingsPc && settingsOverlay){
     bgmValLabel.textContent = bgmSlider.value+'%';
     if(bgmGain && !muted) bgmGain.gain.value = bgmVolume*0.18;
   });
+  if(sfxSlider){
+    sfxSlider.addEventListener('input',()=>{
+      sfxVolume = sfxSlider.value/100;
+      localStorage.setItem('donutSfxVolume', sfxVolume);
+      sfxValLabel.textContent = sfxSlider.value+'%';
+      if(sfxGain) sfxGain.gain.value = sfxVolume;
+    });
+    sfxSlider.addEventListener('change',()=>{ initAudio(); sfxMove(); });
+  }
 
   // データ初期化
   const btnResetData=document.getElementById('btn-reset-data');
@@ -1615,7 +1635,11 @@ if(btnSettingsPc && settingsOverlay){
 // モバイル設定ボタン
 const btnSettingsM = document.getElementById('btn-settings-m');
 if(btnSettingsM && settingsOverlay){
-  btnSettingsM.addEventListener('click',()=>{ settingsOverlay.style.display='flex'; });
+  btnSettingsM.addEventListener('click',()=>{
+    if(bgmSlider){ const p=Math.round(bgmVolume*100); bgmSlider.value=p; bgmValLabel.textContent=p+'%'; }
+    if(sfxSlider){ const p=Math.round(sfxVolume*100); sfxSlider.value=p; sfxValLabel.textContent=p+'%'; }
+    settingsOverlay.style.display='flex';
+  });
 }
 
 // ════════════════════════════════════════════════════════
