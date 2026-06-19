@@ -628,6 +628,7 @@ function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'squar
 function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); }
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
+function sfxSelect()  { playTone(880,'sine',0.15,0.45); playTone(1108,'sine',0.15,0.45,0.11); playTone(1320,'sine',0.22,0.55,0.22); }
 
 function startBGM() {
   if(!audioCtx||bgmStarted) return;
@@ -1394,7 +1395,7 @@ function setupOverlayButtons(){
   const battleBtn=document.getElementById('battle-btn');
   if(battleBtn){
     battleBtn.addEventListener('click',()=>{
-      initAudio();
+      initAudio(); sfxSelect();
       const modeRow=document.getElementById('mode-btn-row');
       const subEl=document.querySelector('#overlay .sub');
       const h1El=document.querySelector('#overlay h1');
@@ -1425,7 +1426,7 @@ function setupOverlayButtons(){
   const lvBtns=document.querySelectorAll('.com-level-btn');
   lvBtns.forEach(btn=>{
     btn.addEventListener('click',()=>{
-      initAudio();
+      initAudio(); sfxSelect();
       const lv=parseInt(btn.dataset.lv);
       startBattleMode(lv);
     });
@@ -1547,7 +1548,7 @@ function endGame() {
 
 // 初回のスタートボタン
 const initStartBtn=document.getElementById('start-btn');
-if(initStartBtn) initStartBtn.addEventListener('click',startGame);
+if(initStartBtn) initStartBtn.addEventListener('click',()=>{ initAudio(); sfxSelect(); startGame(); });
 
 // オーバーレイボタン初期セットアップ（PC版）
 if(!isMobile) setupOverlayButtons();
