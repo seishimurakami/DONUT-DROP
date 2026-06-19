@@ -85,6 +85,47 @@ body::before {
 .btn:active { transform: scale(0.97); }
 @keyframes btnPop { 0%,100%{transform:scale(1);} 50%{transform:scale(1.03);} }
 
+.btn-secondary {
+  background: linear-gradient(135deg, #4a4aaa, #2a2a88);
+  border: none; border-radius: 50px; padding: 13px 38px;
+  font-family: 'Fredoka One', cursive; font-size: 19px;
+  color: white; cursor: pointer;
+  box-shadow: 0 0 20px rgba(100,100,255,0.4), 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.2s; letter-spacing: 1px;
+  animation: btnPop 1.5s ease-in-out infinite;
+}
+.btn-secondary:hover { transform: scale(1.07); animation: none; }
+.btn-secondary:active { transform: scale(0.97); }
+
+.btn-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* COM level selection */
+.com-level-btn {
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,107,205,0.4);
+  border-radius: 16px; padding: 14px 20px;
+  font-family: 'Fredoka One', cursive; font-size: 15px;
+  color: white; cursor: pointer; text-align: center;
+  transition: all 0.2s; min-width: 130px;
+}
+.com-level-btn:hover {
+  background: rgba(255,107,205,0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(255,107,205,0.5);
+  transform: scale(1.05);
+}
+.com-level-btn .lv-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+.com-level-btn .lv-name { display: block; font-size: 13px; margin-bottom: 3px; }
+.com-level-btn .lv-diff { display: block; font-size: 10px; color: rgba(255,255,255,0.45); font-family: 'Kosugi Maru', sans-serif; }
+
+.btn-back {
+  background: none; border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 50px; padding: 8px 22px;
+  font-family: 'Fredoka One', cursive; font-size: 14px;
+  color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+}
+.btn-back:hover { color: white; border-color: rgba(255,255,255,0.6); }
+
 /* ── Combo flash (shared) ── */
 #combo-flash {
   position: fixed; top: 50%; left: 50%;
@@ -250,6 +291,19 @@ body::before {
   transform: scale(1.08);
 }
 [data-mode="pc"] .icon-btn:active { transform: scale(0.95); }
+
+/* Battle Mode */
+#battle-wrapper { display:none; gap:20px; justify-content:center; align-items:flex-start; padding:10px 16px; }
+.battle-side { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.battle-head { font-size:11px; letter-spacing:3px; color:var(--accent3); text-transform:uppercase; }
+.battle-scorebox { font-size:11px; color:rgba(255,255,255,.5); text-align:center; }
+.battle-scorebox b { display:block; font-size:20px; color:var(--accent2); }
+#battle-vs-col { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; min-width:48px; }
+#battle-vs { font-size:22px; font-weight:bold; color:var(--accent); text-shadow:0 0 16px rgba(255,107,205,.8); letter-spacing:2px; }
+.garbage-pill { background:rgba(255,107,205,.15); border:1px solid rgba(255,107,205,.3); border-radius:8px; padding:4px 8px; font-size:10px; color:rgba(255,255,255,.5); text-align:center; white-space:nowrap; }
+#com-canvas { border:2px solid rgba(255,107,205,.5); border-radius:12px; box-shadow:0 0 20px rgba(255,107,205,.2); display:block; image-rendering:pixelated; }
+#battle-game-canvas { display:block; image-rendering:pixelated; border:2px solid rgba(255,107,205,0.5); border-radius:12px; box-shadow:0 0 30px rgba(255,107,205,0.3); }
+#battle-particle-canvas { position:absolute; inset:0; pointer-events:none; z-index:10; border-radius:12px; }
 </style>
 </head>
 <body>
@@ -258,7 +312,7 @@ body::before {
 <div id="combo-flash"></div>
 <div id="score-popup"></div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.0.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">[サポート]</a> &nbsp;·&nbsp; v1.1.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -359,7 +413,19 @@ if (isMobile) {
         <div id="overlay">
           <h1>🍩<br>DONUT DROP</h1>
           <div class="sub">ミスタードーナツのドーナツを<br>うまく並べてラインを消そう！<br><br>キーボードで操作してください</div>
-          <button class="btn" id="start-btn">🎮 スタート！</button>
+          <div class="btn-row" id="mode-btn-row">
+            <button class="btn" id="start-btn">🎮 ソロ</button>
+            <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
+          </div>
+          <div id="com-select" style="display:none;width:100%;text-align:center;">
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;font-family:'Kosugi Maru',sans-serif;margin-bottom:12px;">COMのつよさをえらんでね！</div>
+            <div class="btn-row" style="margin-bottom:14px;">
+              <button class="com-level-btn" data-lv="1"><span class="lv-emoji">🍩</span><span class="lv-name">もちもちリング</span><span class="lv-diff">弱 (かんたん)</span></button>
+              <button class="com-level-btn" data-lv="2"><span class="lv-emoji">🍓</span><span class="lv-name">ストロベリー</span><span class="lv-diff">中 (ふつう)</span></button>
+              <button class="com-level-btn" data-lv="3"><span class="lv-emoji">👼</span><span class="lv-name">クリームボール</span><span class="lv-diff">強 (むずかしい)</span></button>
+            </div>
+            <button class="btn-back" id="back-to-mode">← もどる</button>
+          </div>
         </div>
       </div>
       <div class="side-panel">
@@ -379,6 +445,25 @@ if (isMobile) {
         </div>
       </div>
     </div>
+    <div id="battle-wrapper">
+      <div class="battle-side">
+        <div class="battle-head">PLAYER</div>
+        <div style="position:relative;">
+          <canvas id="battle-game-canvas"></canvas>
+          <canvas id="battle-particle-canvas"></canvas>
+        </div>
+        <div class="battle-scorebox">SCORE<b id="player-battle-score">0</b></div>
+      </div>
+      <div id="battle-vs-col">
+        <div id="battle-vs">VS</div>
+        <div class="garbage-pill" id="garbage-indicator">🗑 0</div>
+      </div>
+      <div class="battle-side">
+        <div class="battle-head" id="com-name-display">COM</div>
+        <canvas id="com-canvas"></canvas>
+        <div class="battle-scorebox">SCORE<b id="com-battle-score">0</b></div>
+      </div>
+    </div>
   `;
 }
 
@@ -393,14 +478,23 @@ const bgCanvas   = document.getElementById('bg-canvas');
 
 gameCanvas.width  = CW;   gameCanvas.height  = CH;
 pCanvas.width     = CW;   pCanvas.height     = CH;
-nextCanvas.width  = NEXT_SIZE; nextCanvas.height = NEXT_SIZE;
-holdCanvas.width  = HOLD_W;    holdCanvas.height = HOLD_H;
+if (nextCanvas) { nextCanvas.width  = NEXT_SIZE; nextCanvas.height = NEXT_SIZE; }
+if (holdCanvas) { holdCanvas.width  = HOLD_W;    holdCanvas.height = HOLD_H; }
 
 const ctx     = gameCanvas.getContext('2d');
 const pCtx    = pCanvas.getContext('2d');
-const nextCtx = nextCanvas.getContext('2d');
-const holdCtx = holdCanvas.getContext('2d');
+const nextCtx = nextCanvas ? nextCanvas.getContext('2d') : null;
+const holdCtx = holdCanvas ? holdCanvas.getContext('2d') : null;
 const bgCtx   = bgCanvas.getContext('2d');
+
+// バトルモード用キャンバス（PCのみ）
+let battleGameCanvas = null, battlePCanvas = null, battleCtx = null, battlePCtx = null;
+if (!isMobile) {
+  battleGameCanvas = document.getElementById('battle-game-canvas');
+  battlePCanvas = document.getElementById('battle-particle-canvas');
+  if (battleGameCanvas) battleCtx = battleGameCanvas.getContext('2d');
+  if (battlePCanvas) battlePCtx = battlePCanvas.getContext('2d');
+}
 
 // ════════════════════════════════════════════════════════
 // DONUT TYPES
@@ -540,18 +634,20 @@ function updateParticles() {
   }
 }
 function drawParticles() {
-  pCtx.clearRect(0,0,CW,CH);
+  // バトルモードではbattle-particle-canvasに描画
+  const pc = (gameMode==='battle' && battlePCtx) ? battlePCtx : pCtx;
+  pc.clearRect(0,0,CW,CH);
   particles.forEach(p=>{
-    pCtx.save(); pCtx.globalAlpha=p.life; pCtx.fillStyle=p.color;
-    pCtx.translate(p.x,p.y);
+    pc.save(); pc.globalAlpha=p.life; pc.fillStyle=p.color;
+    pc.translate(p.x,p.y);
     if(p.shape==='donut'){
-      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.arc(0,0,p.size*.4,0,Math.PI*2,true); pCtx.fill();
+      pc.beginPath(); pc.arc(0,0,p.size,0,Math.PI*2); pc.arc(0,0,p.size*.4,0,Math.PI*2,true); pc.fill();
     } else if(p.shape==='star'){
-      drawStar(pCtx,0,0,4,p.size,p.size*.4);
+      drawStar(pc,0,0,4,p.size,p.size*.4);
     } else {
-      pCtx.beginPath(); pCtx.arc(0,0,p.size,0,Math.PI*2); pCtx.fill();
+      pc.beginPath(); pc.arc(0,0,p.size,0,Math.PI*2); pc.fill();
     }
-    pCtx.restore();
+    pc.restore();
   });
 }
 function drawStar(c,cx,cy,spikes,outerR,innerR){
@@ -656,6 +752,30 @@ const hsd=document.getElementById('hiscore-display');
 if(hsd) hsd.textContent=hiScore.toLocaleString();
 
 // ════════════════════════════════════════════════════════
+// BATTLE MODE STATE
+// ════════════════════════════════════════════════════════
+let gameMode = 'solo'; // 'solo' | 'battle'
+let comLv = 1;
+const COM_INFO = {
+  1: { name: 'もちもちリング', emoji: '🍩', interval: 1500 },
+  2: { name: 'ストロベリー',   emoji: '🍓', interval: 750  },
+  3: { name: 'クリームボール', emoji: '👼', interval: 300  },
+};
+let comGrid = [];
+let comCurrentPiece = null;
+let comNextData = null;
+let comScore = 0;
+let comLines_count = 0;
+let comLevel = 1;
+let comCombo = 0;
+let comDropTimer = 0;
+let comDropInterval = 1500;
+let comRunning = false;
+let BATTLE_CELL = 22;
+let pendingGarbageForPlayer = 0;
+let pendingGarbageForCom = 0;
+
+// ════════════════════════════════════════════════════════
 // PIECE LOGIC
 // ════════════════════════════════════════════════════════
 function newPieceData() { return {shapeIdx:weightedRandom(SHAPE_WEIGHTS), donutIdx:Math.floor(Math.random()*DONUTS.length)}; }
@@ -690,7 +810,7 @@ function lockPiece(p) {
 
 function checkLines() {
   const cleared=[];
-  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null)) cleared.push(r);
+  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null && c!=='G')) cleared.push(r);
   if(cleared.length){
     cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
     sfxLineClear(cleared.length);
@@ -703,9 +823,235 @@ function checkLines() {
     if(combo>1) showCombo(combo);
     if(!isMobile) showScorePopup(earned);
     updateUI();
+    // バトルモード時: ゴミラインをCOMへ送る
+    if(gameMode==='battle'){
+      const garbage=[0,0,1,2,4][Math.min(cleared.length,4)];
+      if(garbage>0) pendingGarbageForCom+=garbage;
+      updateGarbageIndicator();
+    }
   } else { combo=0; }
   const cb=document.getElementById('combo-display-box');
   if(cb) cb.textContent=combo>0?combo+'x':'0x';
+}
+
+// ════════════════════════════════════════════════════════
+// GARBAGE LINES
+// ════════════════════════════════════════════════════════
+function addGarbageToGrid(targetGrid, count) {
+  for(let i=0;i<count;i++){
+    targetGrid.shift();
+    targetGrid.push(Array(COLS).fill('G'));
+  }
+}
+
+function updateGarbageIndicator(){
+  const el=document.getElementById('garbage-indicator');
+  if(el) el.textContent='🗑 '+pendingGarbageForCom;
+}
+
+// ════════════════════════════════════════════════════════
+// COM AI LOGIC
+// ════════════════════════════════════════════════════════
+function comCollides(p) {
+  return p.cells.some(({dx,dy})=>{
+    const nx=p.x+dx, ny=p.y+dy;
+    return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&comGrid[ny][nx]!==null);
+  });
+}
+
+function comHardDrop(p) {
+  let q={...p, cells:p.cells.map(c=>({...c}))};
+  while(!comCollides({...q,y:q.y+1})) q.y++;
+  return q;
+}
+
+function comRotatePiece(p,dir=1){
+  const rot=p.cells.map(({dx,dy})=>({dx:-dy*dir,dy:dx*dir}));
+  for(const kx of [0,-1,1,-2,2]) for(const ky of [0,-1,1]){
+    const k={...p,x:p.x+kx,y:p.y+ky,cells:rot};
+    if(!comCollides(k)) return k;
+  }
+  return p;
+}
+
+function comEvalBoard(g){
+  let height=0, holes=0, bumpiness=0;
+  const colHeights=Array(COLS).fill(0);
+  for(let c=0;c<COLS;c++){
+    let found=false;
+    for(let r=0;r<ROWS;r++){
+      if(g[r][c]!==null){
+        if(!found){colHeights[c]=ROWS-r;found=true;}
+        else holes++;
+      }
+    }
+    if(colHeights[c]>height) height=colHeights[c];
+  }
+  for(let c=0;c<COLS-1;c++) bumpiness+=Math.abs(colHeights[c]-colHeights[c+1]);
+
+  let cleared=0;
+  for(let r=0;r<ROWS;r++) if(g[r].every(c=>c!==null&&c!=='G')) cleared++;
+
+  return -0.51*height - 0.36*holes - 0.18*bumpiness + 0.76*cleared;
+}
+
+function comBestMove(piece){
+  let bestScore=-Infinity, bestX=piece.x, bestCells=piece.cells, bestY=piece.y;
+  let p={...piece, cells:piece.cells.map(c=>({...c}))};
+  for(let rot=0;rot<4;rot++){
+    for(let x=0;x<COLS;x++){
+      const candidate={...p, x};
+      if(comCollides(candidate)) continue;
+      const dropped=comHardDrop(candidate);
+      // テスト用グリッドにロック
+      const testGrid=comGrid.map(row=>[...row]);
+      dropped.cells.forEach(({dx,dy})=>{
+        const nx=dropped.x+dx, ny=dropped.y+dy;
+        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx;
+      });
+      const sc=comEvalBoard(testGrid);
+      if(sc>bestScore){
+        bestScore=sc; bestX=dropped.x; bestCells=dropped.cells.map(c=>({...c})); bestY=dropped.y;
+      }
+    }
+    p=comRotatePiece(p,1);
+  }
+  return {x:bestX, cells:bestCells, y:bestY};
+}
+
+function comSpawnPiece(){
+  if(!comNextData) comNextData=newPieceData();
+  comCurrentPiece=createPiece(comNextData);
+  comCurrentPiece.cells=SHAPES[comNextData.shapeIdx].map(([dx,dy])=>({dx,dy}));
+  comNextData=newPieceData();
+  if(comCollides(comCurrentPiece)) comEndGame();
+}
+
+function comLockAndProcess(finalX, finalCells, finalY){
+  // ロック
+  finalCells.forEach(({dx,dy})=>{
+    const nx=finalX+dx, ny=finalY+dy;
+    if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) comGrid[ny][nx]=comCurrentPiece?comCurrentPiece.donutIdx:0;
+  });
+  // ライン消去
+  const cleared=[];
+  for(let r=ROWS-1;r>=0;r--) if(comGrid[r].every(c=>c!==null&&c!=='G')) cleared.push(r);
+  if(cleared.length){
+    cleared.forEach(r=>{comGrid.splice(r,1);comGrid.unshift(Array(COLS).fill(null));});
+    comCombo++;
+    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*comLevel*comCombo;
+    comScore+=earned; comLines_count+=cleared.length;
+    const nl=Math.floor(comLines_count/10)+1;
+    if(nl>comLevel) comLevel=nl;
+    // ゴミラインをプレイヤーへ送る
+    const garbage=[0,0,1,2,4][Math.min(cleared.length,4)];
+    if(garbage>0) pendingGarbageForPlayer+=garbage;
+    const cbs=document.getElementById('com-battle-score');
+    if(cbs) cbs.textContent=comScore.toLocaleString();
+  } else { comCombo=0; }
+  comCurrentPiece=null;
+  comSpawnPiece();
+}
+
+function comDoMove(){
+  if(!comCurrentPiece||!comRunning) return;
+  let best;
+  const rand=Math.random();
+  if(comLv===1){
+    // 40%ベスト、60%ランダム
+    if(rand<0.4){
+      best=comBestMove(comCurrentPiece);
+    } else {
+      const rx=Math.floor(Math.random()*COLS);
+      const dropped=comHardDrop({...comCurrentPiece,x:rx});
+      best={x:dropped.x, cells:dropped.cells, y:dropped.y};
+    }
+  } else if(comLv===2){
+    // 75%ベスト、25%ランダム
+    if(rand<0.75){
+      best=comBestMove(comCurrentPiece);
+    } else {
+      const rx=Math.floor(Math.random()*COLS);
+      const dropped=comHardDrop({...comCurrentPiece,x:rx});
+      best={x:dropped.x, cells:dropped.cells, y:dropped.y};
+    }
+  } else {
+    // 100%ベスト
+    best=comBestMove(comCurrentPiece);
+  }
+  comLockAndProcess(best.x, best.cells, best.y);
+}
+
+function comTick(dt){
+  if(!comRunning||!comCurrentPiece) return;
+  comDropTimer+=dt;
+  if(comDropTimer>=comDropInterval){
+    comDropTimer=0;
+    comDoMove();
+  }
+}
+
+function comDrawBoard(){
+  const cc=document.getElementById('com-canvas');
+  if(!cc) return;
+  const cCtx=cc.getContext('2d');
+  const bCW=COLS*BATTLE_CELL, bCH=ROWS*BATTLE_CELL;
+  cCtx.clearRect(0,0,bCW,bCH);
+  // グリッド線
+  cCtx.strokeStyle='rgba(255,255,255,0.04)'; cCtx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){cCtx.beginPath();cCtx.moveTo(c*BATTLE_CELL,0);cCtx.lineTo(c*BATTLE_CELL,bCH);cCtx.stroke();}
+  for(let r=0;r<=ROWS;r++){cCtx.beginPath();cCtx.moveTo(0,r*BATTLE_CELL);cCtx.lineTo(bCW,r*BATTLE_CELL);cCtx.stroke();}
+  // セル描画
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const cell=comGrid[r][c];
+    if(cell==='G'){
+      cCtx.fillStyle='#3a3a5c';
+      cCtx.fillRect(c*BATTLE_CELL+1,r*BATTLE_CELL+1,BATTLE_CELL-2,BATTLE_CELL-2);
+      cCtx.fillStyle='rgba(255,255,255,0.08)';
+      cCtx.fillRect(c*BATTLE_CELL+1,r*BATTLE_CELL+1,BATTLE_CELL-2,2);
+    } else if(cell!==null){
+      drawDonut(cCtx,c*BATTLE_CELL+1,r*BATTLE_CELL+1,BATTLE_CELL-2,DONUTS[cell],1,gameTime*.05);
+    }
+  }
+  // COMの現在ピース（落下位置プレビュー）
+  if(comCurrentPiece){
+    const ghost=comHardDrop(comCurrentPiece);
+    const donut=DONUTS[comCurrentPiece.donutIdx];
+    ghost.cells.forEach(({dx,dy})=>{
+      const nx=ghost.x+dx,ny=ghost.y+dy;
+      if(ny>=0){
+        cCtx.save();cCtx.globalAlpha=0.3;
+        cCtx.fillStyle=donut.glaze;
+        cCtx.fillRect(nx*BATTLE_CELL+2,ny*BATTLE_CELL+2,BATTLE_CELL-4,BATTLE_CELL-4);
+        cCtx.restore();
+      }
+    });
+    comCurrentPiece.cells.forEach(({dx,dy})=>{
+      const nx=comCurrentPiece.x+dx,ny=comCurrentPiece.y+dy;
+      if(ny>=0) drawDonut(cCtx,nx*BATTLE_CELL+1,ny*BATTLE_CELL+1,BATTLE_CELL-2,donut,1,gameTime*.1);
+    });
+  }
+}
+
+function comEndGame(){
+  // COMが詰まった→プレイヤーの勝利
+  comRunning=false;
+  gameRunning=false;
+  sfxLevelUp();
+  setTimeout(()=>{
+    const ov=document.getElementById('overlay');
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <h1>🎉 YOU WIN!</h1>
+      <div class="sub">
+        ${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に勝った！<br>
+        あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
+        COMのスコア: ${comScore.toLocaleString()}
+      </div>
+      <button class="btn" id="start-btn">🎮 もう一度！</button>
+    `;
+    document.getElementById('start-btn').addEventListener('click',()=>startBattleMode(comLv));
+  },800);
 }
 
 // ════════════════════════════════════════════════════════
@@ -716,37 +1062,55 @@ function holdPiece() {
   sfxHold(); canHold=false;
   if(!holdPieceData){holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};spawnPiece();}
   else{const t=holdPieceData;holdPieceData={shapeIdx:currentPiece.shapeIdx,donutIdx:currentPiece.donutIdx};currentPiece=createPiece(t);}
-  drawHold();
+  if(holdCtx) drawHold();
 }
 
 // ════════════════════════════════════════════════════════
 // RENDERING
 // ════════════════════════════════════════════════════════
+function getDrawCtx(){
+  // バトルモードではbattle-game-canvasに描画
+  if(gameMode==='battle' && battleCtx) return battleCtx;
+  return ctx;
+}
+
 function drawGrid() {
-  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
-  for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,CH);ctx.stroke();}
-  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(CW,r*CELL);ctx.stroke();}
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
-    if(grid[r][c]!==null) drawDonut(ctx,c*CELL+1,r*CELL+1,CELL-2,DONUTS[grid[r][c]],1,gameTime*.05);
+  const dc = getDrawCtx();
+  dc.strokeStyle='rgba(255,255,255,0.04)'; dc.lineWidth=1;
+  for(let c=0;c<=COLS;c++){dc.beginPath();dc.moveTo(c*CELL,0);dc.lineTo(c*CELL,CH);dc.stroke();}
+  for(let r=0;r<=ROWS;r++){dc.beginPath();dc.moveTo(0,r*CELL);dc.lineTo(CW,r*CELL);dc.stroke();}
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const cell=grid[r][c];
+    if(cell==='G'){
+      dc.fillStyle='#3a3a5c';
+      dc.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);
+      dc.fillStyle='rgba(255,255,255,0.08)';
+      dc.fillRect(c*CELL+1,r*CELL+1,CELL-2,2);
+    } else if(cell!==null){
+      drawDonut(dc,c*CELL+1,r*CELL+1,CELL-2,DONUTS[cell],1,gameTime*.05);
+    }
+  }
 }
 
 function drawCurrentPiece() {
   if(!currentPiece) return;
+  const dc = getDrawCtx();
   const ghost=hardDrop(currentPiece), donut=DONUTS[currentPiece.donutIdx];
   ghost.cells.forEach(({dx,dy})=>{
     const nx=ghost.x+dx,ny=ghost.y+dy;
-    if(ny>=0){ctx.save();ctx.globalAlpha=0.2;ctx.beginPath();
-      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.38,0,Math.PI*2);
-      ctx.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.14,0,Math.PI*2,true);
-      ctx.strokeStyle=donut.glaze;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+    if(ny>=0){dc.save();dc.globalAlpha=0.2;dc.beginPath();
+      dc.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.38,0,Math.PI*2);
+      dc.arc(nx*CELL+CELL/2,ny*CELL+CELL/2,CELL*.14,0,Math.PI*2,true);
+      dc.strokeStyle=donut.glaze;dc.lineWidth=2;dc.stroke();dc.restore();}
   });
   currentPiece.cells.forEach(({dx,dy})=>{
     const nx=currentPiece.x+dx,ny=currentPiece.y+dy;
-    if(ny>=0) drawDonut(ctx,nx*CELL+1,ny*CELL+1,CELL-2,donut,1,gameTime*.1);
+    if(ny>=0) drawDonut(dc,nx*CELL+1,ny*CELL+1,CELL-2,donut,1,gameTime*.1);
   });
 }
 
 function drawNext() {
+  if(!nextCtx) return;
   nextCtx.clearRect(0,0,NEXT_SIZE,NEXT_SIZE);
   if(!nextPieceData) return;
   const donut=DONUTS[nextPieceData.donutIdx], cells=SHAPES[nextPieceData.shapeIdx];
@@ -758,6 +1122,7 @@ function drawNext() {
 }
 
 function drawHold() {
+  if(!holdCtx) return;
   holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
   if(!holdPieceData) return;
   const donut=DONUTS[holdPieceData.donutIdx], cells=SHAPES[holdPieceData.shapeIdx];
@@ -783,6 +1148,9 @@ function updateUI() {
     const h=document.getElementById('hiscore-display');
     if(h) h.textContent=hiScore.toLocaleString();
   }
+  // バトルモード時のプレイヤースコア更新
+  const pbs=document.getElementById('player-battle-score');
+  if(pbs) pbs.textContent=score.toLocaleString();
 }
 
 let comboTO=null;
@@ -810,9 +1178,11 @@ function gameLoop(ts) {
   if(!gameRunning) return;
   const dt=ts-lastTime; lastTime=ts; gameTime++;
   drawBg();
-  ctx.clearRect(0,0,CW,CH); ctx.save();
+
+  const dc = getDrawCtx();
+  dc.clearRect(0,0,CW,CH); dc.save();
   if(!gamePaused){
-    if(shakeTimer>0){const a=shakeTimer*.5;ctx.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
+    if(shakeTimer>0){const a=shakeTimer*.5;dc.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
     if(currentPiece) currentPiece.time++;
     dropTimer+=dt;
     if(dropTimer>=dropInterval){
@@ -820,8 +1190,18 @@ function gameLoop(ts) {
       if(currentPiece){const m={...currentPiece,y:currentPiece.y+1};if(!collides(m))currentPiece=m;else lockPiece(currentPiece);}
     }
   }
-  drawGrid(); drawCurrentPiece(); ctx.restore();
+  drawGrid(); drawCurrentPiece(); dc.restore();
   updateParticles(); drawParticles(); drawNext();
+
+  // COM tick (バトルモード時のみ)
+  if(gameMode==='battle' && comRunning){
+    comTick(dt);
+    // ゴミライン送付
+    if(pendingGarbageForPlayer>0){ addGarbageToGrid(grid,pendingGarbageForPlayer); pendingGarbageForPlayer=0; }
+    if(pendingGarbageForCom>0){ addGarbageToGrid(comGrid,pendingGarbageForCom); pendingGarbageForCom=0; updateGarbageIndicator(); }
+    comDrawBoard();
+  }
+
   requestAnimationFrame(gameLoop);
 }
 
@@ -910,9 +1290,66 @@ const btnResetPc = document.getElementById('btn-reset-pc');
 if(btnResetPc) btnResetPc.addEventListener('click', ()=>{ resetGame(); });
 
 // ════════════════════════════════════════════════════════
+// OVERLAY ボタンイベント (モード選択)
+// ════════════════════════════════════════════════════════
+function setupOverlayButtons(){
+  // 対戦ボタン
+  const battleBtn=document.getElementById('battle-btn');
+  if(battleBtn){
+    battleBtn.addEventListener('click',()=>{
+      initAudio();
+      const modeRow=document.getElementById('mode-btn-row');
+      const subEl=document.querySelector('#overlay .sub');
+      const h1El=document.querySelector('#overlay h1');
+      const comSel=document.getElementById('com-select');
+      if(modeRow) modeRow.style.display='none';
+      if(subEl) subEl.style.display='none';
+      if(h1El) h1El.style.display='none';
+      if(comSel) comSel.style.display='block';
+    });
+  }
+
+  // 戻るボタン
+  const backBtn=document.getElementById('back-to-mode');
+  if(backBtn){
+    backBtn.addEventListener('click',()=>{
+      const modeRow=document.getElementById('mode-btn-row');
+      const subEl=document.querySelector('#overlay .sub');
+      const h1El=document.querySelector('#overlay h1');
+      const comSel=document.getElementById('com-select');
+      if(comSel) comSel.style.display='none';
+      if(modeRow) modeRow.style.display='flex';
+      if(subEl) subEl.style.display='block';
+      if(h1El) h1El.style.display='block';
+    });
+  }
+
+  // COMレベル選択ボタン
+  const lvBtns=document.querySelectorAll('.com-level-btn');
+  lvBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      initAudio();
+      const lv=parseInt(btn.dataset.lv);
+      startBattleMode(lv);
+    });
+  });
+}
+
+// ════════════════════════════════════════════════════════
 // START / END
 // ════════════════════════════════════════════════════════
 function resetGame() {
+  if(gameMode==='battle'){
+    comRunning=false;
+    // battle-wrapperを隠してgame-wrapperを戻す
+    const bw=document.getElementById('battle-wrapper');
+    const gw=document.getElementById('game-wrapper');
+    if(bw) bw.style.display='none';
+    if(gw) gw.style.display='flex';
+    // CELLを元に戻す
+    if(!isMobile){ CELL=30; CW=COLS*CELL; CH=ROWS*CELL; gameCanvas.width=CW; gameCanvas.height=CH; pCanvas.width=CW; pCanvas.height=CH; }
+    gameMode='solo';
+  }
   gameRunning=false;
   startGame();
 }
@@ -923,34 +1360,105 @@ function startGame() {
   particles.length=0;
   score=0;lines=0;level=1;combo=0;dropInterval=700;dropTimer=0;gameTime=0;
   currentPiece=null;nextPieceData=null;holdPieceData=null;canHold=true;gamePaused=false;shakeTimer=0;
-  holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
+  if(holdCtx) holdCtx.clearRect(0,0,HOLD_W,HOLD_H);
   updateUI();
-  document.getElementById('overlay').style.display='none';
+  const ov=document.getElementById('overlay');
+  if(ov) ov.style.display='none';
   gameRunning=true; spawnPiece(); nextPieceData=newPieceData();
   lastTime=performance.now();
   requestAnimationFrame(gameLoop);
 }
 
+function startBattleMode(lv){
+  gameMode='battle';
+  comLv=lv;
+  comDropInterval=COM_INFO[lv].interval;
+
+  // バトルレイアウトに切替（PCのみ）
+  if(!isMobile){
+    const gw=document.getElementById('game-wrapper');
+    const bw=document.getElementById('battle-wrapper');
+    if(gw) gw.style.display='none';
+    if(bw) bw.style.display='flex';
+
+    // 両ボードをBATTLE_CELLサイズにリサイズ
+    CELL=BATTLE_CELL;
+    CW=COLS*CELL; CH=ROWS*CELL;
+
+    // battle-game-canvasのサイズ設定
+    if(battleGameCanvas){ battleGameCanvas.width=CW; battleGameCanvas.height=CH; }
+    if(battlePCanvas){ battlePCanvas.width=CW; battlePCanvas.height=CH; }
+
+    const cc=document.getElementById('com-canvas');
+    if(cc){ cc.width=CW; cc.height=CH; }
+
+    // COM名前を表示
+    const cn=document.getElementById('com-name-display');
+    if(cn) cn.textContent=COM_INFO[lv].emoji+' '+COM_INFO[lv].name;
+  }
+
+  // COMグリッド初期化
+  comGrid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  comCurrentPiece=null; comNextData=null;
+  comScore=0; comLines_count=0; comLevel=1; comCombo=0;
+  comDropTimer=0; comRunning=true;
+  pendingGarbageForPlayer=0; pendingGarbageForCom=0;
+
+  // COMスコア表示リセット
+  const cbs=document.getElementById('com-battle-score');
+  if(cbs) cbs.textContent='0';
+
+  comSpawnPiece();
+
+  // プレイヤーゲーム開始
+  startGame();
+}
+
 function endGame() {
   gameRunning=false; sfxGameOver();
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
-  setTimeout(()=>{
-    const ov=document.getElementById('overlay');
-    ov.style.display='flex';
-    ov.innerHTML=`
-      <h1>🍩 GAME OVER!</h1>
-      <div class="sub">
-        スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
-        ハイスコア: ${hiScore.toLocaleString()}<br>
-        レベル ${level} / ${lines}ライン
-      </div>
-      <button class="btn" id="start-btn">🔄 もう一度！</button>
-    `;
-    document.getElementById('start-btn').addEventListener('click',startGame);
-  },800);
+
+  if(gameMode==='battle'){
+    // プレイヤーが負けた
+    comRunning=false;
+    setTimeout(()=>{
+      const ov=document.getElementById('overlay');
+      ov.style.display='flex';
+      ov.innerHTML=`
+        <h1>😭 GAME OVER!</h1>
+        <div class="sub">
+          ${COM_INFO[comLv].emoji} ${COM_INFO[comLv].name} に負けた…<br>
+          あなたのスコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
+          COMのスコア: ${comScore.toLocaleString()}
+        </div>
+        <button class="btn" id="start-btn">🔄 もう一度！</button>
+      `;
+      document.getElementById('start-btn').addEventListener('click',()=>startBattleMode(comLv));
+    },800);
+  } else {
+    setTimeout(()=>{
+      const ov=document.getElementById('overlay');
+      ov.style.display='flex';
+      ov.innerHTML=`
+        <h1>🍩 GAME OVER!</h1>
+        <div class="sub">
+          スコア: <b style="color:#ffcc00;font-size:1.4em">${score.toLocaleString()}</b><br>
+          ハイスコア: ${hiScore.toLocaleString()}<br>
+          レベル ${level} / ${lines}ライン
+        </div>
+        <button class="btn" id="start-btn">🔄 もう一度！</button>
+      `;
+      document.getElementById('start-btn').addEventListener('click',startGame);
+    },800);
+  }
 }
 
-document.getElementById('start-btn').addEventListener('click',startGame);
+// 初回のスタートボタン
+const initStartBtn=document.getElementById('start-btn');
+if(initStartBtn) initStartBtn.addEventListener('click',startGame);
+
+// オーバーレイボタン初期セットアップ（PC版）
+if(!isMobile) setupOverlayButtons();
 
 // Background loop (always running)
 (function bgLoop(){drawBg();requestAnimationFrame(bgLoop);})();
