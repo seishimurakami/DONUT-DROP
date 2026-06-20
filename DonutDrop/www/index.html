@@ -497,13 +497,7 @@ app.innerHTML = `
         <span class="lbl">SCORE</span>
         <span class="val" id="score-display">0</span>
       </div>
-      <div class="mini-box">
-        <span class="lbl">SPEED</span>
-        <span class="val" id="level-display">1</span>
-        <div style="margin-top:3px;height:3px;background:rgba(255,107,205,0.18);border-radius:2px;overflow:hidden;">
-          <div id="level-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent));border-radius:2px;transition:width .3s;"></div>
-        </div>
-      </div>
+
       <div class="mini-box">
         <div style="display:flex;justify-content:space-around;">
           <div><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
@@ -555,7 +549,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.9</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.0</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1217,9 +1211,7 @@ function drawHold() {
 // ════════════════════════════════════════════════════════
 function updateUI() {
   const sd=document.getElementById('score-display'); if(sd)sd.textContent=score.toLocaleString();
-  const ld=document.getElementById('level-display'); if(ld)ld.textContent=level;
   const li=document.getElementById('lines-display'); if(li)li.textContent=lines;
-  const lb=document.getElementById('level-bar'); if(lb)lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
   if(lines>hiLines){hiLines=lines;localStorage.setItem('donutHiLines',hiLines);}
   if(combo>hiCombo){hiCombo=combo;localStorage.setItem('donutHiCombo',hiCombo);}
@@ -1517,7 +1509,7 @@ function startBattleMode(lv){
     // BEST(HI-SCORE)とMENUのみ表示、他は非表示
     document.querySelectorAll('.mini-box').forEach(el=>{
       const lbl=el.querySelector('.lbl');
-      const hide=lbl&&['SCORE','NEXT','HOLD','SPEED','LINES'].includes(lbl.textContent);
+      const hide=lbl&&['SCORE','NEXT','HOLD','LINES'].includes(lbl.textContent);
       el.style.display=hide?'none':'';
       if(!hide){
         el.style.flex='1';

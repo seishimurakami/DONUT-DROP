@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.9</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -449,10 +449,6 @@ app.innerHTML = `
     <div id="game-wrapper">
       <div class="side-panel">
         <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="score-display">0</div></div>
-        <div class="info-box">
-          <div class="info-label">SPEED</div><div class="info-value" id="level-display">1</div>
-          <div id="level-bar-wrapper"><div id="level-bar" style="width:0%"></div></div>
-        </div>
         <div class="info-box">
           <div class="two-stat">
             <div><div class="info-label">LINES</div><div class="info-value" id="lines-display">0</div></div>
@@ -1342,10 +1338,11 @@ function drawHold() {
 // ════════════════════════════════════════════════════════
 function updateUI() {
   const _sd=document.getElementById('score-display'); if(_sd) _sd.textContent=score.toLocaleString();
-  const _ld=document.getElementById('level-display'); if(_ld) _ld.textContent=level;
   const _nd=document.getElementById('lines-display'); if(_nd) _nd.textContent=lines;
-  const lb=document.getElementById('level-bar');
-  if(lb) lb.style.width=((lines%10)*10)+'%';
+  // battle左パネルの更新
+  const _bs=document.getElementById('battle-left-score'); if(_bs) _bs.textContent=score.toLocaleString();
+  const _bl=document.getElementById('battle-left-lines'); if(_bl) _bl.textContent=lines;
+  const _bc=document.getElementById('battle-left-combo'); if(_bc) _bc.textContent=combo>0?combo+'x':'0x';
   if(score>hiScore){
     hiScore=score; localStorage.setItem('donutHiScore',hiScore);
     const h=document.getElementById('hiscore-display'); if(h) h.textContent=hiScore.toLocaleString();
@@ -1647,19 +1644,28 @@ function startBattleMode(lv){
   if(cc){ cc.width=CW; cc.height=CH; }
   const cn=document.getElementById('com-name-display');
   if(cn) cn.textContent=COM_INFO[lv].emoji+' Lv'+lv+' '+COM_INFO[lv].name;
-  // NEXT/HOLDボックスをbattle-player-miniに移動＆サイズ縮小
-  const bNS=70, bHW=70, bHH=55;
-  if(nextCanvas){nextCanvas.width=bNS;nextCanvas.height=bNS;}
-  if(holdCanvas){holdCanvas.width=bHW;holdCanvas.height=bHH;}
+  // battle左パネルにSCORE・LINES COMBO・MENUを表示
   const bpm=document.getElementById('battle-player-mini');
-  const nextBox=document.getElementById('right-next-box');
-  const holdBox=document.getElementById('right-hold-box');
-  if(bpm && nextBox && holdBox){
-    bpm.innerHTML='';
-    nextBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
-    holdBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
-    bpm.appendChild(nextBox);
-    bpm.appendChild(holdBox);
+  if(bpm){
+    bpm.innerHTML=`
+      <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="battle-left-score">0</div></div>
+      <div class="info-box">
+        <div class="two-stat">
+          <div><div class="info-label">LINES</div><div class="info-value" id="battle-left-lines">0</div></div>
+          <div><div class="info-label">COMBO</div><div class="info-value" id="battle-left-combo">0x</div></div>
+        </div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">MENU</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+          <button class="icon-btn" id="btn-mute-pc" title="ミュート (M)">🔊</button>
+          <button class="icon-btn" id="btn-settings-pc" title="設定">⚙</button>
+        </div>
+      </div>
+    `;
+    // ボタンのイベントを再バインド
+    document.getElementById('btn-mute-pc')?.addEventListener('click',()=>toggleMute());
+    document.getElementById('btn-settings-pc')?.addEventListener('click',()=>{ const so=document.getElementById('settings-overlay'); if(so) so.style.display='flex'; });
   }
 
   // COMグリッド初期化
