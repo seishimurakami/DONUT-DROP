@@ -135,18 +135,18 @@ body::before {
 /* ── Pause banner ── */
 #pause-banner {
   display: none; position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%,-50%) rotate(-6deg);
+  transform: translate(-50%,-50%);
   font-family: 'Fredoka One', cursive; font-size: 80px;
-  color: var(--accent); text-shadow: 0 0 40px rgba(255,107,205,0.9), 4px 4px 0 #000;
-  pointer-events: none; z-index: 950; white-space: nowrap;
+  color: var(--accent); text-shadow: 0 0 40px rgba(255,107,205,0.9);
+  pointer-events: none; z-index: 950; white-space: nowrap; letter-spacing: 6px;
 }
 #pause-banner.visible {
   display: block;
-  animation: pausePop 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation: pausePop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
 }
 @keyframes pausePop {
-  0%   { transform: translate(-50%,-50%) rotate(-6deg) scale(0.2); opacity: 0; }
-  100% { transform: translate(-50%,-50%) rotate(-6deg) scale(1);   opacity: 1; }
+  0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+  100% { transform: translate(-50%,-50%) scale(1);   opacity: 1; }
 }
 
 /* ── Combo flash (shared) ── */
@@ -341,7 +341,7 @@ body::before {
 <div class="scanlines"></div>
 <canvas id="bg-canvas"></canvas>
 <div id="combo-flash"></div>
-<div id="pause-banner">ポ〜ズぅ</div>
+<div id="pause-banner">PAUSE</div>
 <div id="score-popup"></div>
 <div id="settings-overlay">
   <div id="settings-card">
@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.8</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.9</div>
 
 <script>
 // ════════════════════════════════════════════════════════
