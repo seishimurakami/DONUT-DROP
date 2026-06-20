@@ -166,11 +166,22 @@ body::before {
 
 [data-mode="mobile"] #controls {
   width: 100%; display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(2, 50px) 32px;
   gap: 5px;
   padding: 5px 8px max(26px, calc(var(--safe-bottom) + 2px));
   flex-shrink: 0;
+}
+[data-mode="mobile"] .menu-icon-row { display:flex; gap:5px; justify-content:center; margin:5px 0 4px; }
+[data-mode="mobile"] .menu-icon-btn {
+  background:rgba(255,107,205,0.12); border:1px solid rgba(255,107,205,0.3);
+  border-radius:8px; width:26px; height:26px; font-size:14px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
+}
+[data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
+[data-mode="mobile"] .menu-mini-link {
+  display:block; font-size:9px; color:rgba(255,255,255,0.5);
+  text-decoration:none; padding:2px 0; text-align:center; transition:color .2s;
 }
 #copyright {
   position: fixed; bottom: 6px; left: 0; right: 0;
@@ -480,6 +491,15 @@ app.innerHTML = `
       <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
       <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
       <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+      <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <span class="lbl">MENU</span>
+        <div class="menu-icon-row">
+          <button class="menu-icon-btn" id="btn-mute">🔊</button>
+          <button class="menu-icon-btn" id="btn-settings">⚙</button>
+        </div>
+        <a class="menu-mini-link" href="https://seishimurakami.github.io/DONUT-DROP/help.html" target="_blank">❓ ヘルプ</a>
+        <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
+      </div>
     </div>
     <div style="position:relative;flex-shrink:0;">
       <canvas id="game-canvas"></canvas>
@@ -503,16 +523,14 @@ app.innerHTML = `
     <button class="ctrl-btn" id="btn-rotL">↺</button>
     <button class="ctrl-btn" id="btn-rotR">↻</button>
     <button class="ctrl-btn large" id="btn-hold">HOLD</button>
-    <button class="ctrl-btn" id="btn-mute">🔊</button>
     <button class="ctrl-btn" id="btn-pause">⏸</button>
     <button class="ctrl-btn" id="btn-left">◀</button>
     <button class="ctrl-btn" id="btn-down">▼</button>
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
-    <button class="ctrl-btn" id="btn-settings">⚙</button>
     <button id="btn-menu-ctrl">🏠 メニューにもどる</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.4</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.5</div>
 `;
 
 // ════════════════════════════════════════════════════════

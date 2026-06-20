@@ -296,8 +296,19 @@ body::before {
 
 [data-mode="mobile"] #controls {
   width: 100%; display: grid;
-  grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr);
   gap: 5px; padding: 5px 8px 10px; flex-shrink: 0;
+}
+[data-mode="mobile"] .menu-icon-row { display:flex; gap:5px; justify-content:center; margin:5px 0 4px; }
+[data-mode="mobile"] .menu-icon-btn {
+  background:rgba(255,107,205,0.12); border:1px solid rgba(255,107,205,0.3);
+  border-radius:8px; width:26px; height:26px; font-size:14px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
+}
+[data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
+[data-mode="mobile"] .menu-mini-link {
+  display:block; font-size:9px; color:rgba(255,255,255,0.5);
+  text-decoration:none; padding:2px 0; text-align:center; transition:color .2s;
 }
 [data-mode="mobile"] .ctrl-btn {
   background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
@@ -447,7 +458,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.4</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.5</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -497,6 +508,15 @@ if (isMobile) {
         <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
         <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
         <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+        <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <span class="lbl">MENU</span>
+          <div class="menu-icon-row">
+            <button class="menu-icon-btn" id="btn-mute">🔊</button>
+            <button class="menu-icon-btn" id="btn-settings-m">⚙</button>
+          </div>
+          <a class="menu-mini-link" href="help.html" target="_blank">❓ ヘルプ</a>
+          <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
+        </div>
       </div>
       <div style="position:relative;flex-shrink:0;">
         <canvas id="game-canvas"></canvas>
@@ -523,13 +543,11 @@ if (isMobile) {
       <button class="ctrl-btn" id="btn-rotL">↺</button>
       <button class="ctrl-btn" id="btn-rotR">↻</button>
       <button class="ctrl-btn large" id="btn-hold">HOLD</button>
-      <button class="ctrl-btn" id="btn-mute">🔊</button>
       <button class="ctrl-btn" id="btn-pause">⏸</button>
       <button class="ctrl-btn" id="btn-left">◀</button>
       <button class="ctrl-btn" id="btn-down">▼</button>
       <button class="ctrl-btn large" id="btn-drop">DROP</button>
       <button class="ctrl-btn" id="btn-right">▶</button>
-      <button class="ctrl-btn" id="btn-settings-m">⚙</button>
     </div>
   `;
 } else {
@@ -588,8 +606,8 @@ if (isMobile) {
         </div>
       </div>
       <div class="side-panel" id="right-panel">
-        <div class="info-box"><div class="info-label">NEXT</div><canvas id="next-canvas"></canvas></div>
-        <div class="info-box"><div class="info-label">HOLD</div><canvas id="hold-canvas"></canvas></div>
+        <div class="info-box" id="right-next-box"><div class="info-label">NEXT</div><canvas id="next-canvas"></canvas></div>
+        <div class="info-box" id="right-hold-box"><div class="info-label">HOLD</div><canvas id="hold-canvas"></canvas></div>
         <div class="info-box"><div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div></div>
         <div class="info-box"><div class="info-label">DONUTS</div><div class="donut-legend" id="donut-legend"></div></div>
       </div>
@@ -1304,14 +1322,14 @@ function returnToModeSelect(){
   gameMode='solo'; gameRunning=false; comRunning=false;
   if(!isMobile){
     document.getElementById('battle-wrapper').style.display='none';
-    // NEXT/HOLDキャンバスを右side-panelに戻す
+    // NEXT/HOLDボックスを右side-panelの先頭に戻す
     const sidePanel=document.getElementById('right-panel');
-    const nextBox=nextCanvas?.parentElement; const holdBox=holdCanvas?.parentElement;
+    const nextBox=document.getElementById('right-next-box');
+    const holdBox=document.getElementById('right-hold-box');
     if(sidePanel&&nextBox&&holdBox){
-      const firstBox=sidePanel.querySelector('.info-box');
-      sidePanel.insertBefore(nextBox,firstBox);
-      sidePanel.insertBefore(holdBox,firstBox);
-      nextBox.style=''; holdBox.style='';
+      nextBox.style.cssText=''; holdBox.style.cssText='';
+      sidePanel.insertBefore(holdBox, sidePanel.firstElementChild);
+      sidePanel.insertBefore(nextBox, holdBox);
     }
     document.getElementById('game-wrapper').style.display='';
     CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
@@ -1810,21 +1828,19 @@ function startBattleMode(lv){
     if(cc){ cc.width=CW; cc.height=CH; }
     const cn=document.getElementById('com-name-display');
     if(cn) cn.textContent=COM_INFO[lv].emoji+' '+COM_INFO[lv].name;
-    // NEXT/HOLDキャンバスをbattle-player-miniに移動＆サイズ縮小
+    // NEXT/HOLDボックスをbattle-player-miniに移動＆サイズ縮小
     const bNS=70, bHW=70, bHH=55;
     if(nextCanvas){nextCanvas.width=bNS;nextCanvas.height=bNS;}
     if(holdCanvas){holdCanvas.width=bHW;holdCanvas.height=bHH;}
     const bpm=document.getElementById('battle-player-mini');
-    if(bpm && nextCanvas && holdCanvas){
+    const nextBox=document.getElementById('right-next-box');
+    const holdBox=document.getElementById('right-hold-box');
+    if(bpm && nextBox && holdBox){
       bpm.innerHTML='';
-      const mkBox=(lbl,cvs)=>{
-        const d=document.createElement('div');
-        d.className='info-box'; d.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
-        const l=document.createElement('div'); l.className='info-label'; l.textContent=lbl;
-        d.appendChild(l); d.appendChild(cvs); return d;
-      };
-      bpm.appendChild(mkBox('NEXT',nextCanvas));
-      bpm.appendChild(mkBox('HOLD',holdCanvas));
+      nextBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
+      holdBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
+      bpm.appendChild(nextBox);
+      bpm.appendChild(holdBox);
     }
   } else {
     // モバイル: ゲームエリアに対戦レイアウトを構築
