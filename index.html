@@ -240,86 +240,6 @@ body::before {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* ════════════════════════════════════
-   MOBILE LAYOUT
-════════════════════════════════════ */
-[data-mode="mobile"] #app {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center;
-  height: 100dvh; gap: 0;
-}
-
-[data-mode="mobile"] #topbar {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px 4px; background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,107,205,0.2);
-  flex-shrink: 0;
-}
-[data-mode="mobile"] #title-top {
-  font-size: 17px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
-}
-[data-mode="mobile"] .top-stats { display: flex; gap: 12px; align-items: center; }
-[data-mode="mobile"] .stat-mini { text-align: center; line-height: 1.1; }
-[data-mode="mobile"] .stat-mini .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 2px; display: block; }
-[data-mode="mobile"] .stat-mini .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.6); }
-
-[data-mode="mobile"] #game-area {
-  display: flex; align-items: flex-start; justify-content: center;
-  gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
-}
-[data-mode="mobile"] #game-area.battle-mode {
-  align-items: center; justify-content: center; gap: 12px;
-}
-.mobile-battle-vs {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  color: var(--accent); font-size: 18px; flex-shrink: 0;
-}
-.mobile-battle-vs .vs-label {
-  font-size: 8px; color: rgba(255,255,255,0.35); letter-spacing: 2px;
-}
-.battle-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 0 4px;
-}
-.battle-stat { display: flex; flex-direction: column; }
-.battle-lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; }
-.battle-val { font-size: 17px; color: var(--accent2); font-family: 'Fredoka One', cursive; }
-.battle-topbar .battle-vs { font-size: 18px; }
-[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-[data-mode="mobile"] .mini-box {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
-  border-radius: 10px; padding: 6px 8px; text-align: center; min-width: 60px;
-}
-[data-mode="mobile"] .mini-box .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; display: block; margin-bottom: 2px; }
-[data-mode="mobile"] .mini-box .val { font-size: 17px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
-[data-mode="mobile"] #game-canvas { border-width: 1.5px; border-radius: 10px; }
-
-[data-mode="mobile"] #controls {
-  width: 100%; display: grid;
-  grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr);
-  gap: 5px; padding: 5px 8px 10px; flex-shrink: 0;
-}
-[data-mode="mobile"] .menu-icon-row { display:flex; gap:5px; justify-content:center; margin:5px 0 4px; }
-[data-mode="mobile"] .menu-icon-btn {
-  background:rgba(255,107,205,0.12); border:1px solid rgba(255,107,205,0.3);
-  border-radius:8px; width:26px; height:26px; font-size:14px;
-  display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
-}
-[data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
-[data-mode="mobile"] .menu-mini-link {
-  display:block; font-size:9px; color:rgba(255,255,255,0.5);
-  text-decoration:none; padding:2px 0; text-align:center; transition:color .2s;
-}
-[data-mode="mobile"] .ctrl-btn {
-  background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
-  border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; height: 50px; cursor: pointer; transition: all 0.1s; position: relative;
-}
-[data-mode="mobile"] .ctrl-btn.active {
-  background: rgba(255,107,205,0.25); border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(255,107,205,0.5); transform: scale(0.93);
-}
-[data-mode="mobile"] .ctrl-btn.large { font-size: 14px; color: rgba(255,255,255,0.9); }
 
 [data-mode="pc"] .icon-btn {
   background: rgba(255,107,205,0.1); border: 1px solid rgba(255,107,205,0.3);
@@ -458,7 +378,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.7</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.0</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -467,7 +387,29 @@ body::before {
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   || ('ontouchstart' in window && window.innerWidth < 1024);
 
-document.documentElement.setAttribute('data-mode', isMobile ? 'mobile' : 'pc');
+document.documentElement.setAttribute('data-mode', 'pc');
+
+// スマホからアクセスした場合はApp Store誘導ページを表示
+if(isMobile){
+  document.getElementById('app').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;gap:24px;padding:32px 24px;text-align:center;">
+      <div style="font-size:56px;">🍩</div>
+      <h1 style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--accent);text-shadow:0 0 20px rgba(255,107,205,0.8);">DONUT DROP</h1>
+      <p style="font-family:'Kosugi Maru',sans-serif;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.9;">
+        このゲームはPCブラウザ向けです。<br>
+        スマホでプレイするには<br>
+        iOSアプリをダウンロードしてください！
+      </p>
+      <a href="https://apps.apple.com/jp/app/donut-drop/id6780714595" target="_blank" style="display:block;">
+        <img src="assets/Download_on_the_App_Store_Badge_JP_RGB_blk_100317.svg" alt="App Store でダウンロード" style="height:52px;filter:drop-shadow(0 0 12px rgba(255,107,205,0.4));">
+      </a>
+      <p style="font-family:'Kosugi Maru',sans-serif;font-size:11px;color:rgba(255,255,255,0.3);">
+        PCでアクセスするとゲームが遊べます 🖥
+      </p>
+    </div>
+  `;
+  throw new Error('mobile-redirect');
+}
 
 // ════════════════════════════════════════════════════════
 // LAYOUT CONSTANTS
@@ -475,16 +417,8 @@ document.documentElement.setAttribute('data-mode', isMobile ? 'mobile' : 'pc');
 const COLS = 10, ROWS = 20;
 let CELL, CW, CH, NEXT_SIZE, HOLD_W, HOLD_H;
 
-if (isMobile) {
-  const topH = 58, ctrlH = 122, pad = 18;
-  const availH = window.innerHeight - topH - ctrlH - pad;
-  const availW = window.innerWidth * 0.63;
-  CELL = Math.max(18, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 30));
-  NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
-} else {
-  CELL = 30;
-  NEXT_SIZE = 110; HOLD_W = 110; HOLD_H = 80;
-}
+CELL = 30;
+NEXT_SIZE = 110; HOLD_W = 110; HOLD_H = 80;
 CW = COLS * CELL;
 CH = ROWS * CELL;
 
@@ -493,65 +427,7 @@ CH = ROWS * CELL;
 // ════════════════════════════════════════════════════════
 const app = document.getElementById('app');
 
-if (isMobile) {
-  app.innerHTML = `
-    <div id="topbar">
-      <div id="title-top">🍩 DONUT DROP</div>
-      <div class="top-stats">
-        <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-        <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
-        <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
-      </div>
-    </div>
-    <div id="game-area">
-      <div class="side-mini">
-        <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
-        <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
-        <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
-        <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-          <span class="lbl">MENU</span>
-          <div class="menu-icon-row">
-            <button class="menu-icon-btn" id="btn-mute">🔊</button>
-            <button class="menu-icon-btn" id="btn-settings-m">⚙</button>
-          </div>
-          <a class="menu-mini-link" href="help.html" target="_blank">❓ ヘルプ</a>
-          <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
-        </div>
-      </div>
-      <div style="position:relative;flex-shrink:0;">
-        <canvas id="game-canvas"></canvas>
-        <canvas id="particle-canvas"></canvas>
-        <div id="overlay">
-          <div id="top-section">
-            <h1>🍩<br>DONUT DROP</h1>
-            <div id="mode-btn-row" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
-              <div class="sub" style="font-size:12px;margin-bottom:4px;">甘いドーナツを並べてラインを消そう！</div>
-              <button class="btn" id="start-btn">🎮 ひとりプレイ</button>
-              <button class="btn-secondary" id="battle-btn">⚔ 対戦</button>
-            </div>
-            <div id="com-select" style="display:none;width:min(300px,88vw);">
-              <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:8px;">COMのつよさをえらんでね！</div>
-              <div class="com-level-grid" id="com-level-grid"></div>
-              <button class="btn-back" id="back-to-mode">← もどる</button>
-            </div>
-          </div>
-          <div id="gameover-section" style="display:none;"></div>
-        </div>
-      </div>
-    </div>
-    <div id="controls">
-      <button class="ctrl-btn" id="btn-rotL">↺</button>
-      <button class="ctrl-btn" id="btn-rotR">↻</button>
-      <button class="ctrl-btn large" id="btn-hold">HOLD</button>
-      <button class="ctrl-btn" id="btn-pause">⏸</button>
-      <button class="ctrl-btn" id="btn-left">◀</button>
-      <button class="ctrl-btn" id="btn-down">▼</button>
-      <button class="ctrl-btn large" id="btn-drop">DROP</button>
-      <button class="ctrl-btn" id="btn-right">▶</button>
-    </div>
-  `;
-} else {
-  app.innerHTML = `
+app.innerHTML = `
     <div id="title">🍩 <span>DONUT DROP</span> 🍩</div>
     <div id="game-wrapper">
       <div class="side-panel">
@@ -635,7 +511,6 @@ if (isMobile) {
       </div>
     </div>
   `;
-}
 
 // ════════════════════════════════════════════════════════
 // CANVAS REFERENCES
@@ -657,14 +532,12 @@ const nextCtx = nextCanvas ? nextCanvas.getContext('2d') : null;
 const holdCtx = holdCanvas ? holdCanvas.getContext('2d') : null;
 const bgCtx   = bgCanvas.getContext('2d');
 
-// バトルモード用キャンバス（PCのみ）
+// バトルモード用キャンバス
 let battleGameCanvas = null, battlePCanvas = null, battleCtx = null, battlePCtx = null;
-if (!isMobile) {
-  battleGameCanvas = document.getElementById('battle-game-canvas');
-  battlePCanvas = document.getElementById('battle-particle-canvas');
-  if (battleGameCanvas) battleCtx = battleGameCanvas.getContext('2d');
-  if (battlePCanvas) battlePCtx = battlePCanvas.getContext('2d');
-}
+battleGameCanvas = document.getElementById('battle-game-canvas');
+battlePCanvas = document.getElementById('battle-particle-canvas');
+if (battleGameCanvas) battleCtx = battleGameCanvas.getContext('2d');
+if (battlePCanvas) battlePCtx = battlePCanvas.getContext('2d');
 
 // ════════════════════════════════════════════════════════
 // DONUT TYPES
@@ -745,6 +618,7 @@ function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
 function sfxSelect()  { playTone(880,'sine',0.15,0.45); playTone(1108,'sine',0.15,0.45,0.11); playTone(1320,'sine',0.22,0.55,0.22); }
+function sfxPause()   { [[880,0],[1100,0.12]].forEach(([f,d])=>{ const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(sfxGain);o.type='sine';o.frequency.value=f;const t=audioCtx.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);}); }
 
 function startBGM() {
   if(!audioCtx||bgmStarted) return;
@@ -1027,7 +901,7 @@ function checkLines() {
     const nl=Math.floor(lines/10)+1;
     if(nl>level){level=nl;dropInterval=Math.max(100,700-(level-1)*60);sfxLevelUp();}
     if(combo>1) showCombo(combo);
-    if(!isMobile) showScorePopup(earned);
+    showScorePopup(earned);
     updateUI();
     // バトルモード時: 消した行数分だけゴミラインをCOMへ送る
     if(gameMode==='battle'){
@@ -1320,48 +1194,22 @@ function showBattleResult(win){
 
 function returnToModeSelect(){
   gameMode='solo'; gameRunning=false; comRunning=false;
-  if(!isMobile){
-    document.getElementById('battle-wrapper').style.display='none';
-    // NEXT/HOLDボックスを右side-panelの先頭に戻す
-    const sidePanel=document.getElementById('right-panel');
-    const nextBox=document.getElementById('right-next-box');
-    const holdBox=document.getElementById('right-hold-box');
-    if(sidePanel&&nextBox&&holdBox){
-      nextBox.style.cssText=''; holdBox.style.cssText='';
-      sidePanel.insertBefore(holdBox, sidePanel.firstElementChild);
-      sidePanel.insertBefore(nextBox, holdBox);
-    }
-    document.getElementById('game-wrapper').style.display='';
-    CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
-    gameCanvas.width=CW; gameCanvas.height=CH;
-    pCanvas.width=CW; pCanvas.height=CH;
-    if(nextCanvas){nextCanvas.width=NEXT_SIZE;nextCanvas.height=NEXT_SIZE;}
-    if(holdCanvas){holdCanvas.width=HOLD_W;holdCanvas.height=HOLD_H;}
-  } else {
-    // モバイル: 対戦レイアウトを元に戻す
-    document.getElementById('mobile-battle-vs-el')?.remove();
-    document.getElementById('mobile-com-board')?.remove();
-    const gameArea=document.getElementById('game-area');
-    if(gameArea) gameArea.classList.remove('battle-mode');
-    document.querySelectorAll('.mini-box').forEach(el=>el.style.display='');
-    // トップバーを元に戻す
-    const topbar=document.getElementById('topbar');
-    if(topbar) topbar.innerHTML=`
-      <div id="title-top">🍩 DONUT DROP</div>
-      <div class="top-stats">
-        <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-        <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
-        <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
-      </div>`;
-    // キャンバスサイズをソロ用に戻す
-    const topH=58,ctrlH=122,pad=18;
-    const availH=window.innerHeight-topH-ctrlH-pad;
-    const availW=window.innerWidth*0.63;
-    CELL=Math.max(18,Math.min(Math.floor(availH/ROWS),Math.floor(availW/COLS),30));
-    BATTLE_CELL=22; CW=COLS*CELL; CH=ROWS*CELL;
-    gameCanvas.width=CW; gameCanvas.height=CH;
-    pCanvas.width=CW; pCanvas.height=CH;
+  document.getElementById('battle-wrapper').style.display='none';
+  // NEXT/HOLDボックスを右side-panelの先頭に戻す
+  const sidePanel=document.getElementById('right-panel');
+  const nextBox=document.getElementById('right-next-box');
+  const holdBox=document.getElementById('right-hold-box');
+  if(sidePanel&&nextBox&&holdBox){
+    nextBox.style.cssText=''; holdBox.style.cssText='';
+    sidePanel.insertBefore(holdBox, sidePanel.firstElementChild);
+    sidePanel.insertBefore(nextBox, holdBox);
   }
+  document.getElementById('game-wrapper').style.display='';
+  CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
+  gameCanvas.width=CW; gameCanvas.height=CH;
+  pCanvas.width=CW; pCanvas.height=CH;
+  if(nextCanvas){nextCanvas.width=NEXT_SIZE;nextCanvas.height=NEXT_SIZE;}
+  if(holdCanvas){holdCanvas.width=HOLD_W;holdCanvas.height=HOLD_H;}
   // ゲームオーバー画面を隠してトップ選択画面を復元
   const gos=document.getElementById('gameover-section');
   const ts=document.getElementById('top-section');
@@ -1542,12 +1390,16 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     const eo=document.getElementById('esc-overlay');
     if(!eo) return;
-    if(eo.style.display==='flex'){ eo.style.display='none'; gamePaused=false; return; }
-    if(gameRunning){ gamePaused=true; eo.style.display='flex'; }
+    if(eo.style.display==='flex'){ eo.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; return; }
+    if(gameRunning){ gamePaused=true; if(audioCtx)sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; eo.style.display='flex'; }
     return;
   }
   if(!gameRunning) return;
-  if(e.key==='p'||e.key==='P'){gamePaused=!gamePaused;return;}
+  if(e.key==='p'||e.key==='P'){
+    if(!gamePaused){gamePaused=true;if(audioCtx)sfxPause();if(bgmGain&&!muted)bgmGain.gain.value=0;}
+    else{gamePaused=false;if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18;}
+    return;
+  }
   if(e.key==='m'||e.key==='M'){toggleMute();return;}
   if(gamePaused||!currentPiece) return;
   e.preventDefault();
@@ -1563,68 +1415,14 @@ document.addEventListener('keydown',e=>{
 // ════════════════════════════════════════════════════════
 // MOBILE TOUCH & BUTTON CONTROLS
 // ════════════════════════════════════════════════════════
-if(isMobile) {
-  // Touch swipe on canvas
-  let tx0=0,ty0=0,txL=0,tMoved=false;
-  gameCanvas.addEventListener('touchstart',e=>{
-    if(!gameRunning||gamePaused)return;
-    const t=e.touches[0]; tx0=txL=t.clientX; ty0=t.clientY; tMoved=false;
-  },{passive:true});
-  gameCanvas.addEventListener('touchmove',e=>{
-    if(!gameRunning||gamePaused||!currentPiece)return;
-    e.preventDefault();
-    const t=e.touches[0],dx=t.clientX-txL,dy=t.clientY-ty0;
-    if(Math.abs(t.clientX-tx0)>12||Math.abs(dy)>12) tMoved=true;
-    if(Math.abs(dx)>CELL*.8){
-      const dir=dx>0?1:-1, m={...currentPiece,x:currentPiece.x+dir};
-      if(!collides(m)){currentPiece=m;sfxMove();} txL=t.clientX;
-    }
-    if(dy>30) dropTimer=dropInterval;
-  },{passive:false});
-  gameCanvas.addEventListener('touchend',e=>{
-    if(!gameRunning||gamePaused||!currentPiece)return;
-    if(!tMoved){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
-    const sy=e.changedTouches[0].clientY-ty0;
-    if(sy>70){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
-  },{passive:true});
-
-  // Button helpers
-  function btnPress(id,fn) {
-    const btn=document.getElementById(id); if(!btn)return;
-    let iv=null;
-    const start=()=>{fn();iv=setInterval(fn,150);btn.classList.add('active');};
-    const stop=()=>{clearInterval(iv);iv=null;btn.classList.remove('active');};
-    btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();start();},{passive:false});
-    btn.addEventListener('touchend',e=>{e.preventDefault();stop();},{passive:false});
-    btn.addEventListener('mousedown',()=>{initAudio();start();});
-    ['mouseup','mouseleave'].forEach(ev=>btn.addEventListener(ev,stop));
-  }
-  function btnTap(id,fn) {
-    const btn=document.getElementById(id); if(!btn)return;
-    btn.addEventListener('touchstart',e=>{e.preventDefault();initAudio();fn();btn.classList.add('active');},{passive:false});
-    btn.addEventListener('touchend',e=>{e.preventDefault();btn.classList.remove('active');},{passive:false});
-    btn.addEventListener('click',()=>{initAudio();fn();});
-  }
-
-  btnPress('btn-left', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x-1};if(!collides(m)){currentPiece=m;sfxMove();} });
-  btnPress('btn-right',()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const m={...currentPiece,x:currentPiece.x+1};if(!collides(m)){currentPiece=m;sfxMove();} });
-  btnPress('btn-down', ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; dropTimer=dropInterval;score+=1;updateUI(); });
-  btnTap('btn-rotR',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,1);sfxRotate(); });
-  btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; currentPiece=rotatePiece(currentPiece,-1);sfxRotate(); });
-  btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
-  btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
-  btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
-  btnTap('btn-mute',   ()=>toggleMute());
-}
-
-// PC用ボタン（モバイルのときはDOMが存在しないので、あれば登録する）
+// PCミュートボタン
 const btnMutePc = document.getElementById('btn-mute-pc');
 if(btnMutePc) btnMutePc.addEventListener('click', ()=>{ toggleMute(); });
 
 // Esc ポップアップのボタン
 (()=>{
   const eo=document.getElementById('esc-overlay');
-  document.getElementById('esc-cancel')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; });
+  document.getElementById('esc-cancel')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
   document.getElementById('esc-yes')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; returnToModeSelect(); });
 })();
 
@@ -1695,15 +1493,6 @@ if(btnSettingsPc && settingsOverlay){
   }
 }
 
-// モバイル設定ボタン
-const btnSettingsM = document.getElementById('btn-settings-m');
-if(btnSettingsM && settingsOverlay){
-  btnSettingsM.addEventListener('click',()=>{
-    if(bgmSlider){ const p=Math.round(bgmVolume*100); bgmSlider.value=p; bgmValLabel.textContent=p+'%'; }
-    if(sfxSlider){ const p=Math.round(sfxVolume*100); sfxSlider.value=p; sfxValLabel.textContent=p+'%'; }
-    settingsOverlay.style.display='flex';
-  });
-}
 
 // ════════════════════════════════════════════════════════
 // OVERLAY ボタンイベント (モード選択)
@@ -1774,21 +1563,13 @@ function setupOverlayButtons(){
 function resetGame() {
   if(gameMode==='battle'){
     comRunning=false;
-    if(!isMobile){
-      const bw=document.getElementById('battle-wrapper');
-      const gw=document.getElementById('game-wrapper');
-      if(bw) bw.style.display='none';
-      if(gw) gw.style.display='flex';
-      CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
-      gameCanvas.width=CW; gameCanvas.height=CH;
-      pCanvas.width=CW; pCanvas.height=CH;
-    } else {
-      document.getElementById('mobile-battle-vs-el')?.remove();
-      document.getElementById('mobile-com-board')?.remove();
-      const gameArea=document.getElementById('game-area');
-      if(gameArea) gameArea.classList.remove('battle-mode');
-      document.querySelectorAll('.side-mini').forEach(el=>el.style.display='');
-    }
+    const bw=document.getElementById('battle-wrapper');
+    const gw=document.getElementById('game-wrapper');
+    if(bw) bw.style.display='none';
+    if(gw) gw.style.display='flex';
+    CELL=30; CW=COLS*CELL; CH=ROWS*CELL;
+    gameCanvas.width=CW; gameCanvas.height=CH;
+    pCanvas.width=CW; pCanvas.height=CH;
     gameMode='solo';
   }
   gameRunning=false;
@@ -1816,73 +1597,30 @@ function startBattleMode(lv){
   comDropInterval=COM_INFO[lv].interval;
 
   // バトルレイアウトに切替（PCのみ）
-  if(!isMobile){
-    const gw=document.getElementById('game-wrapper');
-    const bw=document.getElementById('battle-wrapper');
-    if(gw) gw.style.display='none';
-    if(bw) bw.style.display='flex';
-    CELL=BATTLE_CELL; CW=COLS*CELL; CH=ROWS*CELL;
-    if(battleGameCanvas){ battleGameCanvas.width=CW; battleGameCanvas.height=CH; }
-    if(battlePCanvas){ battlePCanvas.width=CW; battlePCanvas.height=CH; }
-    const cc=document.getElementById('com-canvas');
-    if(cc){ cc.width=CW; cc.height=CH; }
-    const cn=document.getElementById('com-name-display');
-    if(cn) cn.textContent=COM_INFO[lv].emoji+' '+COM_INFO[lv].name;
-    // NEXT/HOLDボックスをbattle-player-miniに移動＆サイズ縮小
-    const bNS=70, bHW=70, bHH=55;
-    if(nextCanvas){nextCanvas.width=bNS;nextCanvas.height=bNS;}
-    if(holdCanvas){holdCanvas.width=bHW;holdCanvas.height=bHH;}
-    const bpm=document.getElementById('battle-player-mini');
-    const nextBox=document.getElementById('right-next-box');
-    const holdBox=document.getElementById('right-hold-box');
-    if(bpm && nextBox && holdBox){
-      bpm.innerHTML='';
-      nextBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
-      holdBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
-      bpm.appendChild(nextBox);
-      bpm.appendChild(holdBox);
-    }
-  } else {
-    // モバイル: ゲームエリアに対戦レイアウトを構築
-    const mbc=Math.max(14,Math.min(19,Math.floor((window.innerWidth-24-52)/(COLS*2+1))));
-    BATTLE_CELL=mbc; CELL=mbc; CW=COLS*mbc; CH=ROWS*mbc;
-    gameCanvas.width=CW; gameCanvas.height=CH;
-    pCanvas.width=CW; pCanvas.height=CH;
-    document.querySelectorAll('.mini-box').forEach(el=>{
-      const lbl=el.querySelector('.lbl');
-      if(lbl&&lbl.textContent==='COMBO') el.style.display='none';
-    });
-    // トップバーを対戦用に
-    const topbar=document.getElementById('topbar');
-    if(topbar) topbar.innerHTML=`
-      <div class="battle-topbar">
-        <div class="battle-stat">
-          <span class="battle-lbl">YOU</span>
-          <span class="battle-val" id="score-display">0</span>
-        </div>
-        <div class="battle-vs">⚔️</div>
-        <div class="battle-stat" style="text-align:right;">
-          <span class="battle-lbl">${COM_INFO[lv].emoji} ${COM_INFO[lv].name}</span>
-          <span class="battle-val" id="com-battle-score">0</span>
-        </div>
-      </div>`;
-    // ゲームエリアにVSコラムとCOMキャンバスを追加
-    document.getElementById('mobile-battle-vs-el')?.remove();
-    document.getElementById('mobile-com-board')?.remove();
-    const gameArea=document.getElementById('game-area');
-    if(gameArea){
-      gameArea.classList.add('battle-mode');
-      const vsEl=document.createElement('div');
-      vsEl.className='mobile-battle-vs'; vsEl.id='mobile-battle-vs-el';
-      vsEl.innerHTML='⚔️<span class="vs-label">VS</span>';
-      const comDiv=document.createElement('div');
-      comDiv.id='mobile-com-board'; comDiv.style.cssText='position:relative;flex-shrink:0;';
-      const comCvs=document.createElement('canvas');
-      comCvs.id='com-canvas'; comCvs.width=CW; comCvs.height=CH;
-      comDiv.appendChild(comCvs);
-      gameArea.appendChild(vsEl);
-      gameArea.appendChild(comDiv);
-    }
+  const gw=document.getElementById('game-wrapper');
+  const bw=document.getElementById('battle-wrapper');
+  if(gw) gw.style.display='none';
+  if(bw) bw.style.display='flex';
+  CELL=BATTLE_CELL; CW=COLS*CELL; CH=ROWS*CELL;
+  if(battleGameCanvas){ battleGameCanvas.width=CW; battleGameCanvas.height=CH; }
+  if(battlePCanvas){ battlePCanvas.width=CW; battlePCanvas.height=CH; }
+  const cc=document.getElementById('com-canvas');
+  if(cc){ cc.width=CW; cc.height=CH; }
+  const cn=document.getElementById('com-name-display');
+  if(cn) cn.textContent=COM_INFO[lv].emoji+' Lv'+lv+' '+COM_INFO[lv].name;
+  // NEXT/HOLDボックスをbattle-player-miniに移動＆サイズ縮小
+  const bNS=70, bHW=70, bHH=55;
+  if(nextCanvas){nextCanvas.width=bNS;nextCanvas.height=bNS;}
+  if(holdCanvas){holdCanvas.width=bHW;holdCanvas.height=bHH;}
+  const bpm=document.getElementById('battle-player-mini');
+  const nextBox=document.getElementById('right-next-box');
+  const holdBox=document.getElementById('right-hold-box');
+  if(bpm && nextBox && holdBox){
+    bpm.innerHTML='';
+    nextBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
+    holdBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';
+    bpm.appendChild(nextBox);
+    bpm.appendChild(holdBox);
   }
 
   // COMグリッド初期化
@@ -1943,7 +1681,7 @@ if(initStartBtn) initStartBtn.addEventListener('click',()=>{ initAudio(); sfxSel
 // オーバーレイボタン初期セットアップ（PC・モバイル共通）
 setupOverlayButtons();
 // モバイルの初期レベルグリッドを描画
-if(isMobile){ const g=document.getElementById('com-level-grid'); if(g) g.innerHTML=buildLevelBtnsHTML(); }
+const g=document.getElementById('com-level-grid'); if(g) g.innerHTML=buildLevelBtnsHTML();
 
 // Background loop (always running)
 (function bgLoop(){drawBg();requestAnimationFrame(bgLoop);})();

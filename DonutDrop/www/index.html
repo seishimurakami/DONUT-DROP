@@ -126,27 +126,22 @@ body::before {
 }
 
 [data-mode="mobile"] #topbar {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  /* iPhoneのノッチ分だけ上にスペースを足す */
-  padding: max(8px, var(--safe-top)) 12px 4px;
+  width: 100%; display: flex; align-items: center; justify-content: center;
+  padding: max(6px, var(--safe-top)) 12px 4px;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,107,205,0.2);
   flex-shrink: 0;
 }
 [data-mode="mobile"] #title-top {
-  font-size: 17px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
+  font-size: 16px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
 }
-[data-mode="mobile"] .top-stats { display: flex; gap: 12px; align-items: center; }
-[data-mode="mobile"] .stat-mini { text-align: center; line-height: 1.1; }
-[data-mode="mobile"] .stat-mini .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 2px; display: block; }
-[data-mode="mobile"] .stat-mini .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.6); }
 
 [data-mode="mobile"] #game-area {
   display: flex; align-items: flex-start; justify-content: center;
-  gap: 8px; flex: 1; padding: 6px 4px 2px; min-height: 0;
+  gap: 6px; flex: 1; padding: 5px 4px 2px; min-height: 0;
 }
 [data-mode="mobile"] #game-area.battle-mode {
-  align-items: center; justify-content: center; gap: 12px;
+  align-items: flex-start; justify-content: center; gap: 4px; padding: 4px 4px 2px;
 }
 .battle-vs-col {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -155,32 +150,32 @@ body::before {
 .battle-vs-col .vs-label {
   font-size: 8px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase;
 }
-[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; width: 66px; }
 [data-mode="mobile"] .mini-box {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
-  border-radius: 10px; padding: 6px 8px; text-align: center; min-width: 60px;
+  border-radius: 10px; padding: 5px 5px; text-align: center; min-width: 0;
 }
-[data-mode="mobile"] .mini-box .lbl { font-size: 8px; color: var(--accent3); letter-spacing: 1.5px; display: block; margin-bottom: 2px; }
-[data-mode="mobile"] .mini-box .val { font-size: 17px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
+[data-mode="mobile"] .mini-box .lbl { font-size: 7px; color: var(--accent3); letter-spacing: 1px; display: block; margin-bottom: 1px; }
+[data-mode="mobile"] .mini-box .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
 [data-mode="mobile"] #game-canvas { border-width: 1.5px; border-radius: 10px; }
 
 [data-mode="mobile"] #controls {
   width: 100%; display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 50px) 32px;
+  grid-template-rows: repeat(2, 50px);
   gap: 5px;
-  padding: 5px 8px max(26px, calc(var(--safe-bottom) + 2px));
+  padding: 5px 8px max(22px, calc(var(--safe-bottom) + 2px));
   flex-shrink: 0;
 }
-[data-mode="mobile"] .menu-icon-row { display:flex; gap:5px; justify-content:center; margin:5px 0 4px; }
+[data-mode="mobile"] .menu-icon-row { display:flex; gap:4px; justify-content:center; margin:4px 0 3px; }
 [data-mode="mobile"] .menu-icon-btn {
   background:rgba(255,107,205,0.12); border:1px solid rgba(255,107,205,0.3);
-  border-radius:8px; width:26px; height:26px; font-size:14px;
+  border-radius:7px; width:24px; height:24px; font-size:13px;
   display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
 }
 [data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
 [data-mode="mobile"] .menu-mini-link {
-  display:block; font-size:9px; color:rgba(255,255,255,0.5);
+  display:block; font-size:8px; color:rgba(255,255,255,0.5);
   text-decoration:none; padding:2px 0; text-align:center; transition:color .2s;
 }
 #copyright {
@@ -191,18 +186,6 @@ body::before {
   pointer-events: none;
 }
 #copyright a { color: rgba(255,255,255,0.7); text-decoration: none; pointer-events: auto; }
-[data-mode="mobile"] #btn-menu-ctrl {
-  grid-column: 1 / -1;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  font-size: 13px; color: rgba(255,255,255,0.55);
-  font-family: ui-rounded,-apple-system,sans-serif;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-[data-mode="mobile"] #btn-menu-ctrl:active {
-  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
-}
 [data-mode="mobile"] .ctrl-btn {
   background: rgba(255,107,205,0.1); border: 1.5px solid rgba(255,107,205,0.35);
   border-radius: 12px; display: flex; align-items: center; justify-content: center;
@@ -458,18 +441,19 @@ let CELL, CW, CH, NEXT_SIZE, HOLD_W, HOLD_H;
 
 const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top')) || 0;
 const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')) || 0;
-const topH = 58 + Math.max(0, safeTop - 8);
-const ctrlH = 142 + Math.max(0, safeBottom - 10);
-const pad = 18;
+const topH = 40 + Math.max(0, safeTop - 8);
+const ctrlH = 120 + Math.max(0, safeBottom - 10);
+const pad = 12;
+const sideW = 66; // side-miniの幅
 const availH = window.innerHeight - topH - ctrlH - pad;
-const availW = window.innerWidth * 0.63;
-CELL = Math.max(18, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 30));
+const availW = window.innerWidth - sideW - 16;
+CELL = Math.max(20, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 32));
 NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
 
 CW = COLS * CELL;
 CH = ROWS * CELL;
-// BATTLE_CELLはNEXT/HOLDパネル幅(52px)を考慮して計算
-let BATTLE_CELL = Math.max(12, Math.min(16, Math.floor((window.innerWidth - 24 - 52) / (COLS * 2 + 1))));
+// BATTLE_CELL: VSなし・side-miniなしで全幅使用
+let BATTLE_CELL = Math.max(15, Math.min(20, Math.floor((window.innerWidth - 20) / (COLS * 2))));
 let BCW = COLS * BATTLE_CELL, BCH = ROWS * BATTLE_CELL;
 
 // ════════════════════════════════════════════════════════
@@ -480,17 +464,26 @@ const app = document.getElementById('app');
 app.innerHTML = `
   <div id="topbar">
     <div id="title-top">🍩 DONUT DROP</div>
-    <div class="top-stats">
-      <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-      <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
-      <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
-    </div>
   </div>
   <div id="game-area">
     <div class="side-mini">
-      <div class="mini-box"><span class="lbl">NEXT</span><canvas id="next-canvas"></canvas></div>
-      <div class="mini-box"><span class="lbl">HOLD</span><canvas id="hold-canvas"></canvas></div>
-      <div class="mini-box"><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+      <div class="mini-box">
+        <span class="lbl">SCORE</span>
+        <span class="val" id="score-display">0</span>
+      </div>
+      <div class="mini-box">
+        <span class="lbl">SPEED</span>
+        <span class="val" id="level-display">1</span>
+        <div style="margin-top:3px;height:3px;background:rgba(255,107,205,0.18);border-radius:2px;overflow:hidden;">
+          <div id="level-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent));border-radius:2px;transition:width .3s;"></div>
+        </div>
+      </div>
+      <div class="mini-box">
+        <div style="display:flex;justify-content:space-around;">
+          <div><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
+          <div><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
+        </div>
+      </div>
       <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
         <span class="lbl">MENU</span>
         <div class="menu-icon-row">
@@ -504,6 +497,10 @@ app.innerHTML = `
     <div style="position:relative;flex-shrink:0;">
       <canvas id="game-canvas"></canvas>
       <canvas id="particle-canvas"></canvas>
+      <div style="display:none;position:absolute;">
+        <canvas id="next-canvas"></canvas>
+        <canvas id="hold-canvas"></canvas>
+      </div>
       <div id="overlay">
         <h1>🍩<br>DONUT DROP</h1>
         <div id="mode-select" class="mode-select-btns">
@@ -528,9 +525,8 @@ app.innerHTML = `
     <button class="ctrl-btn" id="btn-down">▼</button>
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
-    <button id="btn-menu-ctrl">🏠 メニューにもどる</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.7</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.0</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -624,6 +620,7 @@ function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'squar
 function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); haptic('gameOver'); }
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
+function sfxPause()   { if(!audioCtx) return; [[880,0],[1100,0.12]].forEach(([f,d])=>{ const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(sfxGain);o.type='sine';o.frequency.value=f;const t=audioCtx.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);}); }
 
 // ── 設定（localStorage で保存） ──────────────────────────────
 let bgmVolume    = parseFloat(localStorage.getItem('bgmVolume')    ?? '0.7');
@@ -1184,6 +1181,7 @@ function updateUI() {
   const sd=document.getElementById('score-display'); if(sd)sd.textContent=score.toLocaleString();
   const ld=document.getElementById('level-display'); if(ld)ld.textContent=level;
   const li=document.getElementById('lines-display'); if(li)li.textContent=lines;
+  const lb=document.getElementById('level-bar'); if(lb)lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
 }
 
@@ -1269,20 +1267,16 @@ btnTap('btn-rotL',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; cu
 btnTap('btn-settings', ()=>{ openSettings(); });
 btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI(); });
 btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
-btnTap('btn-pause',  ()=>{ if(!gameRunning)return; gamePaused=!gamePaused; const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸'; });
+btnTap('btn-pause',  ()=>{
+  if(!gameRunning)return;
+  if(!gamePaused){ gamePaused=true; sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; }
+  else{ gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; }
+  const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸';
+});
 btnTap('btn-mute',   ()=>toggleMute());
 
-// MENU ボタン（ゲーム中にトップへもどる）
-// MENU ボタン → 確認ダイアログを表示
-const menuCtrlBtn=document.getElementById('btn-menu-ctrl');
 const escOverlay=document.getElementById('esc-overlay');
-function showEscDialog(){ if(escOverlay){ gamePaused=true; escOverlay.style.display='flex'; } }
-if(menuCtrlBtn){
-  menuCtrlBtn.addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});
-  menuCtrlBtn.addEventListener('touchend',e=>{ e.preventDefault(); showEscDialog(); },{passive:false});
-  menuCtrlBtn.addEventListener('click',()=>{ showEscDialog(); });
-}
-document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; });
+document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
 document.getElementById('esc-yes')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; sfxGameOver(); resetToTop(); });
 
 // ════════════════════════════════════════════════════════
@@ -1349,22 +1343,22 @@ function endGame(playerWon=false) {
 
 function resetToTop(){
   gameRunning=false;comRunning=false;gameMode='solo';cCtx=null;
-  CELL=Math.max(18,Math.min(Math.floor(availH/ROWS),Math.floor(availW/COLS),30));
+  CELL=Math.max(20,Math.min(Math.floor(availH/ROWS),Math.floor(availW/COLS),32));
   CW=COLS*CELL;CH=ROWS*CELL;
   gameCanvas.width=CW;gameCanvas.height=CH;
   pCanvas.width=CW;pCanvas.height=CH;
   const topbar=document.getElementById('topbar');
-  if(topbar) topbar.innerHTML=`
-    <div id="title-top">🍩 DONUT DROP</div>
-    <div class="top-stats">
-      <div class="stat-mini"><span class="lbl">SCORE</span><span class="val" id="score-display">0</span></div>
-      <div class="stat-mini"><span class="lbl">SPEED</span><span class="val" id="level-display">1</span></div>
-      <div class="stat-mini"><span class="lbl">LINES</span><span class="val" id="lines-display">0</span></div>
-    </div>`;
+  if(topbar) topbar.innerHTML=`<div id="title-top">🍩 DONUT DROP</div>`;
   const comArea=document.getElementById('com-board-area');if(comArea)comArea.remove();
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea) gameArea.classList.remove('battle-mode');
+  // side-miniを元の位置（game-area内）に戻す
+  const sideMini=document.querySelector('.side-mini');
+  if(sideMini&&gameArea){
+    gameArea.insertBefore(sideMini,gameArea.firstChild);
+    sideMini.style.cssText='';
+  }
   document.querySelectorAll('.mini-box').forEach(el=>el.style.display='');
   document.getElementById('battle-result').style.display='none';
   showTopOverlay();
@@ -1429,12 +1423,6 @@ function startBattleMode(lv){
   gameCanvas.width=CW;gameCanvas.height=CH;
   pCanvas.width=CW;pCanvas.height=CH;
 
-  // 対戦時: NEXT/HOLDは表示、COMBOボックスだけ隠す
-  document.querySelectorAll('.mini-box').forEach(el=>{
-    const lbl=el.querySelector('.lbl');
-    if(lbl&&lbl.textContent==='COMBO') el.style.display='none';
-  });
-
   // トップバーを対戦用に変更
   const topbar=document.getElementById('topbar');
   if(topbar) topbar.innerHTML=`
@@ -1445,27 +1433,36 @@ function startBattleMode(lv){
       </div>
       <div class="battle-vs">⚔️</div>
       <div class="battle-stat" style="text-align:right;">
-        <span class="battle-lbl">${COM_INFO[lv].emoji} ${COM_INFO[lv].name}</span>
+        <span class="battle-lbl">${COM_INFO[lv].emoji} Lv${lv} ${COM_INFO[lv].name}</span>
         <span class="battle-val" id="com-score-display">0</span>
       </div>
     </div>`;
 
-  // COMボードキャンバスを追加
+  // side-miniを画面下部（controls上）に移動して横並びに
+  const sideMini=document.querySelector('.side-mini');
+  const controls=document.getElementById('controls');
+  if(sideMini&&controls){
+    app.insertBefore(sideMini,controls);
+    sideMini.style.cssText='flex-direction:row;justify-content:space-around;align-items:center;width:100%;padding:2px 8px;flex-shrink:0;gap:5px;box-sizing:border-box;';
+    // SCOREはtopbarにあるので隠す
+    document.querySelectorAll('.mini-box').forEach(el=>{
+      const lbl=el.querySelector('.lbl');
+      if(lbl&&lbl.textContent==='SCORE') el.style.display='none';
+    });
+  }
+
+  // COMボードキャンバスを追加（VSなし）
   const old=document.getElementById('com-board-area');if(old)old.remove();
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea){
     gameArea.classList.add('battle-mode');
-    const vsEl=document.createElement('div');
-    vsEl.className='battle-vs-col'; vsEl.id='battle-vs-el';
-    vsEl.innerHTML='⚔️<span class="vs-label">VS</span>';
     const comDiv=document.createElement('div');
     comDiv.id='com-board-area';
     comDiv.style.cssText='position:relative;flex-shrink:0;';
     const comCvs=document.createElement('canvas');
     comCvs.id='com-canvas';comCvs.width=BCW;comCvs.height=BCH;
     comDiv.appendChild(comCvs);
-    gameArea.appendChild(vsEl);
     gameArea.appendChild(comDiv);
     cCtx=comCvs.getContext('2d');
   }
