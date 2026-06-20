@@ -378,7 +378,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.2</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -490,7 +490,7 @@ app.innerHTML = `
     </div>
     <div id="battle-wrapper">
       <div class="battle-side">
-        <div class="battle-head">PLAYER</div>
+        <div class="battle-head">YOU</div>
         <div style="display:flex;gap:8px;align-items:flex-start;">
           <div id="battle-player-mini" style="display:flex;flex-direction:column;gap:6px;"></div>
           <div style="position:relative;">
@@ -1371,8 +1371,8 @@ function gameLoop(ts) {
   drawGrid(); drawCurrentPiece(); dc.restore();
   updateParticles(); drawParticles(); drawNext();
 
-  // COM tick (バトルモード時のみ)
-  if(gameMode==='battle' && comRunning){
+  // COM tick (バトルモード時のみ・ポーズ中は停止)
+  if(gameMode==='battle' && comRunning && !gamePaused){
     comTick(dt);
     // ゴミライン送付
     if(pendingGarbageForPlayer>0){ addGarbageToGrid(grid,pendingGarbageForPlayer); pendingGarbageForPlayer=0; }

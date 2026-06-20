@@ -534,7 +534,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.1</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.2</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1363,6 +1363,25 @@ function resetToTop(){
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea) gameArea.classList.remove('battle-mode');
+  // battle-player-colをアンラップしてNEXT/HOLDを元の場所に戻す
+  const playerCol=document.getElementById('battle-player-col');
+  if(playerCol&&gameArea){
+    const nextEl=document.getElementById('next-canvas');
+    const holdEl=document.getElementById('hold-canvas');
+    // まずNEXT/HOLDキャンバスをmini-boxに戻す
+    document.querySelectorAll('.mini-box').forEach(el=>{
+      const lbl=el.querySelector('.lbl');
+      if(lbl&&lbl.textContent==='NEXT'&&nextEl) el.appendChild(nextEl);
+      if(lbl&&lbl.textContent==='HOLD'&&holdEl) el.appendChild(holdEl);
+    });
+    // キャンバスラッパーをgameAreaに戻す
+    const canvasWr=gameCanvas.parentElement;
+    gameArea.insertBefore(canvasWr,playerCol);
+    playerCol.remove();
+    // サイズを元に戻す
+    NEXT_SIZE=54; nextEl.width=NEXT_SIZE; nextEl.height=NEXT_SIZE;
+    HOLD_W=54; HOLD_H=44; holdEl.width=HOLD_W; holdEl.height=HOLD_H;
+  }
   // side-miniを元の位置（game-area内）に戻す
   const sideMini=document.querySelector('.side-mini');
   if(sideMini&&gameArea){
@@ -1461,12 +1480,38 @@ function startBattleMode(lv){
     });
   }
 
+  // NEXT/HOLDをプレイキャンバスの上部に移動
+  const nextEl=document.getElementById('next-canvas');
+  const holdEl=document.getElementById('hold-canvas');
+  const battleNS=42; const battleHW=42; const battleHH=34;
+  nextEl.width=battleNS; nextEl.height=battleNS;
+  holdEl.width=battleHW; holdEl.height=battleHH;
+  const canvasWrapper=gameCanvas.parentElement;
+  const playerCol=document.createElement('div');
+  playerCol.id='battle-player-col';
+  playerCol.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;';
+  const nhRow=document.createElement('div');
+  nhRow.id='battle-nh-row';
+  nhRow.style.cssText='display:flex;gap:4px;width:100%;';
+  const mkNH=(lbl,cvs)=>{
+    const d=document.createElement('div');
+    d.style.cssText='flex:1;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,107,205,0.25);border-radius:6px;padding:2px;';
+    const l=document.createElement('div');
+    l.style.cssText='font-size:7px;color:var(--accent3);letter-spacing:1px;margin-bottom:1px;';
+    l.textContent=lbl; d.appendChild(l); d.appendChild(cvs); return d;
+  };
+  nhRow.appendChild(mkNH('NEXT',nextEl));
+  nhRow.appendChild(mkNH('HOLD',holdEl));
+  playerCol.appendChild(nhRow);
+  playerCol.appendChild(canvasWrapper);
+
   // COMボードキャンバスを追加（VSなし）
   const old=document.getElementById('com-board-area');if(old)old.remove();
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea){
     gameArea.classList.add('battle-mode');
+    gameArea.insertBefore(playerCol,gameArea.firstChild);
     const comDiv=document.createElement('div');
     comDiv.id='com-board-area';
     comDiv.style.cssText='position:relative;flex-shrink:0;';
