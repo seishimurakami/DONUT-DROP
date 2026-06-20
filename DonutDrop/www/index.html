@@ -84,6 +84,23 @@ body::before {
 .btn:active { transform: scale(0.97); }
 @keyframes btnPop { 0%,100%{transform:scale(1);} 50%{transform:scale(1.03);} }
 
+/* ── Pause banner ── */
+#pause-banner {
+  display: none; position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(-6deg);
+  font-family: 'Fredoka One', cursive; font-size: 58px;
+  color: var(--accent); text-shadow: 0 0 30px rgba(255,107,205,0.9), 3px 3px 0 #000;
+  pointer-events: none; z-index: 950; white-space: nowrap;
+}
+#pause-banner.visible {
+  display: block;
+  animation: pausePop 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes pausePop {
+  0%   { transform: translate(-50%,-50%) rotate(-6deg) scale(0.2); opacity: 0; }
+  100% { transform: translate(-50%,-50%) rotate(-6deg) scale(1);   opacity: 1; }
+}
+
 /* ── Combo flash (shared) ── */
 #combo-flash {
   position: fixed; top: 50%; left: 50%;
@@ -361,6 +378,7 @@ body::before {
 <div class="scanlines"></div>
 <canvas id="bg-canvas"></canvas>
 <div id="combo-flash"></div>
+<div id="pause-banner">ポ〜ズぅ</div>
 <div id="score-popup"></div>
 <div id="app"></div>
 
@@ -537,7 +555,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.6</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.7</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1210,6 +1228,9 @@ function updateUI() {
   const hc=document.getElementById('hicombo-display'); if(hc)hc.textContent=hiCombo.toLocaleString()+'x';
 }
 
+function showPauseBanner(){const b=document.getElementById('pause-banner');if(b){b.className='';void b.offsetWidth;b.className='visible';}}
+function hidePauseBanner(){const b=document.getElementById('pause-banner');if(b)b.className='';}
+
 let comboTO=null;
 function showCombo(n) {
   const el=document.getElementById('combo-flash');
@@ -1294,15 +1315,15 @@ btnTap('btn-drop',   ()=>{ if(!gameRunning||gamePaused||!currentPiece)return; co
 btnTap('btn-hold',   ()=>{ if(!gameRunning||gamePaused)return; holdPiece(); });
 btnTap('btn-pause',  ()=>{
   if(!gameRunning)return;
-  if(!gamePaused){ gamePaused=true; sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; }
-  else{ gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; }
+  if(!gamePaused){ gamePaused=true; sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; showPauseBanner(); }
+  else{ gamePaused=false; hidePauseBanner(); if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; }
   const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸';
 });
 btnTap('btn-mute',   ()=>toggleMute());
 
 const escOverlay=document.getElementById('esc-overlay');
-document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
-document.getElementById('esc-yes')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; sfxGameOver(); resetToTop(); });
+document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; hidePauseBanner(); if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
+document.getElementById('esc-yes')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; hidePauseBanner(); sfxGameOver(); resetToTop(); });
 
 // ════════════════════════════════════════════════════════
 // START / END

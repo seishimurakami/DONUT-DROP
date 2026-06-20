@@ -132,6 +132,23 @@ body::before {
 }
 .btn-back:hover { color: white; border-color: rgba(255,255,255,0.6); }
 
+/* ── Pause banner ── */
+#pause-banner {
+  display: none; position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) rotate(-6deg);
+  font-family: 'Fredoka One', cursive; font-size: 80px;
+  color: var(--accent); text-shadow: 0 0 40px rgba(255,107,205,0.9), 4px 4px 0 #000;
+  pointer-events: none; z-index: 950; white-space: nowrap;
+}
+#pause-banner.visible {
+  display: block;
+  animation: pausePop 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes pausePop {
+  0%   { transform: translate(-50%,-50%) rotate(-6deg) scale(0.2); opacity: 0; }
+  100% { transform: translate(-50%,-50%) rotate(-6deg) scale(1);   opacity: 1; }
+}
+
 /* ── Combo flash (shared) ── */
 #combo-flash {
   position: fixed; top: 50%; left: 50%;
@@ -255,7 +272,7 @@ body::before {
 
 /* Battle Mode */
 #battle-wrapper { display:none; gap:20px; justify-content:center; align-items:flex-start; padding:10px 16px; }
-.battle-side { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.battle-side { display:flex; flex-direction:row; align-items:flex-start; gap:8px; }
 .battle-head { font-size:11px; letter-spacing:3px; color:var(--accent3); text-transform:uppercase; }
 .battle-scorebox { font-size:11px; color:rgba(255,255,255,.5); text-align:center; }
 .battle-scorebox b { display:block; font-size:20px; color:var(--accent2); }
@@ -324,6 +341,7 @@ body::before {
 <div class="scanlines"></div>
 <canvas id="bg-canvas"></canvas>
 <div id="combo-flash"></div>
+<div id="pause-banner">ポ〜ズぅ</div>
 <div id="score-popup"></div>
 <div id="settings-overlay">
   <div id="settings-card">
@@ -377,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.6</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.7</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -493,23 +511,25 @@ app.innerHTML = `
     </div>
     <div id="battle-wrapper">
       <div class="battle-side">
-        <div class="battle-head">YOU</div>
-        <div style="display:flex;gap:8px;align-items:flex-start;">
-          <div id="battle-player-mini" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <div id="battle-player-mini" style="display:flex;flex-direction:column;gap:6px;align-self:flex-start;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="battle-head">YOU</div>
+          <div class="battle-scorebox"><b id="player-battle-score">0</b></div>
           <div style="position:relative;">
             <canvas id="battle-game-canvas"></canvas>
             <canvas id="battle-particle-canvas"></canvas>
           </div>
         </div>
-        <div class="battle-scorebox"><b id="player-battle-score">0</b></div>
       </div>
       <div id="battle-vs-col">
         <div id="battle-vs">VS</div>
       </div>
       <div class="battle-side">
-        <div class="battle-head" id="com-name-display">COM</div>
-        <canvas id="com-canvas"></canvas>
-        <div class="battle-scorebox"><b id="com-battle-score">0</b></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="battle-head" id="com-name-display">COM</div>
+          <div class="battle-scorebox"><b id="com-battle-score">0</b></div>
+          <canvas id="com-canvas"></canvas>
+        </div>
       </div>
     </div>
   `;
@@ -1343,6 +1363,9 @@ function updateUI() {
   if(pbs) pbs.textContent=score.toLocaleString();
 }
 
+function showPauseBanner(){const b=document.getElementById('pause-banner');if(b){b.className='';void b.offsetWidth;b.className='visible';}}
+function hidePauseBanner(){const b=document.getElementById('pause-banner');if(b)b.className='';}
+
 let comboTO=null;
 function showCombo(n) {
   const el=document.getElementById('combo-flash');
@@ -1402,14 +1425,14 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     const eo=document.getElementById('esc-overlay');
     if(!eo) return;
-    if(eo.style.display==='flex'){ eo.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; return; }
-    if(gameRunning){ gamePaused=true; if(audioCtx)sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; eo.style.display='flex'; }
+    if(eo.style.display==='flex'){ eo.style.display='none'; gamePaused=false; hidePauseBanner(); if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; return; }
+    if(gameRunning){ gamePaused=true; if(audioCtx)sfxPause(); if(bgmGain&&!muted)bgmGain.gain.value=0; showPauseBanner(); eo.style.display='flex'; }
     return;
   }
   if(!gameRunning) return;
   if(e.key==='p'||e.key==='P'){
-    if(!gamePaused){gamePaused=true;if(audioCtx)sfxPause();if(bgmGain&&!muted)bgmGain.gain.value=0;}
-    else{gamePaused=false;if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18;}
+    if(!gamePaused){gamePaused=true;if(audioCtx)sfxPause();if(bgmGain&&!muted)bgmGain.gain.value=0;showPauseBanner();}
+    else{gamePaused=false;hidePauseBanner();if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18;}
     return;
   }
   if(e.key==='m'||e.key==='M'){toggleMute();return;}
@@ -1434,8 +1457,8 @@ if(btnMutePc) btnMutePc.addEventListener('click', ()=>{ toggleMute(); });
 // Esc ポップアップのボタン
 (()=>{
   const eo=document.getElementById('esc-overlay');
-  document.getElementById('esc-cancel')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
-  document.getElementById('esc-yes')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; returnToModeSelect(); });
+  document.getElementById('esc-cancel')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; hidePauseBanner(); if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
+  document.getElementById('esc-yes')?.addEventListener('click',()=>{ eo.style.display='none'; gamePaused=false; hidePauseBanner(); returnToModeSelect(); });
 })();
 
 // Settings
