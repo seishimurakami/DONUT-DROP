@@ -458,7 +458,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.6</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.8.7</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -1468,9 +1468,9 @@ function drawHold() {
 // UI UPDATES
 // ════════════════════════════════════════════════════════
 function updateUI() {
-  document.getElementById('score-display').textContent=score.toLocaleString();
-  document.getElementById('level-display').textContent=level;
-  document.getElementById('lines-display').textContent=lines;
+  const _sd=document.getElementById('score-display'); if(_sd) _sd.textContent=score.toLocaleString();
+  const _ld=document.getElementById('level-display'); if(_ld) _ld.textContent=level;
+  const _nd=document.getElementById('lines-display'); if(_nd) _nd.textContent=lines;
   const lb=document.getElementById('level-bar');
   if(lb) lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){
