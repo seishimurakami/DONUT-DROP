@@ -444,11 +444,11 @@ const safeBottom = parseFloat(getComputedStyle(document.documentElement).getProp
 const topH = 40 + Math.max(0, safeTop - 8);
 const ctrlH = 120 + Math.max(0, safeBottom - 10);
 const pad = 12;
-const sideW = 66; // side-miniの幅
+const sideW = 74; // side-miniの幅
 const availH = window.innerHeight - topH - ctrlH - pad;
 const availW = window.innerWidth - sideW - 16;
-CELL = Math.max(20, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 32));
-NEXT_SIZE = 60; HOLD_W = 60; HOLD_H = 50;
+CELL = Math.max(20, Math.min(Math.floor(availH / ROWS), Math.floor(availW / COLS), 31));
+NEXT_SIZE = 54; HOLD_W = 54; HOLD_H = 44;
 
 CW = COLS * CELL;
 CH = ROWS * CELL;
@@ -468,6 +468,14 @@ app.innerHTML = `
   <div id="game-area">
     <div class="side-mini">
       <div class="mini-box">
+        <span class="lbl">NEXT</span>
+        <canvas id="next-canvas" style="display:block;margin:2px auto 0;"></canvas>
+      </div>
+      <div class="mini-box">
+        <span class="lbl">HOLD</span>
+        <canvas id="hold-canvas" style="display:block;margin:2px auto 0;"></canvas>
+      </div>
+      <div class="mini-box">
         <span class="lbl">SCORE</span>
         <span class="val" id="score-display">0</span>
       </div>
@@ -484,6 +492,10 @@ app.innerHTML = `
           <div><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
         </div>
       </div>
+      <div class="mini-box">
+        <span class="lbl">BEST</span>
+        <span class="val" id="hiscore-display" style="font-size:11px;">0</span>
+      </div>
       <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
         <span class="lbl">MENU</span>
         <div class="menu-icon-row">
@@ -497,10 +509,6 @@ app.innerHTML = `
     <div style="position:relative;flex-shrink:0;">
       <canvas id="game-canvas"></canvas>
       <canvas id="particle-canvas"></canvas>
-      <div style="display:none;position:absolute;">
-        <canvas id="next-canvas"></canvas>
-        <canvas id="hold-canvas"></canvas>
-      </div>
       <div id="overlay">
         <h1>🍩<br>DONUT DROP</h1>
         <div id="mode-select" class="mode-select-btns">
@@ -526,7 +534,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.0</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.1</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1054,6 +1062,7 @@ const grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
 let currentPiece=null, nextPieceData=null, holdPieceData=null, canHold=true;
 let score=0, lines=0, level=1, combo=0;
 let hiScore=parseInt(localStorage.getItem('donutHiScore')||'0');
+{ const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString(); }
 let gameRunning=false, gamePaused=false;
 let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
@@ -1183,6 +1192,7 @@ function updateUI() {
   const li=document.getElementById('lines-display'); if(li)li.textContent=lines;
   const lb=document.getElementById('level-bar'); if(lb)lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
+  const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString();
 }
 
 let comboTO=null;
@@ -1444,10 +1454,10 @@ function startBattleMode(lv){
   if(sideMini&&controls){
     app.insertBefore(sideMini,controls);
     sideMini.style.cssText='flex-direction:row;justify-content:space-around;align-items:center;width:100%;padding:2px 8px;flex-shrink:0;gap:5px;box-sizing:border-box;';
-    // SCOREはtopbarにあるので隠す
+    // SCOREはtopbarにあるので隠す。NEXT/HOLDは横バーに入らないので隠す
     document.querySelectorAll('.mini-box').forEach(el=>{
       const lbl=el.querySelector('.lbl');
-      if(lbl&&lbl.textContent==='SCORE') el.style.display='none';
+      if(lbl&&['SCORE','NEXT','HOLD'].includes(lbl.textContent)) el.style.display='none';
     });
   }
 
