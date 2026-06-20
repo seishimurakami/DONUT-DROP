@@ -493,8 +493,11 @@ app.innerHTML = `
         </div>
       </div>
       <div class="mini-box">
-        <span class="lbl">BEST</span>
-        <span class="val" id="hiscore-display" style="font-size:11px;">0</span>
+        <div style="display:flex;flex-direction:column;gap:1px;">
+          <div><span class="lbl" style="font-size:6px;">HI-SCORE</span><span class="val" id="hiscore-display" style="font-size:10px;display:block;">0</span></div>
+          <div><span class="lbl" style="font-size:6px;">HI-LINES</span><span class="val" id="hilines-display" style="font-size:10px;display:block;">0</span></div>
+          <div><span class="lbl" style="font-size:6px;">HI-COMBO</span><span class="val" id="hicombo-display" style="font-size:10px;display:block;">0</span></div>
+        </div>
       </div>
       <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
         <span class="lbl">MENU</span>
@@ -534,7 +537,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.4</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.5</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -725,9 +728,13 @@ function closeSettings() {
     });
     btnResetYes.addEventListener('click', () => {
       localStorage.removeItem('donutHiScore');
+      localStorage.removeItem('donutHiLines');
+      localStorage.removeItem('donutHiCombo');
       localStorage.removeItem('unlockedBattleLv');
-      hiScore = 0;
-      const hel = document.getElementById('hiscore-display'); if (hel) hel.textContent = '0';
+      hiScore=0; hiLines=0; hiCombo=0;
+      const hel=document.getElementById('hiscore-display'); if(hel) hel.textContent='0';
+      const hll=document.getElementById('hilines-display'); if(hll) hll.textContent='0';
+      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0';
       const grid = document.getElementById('com-level-grid');
       if (grid) grid.innerHTML = buildLevelBtnsHTML();
       resetConfirm.style.display = 'none';
@@ -1062,7 +1069,11 @@ const grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
 let currentPiece=null, nextPieceData=null, holdPieceData=null, canHold=true;
 let score=0, lines=0, level=1, combo=0;
 let hiScore=parseInt(localStorage.getItem('donutHiScore')||'0');
+let hiLines=parseInt(localStorage.getItem('donutHiLines')||'0');
+let hiCombo=parseInt(localStorage.getItem('donutHiCombo')||'0');
 { const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString(); }
+{ const hd=document.getElementById('hilines-display'); if(hd)hd.textContent=hiLines.toLocaleString(); }
+{ const hd=document.getElementById('hicombo-display'); if(hd)hd.textContent=hiCombo.toLocaleString(); }
 let gameRunning=false, gamePaused=false;
 let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
@@ -1192,7 +1203,11 @@ function updateUI() {
   const li=document.getElementById('lines-display'); if(li)li.textContent=lines;
   const lb=document.getElementById('level-bar'); if(lb)lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
+  if(lines>hiLines){hiLines=lines;localStorage.setItem('donutHiLines',hiLines);}
+  if(combo>hiCombo){hiCombo=combo;localStorage.setItem('donutHiCombo',hiCombo);}
   const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString();
+  const hl=document.getElementById('hilines-display'); if(hl)hl.textContent=hiLines.toLocaleString();
+  const hc=document.getElementById('hicombo-display'); if(hc)hc.textContent=hiCombo.toLocaleString();
 }
 
 let comboTO=null;

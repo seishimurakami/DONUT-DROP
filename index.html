@@ -377,7 +377,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.4</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.5</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -483,7 +483,11 @@ app.innerHTML = `
       <div class="side-panel" id="right-panel">
         <div class="info-box" id="right-next-box"><div class="info-label">NEXT</div><canvas id="next-canvas"></canvas></div>
         <div class="info-box" id="right-hold-box"><div class="info-label">HOLD</div><canvas id="hold-canvas"></canvas></div>
-        <div class="info-box"><div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div></div>
+        <div class="info-box">
+          <div class="info-label">HI-SCORE</div><div class="info-value small" id="hiscore-display">0</div>
+          <div class="info-label" style="margin-top:6px;">HI-LINES</div><div class="info-value small" id="hilines-display">0</div>
+          <div class="info-label" style="margin-top:6px;">HI-COMBO</div><div class="info-value small" id="hicombo-display">0</div>
+        </div>
         <div class="info-box"><div class="info-label">DONUTS</div><div class="donut-legend" id="donut-legend"></div></div>
       </div>
     </div>
@@ -801,11 +805,14 @@ const grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
 let currentPiece=null, nextPieceData=null, holdPieceData=null, canHold=true;
 let score=0, lines=0, level=1, combo=0;
 let hiScore=parseInt(localStorage.getItem('donutHiScore')||'0');
+let hiLines=parseInt(localStorage.getItem('donutHiLines')||'0');
+let hiCombo=parseInt(localStorage.getItem('donutHiCombo')||'0');
 let gameRunning=false, gamePaused=false;
 let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
-const hsd=document.getElementById('hiscore-display');
-if(hsd) hsd.textContent=hiScore.toLocaleString();
+{ const hsd=document.getElementById('hiscore-display'); if(hsd) hsd.textContent=hiScore.toLocaleString(); }
+{ const hld=document.getElementById('hilines-display'); if(hld) hld.textContent=hiLines.toLocaleString(); }
+{ const hcd=document.getElementById('hicombo-display'); if(hcd) hcd.textContent=hiCombo.toLocaleString(); }
 
 // ════════════════════════════════════════════════════════
 // BATTLE MODE STATE
@@ -1321,8 +1328,15 @@ function updateUI() {
   if(lb) lb.style.width=((lines%10)*10)+'%';
   if(score>hiScore){
     hiScore=score; localStorage.setItem('donutHiScore',hiScore);
-    const h=document.getElementById('hiscore-display');
-    if(h) h.textContent=hiScore.toLocaleString();
+    const h=document.getElementById('hiscore-display'); if(h) h.textContent=hiScore.toLocaleString();
+  }
+  if(lines>hiLines){
+    hiLines=lines; localStorage.setItem('donutHiLines',hiLines);
+    const h=document.getElementById('hilines-display'); if(h) h.textContent=hiLines.toLocaleString();
+  }
+  if(combo>hiCombo){
+    hiCombo=combo; localStorage.setItem('donutHiCombo',hiCombo);
+    const h=document.getElementById('hicombo-display'); if(h) h.textContent=hiCombo.toLocaleString();
   }
   // バトルモード時のプレイヤースコア更新
   const pbs=document.getElementById('player-battle-score');
@@ -1479,9 +1493,13 @@ if(btnSettingsPc && settingsOverlay){
     });
     btnResetYes.addEventListener('click',()=>{
       localStorage.removeItem('donutHiScore');
+      localStorage.removeItem('donutHiLines');
+      localStorage.removeItem('donutHiCombo');
       localStorage.removeItem('unlockedBattleLv');
-      hiScore=0;
+      hiScore=0; hiLines=0; hiCombo=0;
       const hel=document.getElementById('hiscore-display'); if(hel) hel.textContent='0';
+      const hll=document.getElementById('hilines-display'); if(hll) hll.textContent='0';
+      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0';
       const grid=document.getElementById('com-level-grid'); if(grid) grid.innerHTML=buildLevelBtnsHTML();
       resetConfirm.style.display='none';
       btnResetData.style.display='';
