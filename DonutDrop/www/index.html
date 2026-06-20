@@ -537,7 +537,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.5</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.6</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -734,7 +734,7 @@ function closeSettings() {
       hiScore=0; hiLines=0; hiCombo=0;
       const hel=document.getElementById('hiscore-display'); if(hel) hel.textContent='0';
       const hll=document.getElementById('hilines-display'); if(hll) hll.textContent='0';
-      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0';
+      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0x';
       const grid = document.getElementById('com-level-grid');
       if (grid) grid.innerHTML = buildLevelBtnsHTML();
       resetConfirm.style.display = 'none';
@@ -1073,7 +1073,7 @@ let hiLines=parseInt(localStorage.getItem('donutHiLines')||'0');
 let hiCombo=parseInt(localStorage.getItem('donutHiCombo')||'0');
 { const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString(); }
 { const hd=document.getElementById('hilines-display'); if(hd)hd.textContent=hiLines.toLocaleString(); }
-{ const hd=document.getElementById('hicombo-display'); if(hd)hd.textContent=hiCombo.toLocaleString(); }
+{ const hd=document.getElementById('hicombo-display'); if(hd)hd.textContent=hiCombo.toLocaleString()+'x'; }
 let gameRunning=false, gamePaused=false;
 let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
@@ -1207,7 +1207,7 @@ function updateUI() {
   if(combo>hiCombo){hiCombo=combo;localStorage.setItem('donutHiCombo',hiCombo);}
   const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString();
   const hl=document.getElementById('hilines-display'); if(hl)hl.textContent=hiLines.toLocaleString();
-  const hc=document.getElementById('hicombo-display'); if(hc)hc.textContent=hiCombo.toLocaleString();
+  const hc=document.getElementById('hicombo-display'); if(hc)hc.textContent=hiCombo.toLocaleString()+'x';
 }
 
 let comboTO=null;

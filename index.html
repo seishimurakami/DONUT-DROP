@@ -377,7 +377,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.5</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.6</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -812,7 +812,7 @@ let dropTimer=0, dropInterval=700, lastTime=0, shakeTimer=0, gameTime=0;
 
 { const hsd=document.getElementById('hiscore-display'); if(hsd) hsd.textContent=hiScore.toLocaleString(); }
 { const hld=document.getElementById('hilines-display'); if(hld) hld.textContent=hiLines.toLocaleString(); }
-{ const hcd=document.getElementById('hicombo-display'); if(hcd) hcd.textContent=hiCombo.toLocaleString(); }
+{ const hcd=document.getElementById('hicombo-display'); if(hcd) hcd.textContent=hiCombo.toLocaleString()+'x'; }
 
 // ════════════════════════════════════════════════════════
 // BATTLE MODE STATE
@@ -1336,7 +1336,7 @@ function updateUI() {
   }
   if(combo>hiCombo){
     hiCombo=combo; localStorage.setItem('donutHiCombo',hiCombo);
-    const h=document.getElementById('hicombo-display'); if(h) h.textContent=hiCombo.toLocaleString();
+    const h=document.getElementById('hicombo-display'); if(h) h.textContent=hiCombo.toLocaleString()+'x';
   }
   // バトルモード時のプレイヤースコア更新
   const pbs=document.getElementById('player-battle-score');
@@ -1499,7 +1499,7 @@ if(btnSettingsPc && settingsOverlay){
       hiScore=0; hiLines=0; hiCombo=0;
       const hel=document.getElementById('hiscore-display'); if(hel) hel.textContent='0';
       const hll=document.getElementById('hilines-display'); if(hll) hll.textContent='0';
-      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0';
+      const hcl=document.getElementById('hicombo-display'); if(hcl) hcl.textContent='0x';
       const grid=document.getElementById('com-level-grid'); if(grid) grid.innerHTML=buildLevelBtnsHTML();
       resetConfirm.style.display='none';
       btnResetData.style.display='';
