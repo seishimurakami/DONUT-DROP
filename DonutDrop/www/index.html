@@ -246,8 +246,9 @@ body::before {
   font-family:ui-rounded,-apple-system,sans-serif; font-size:13px;
   color:rgba(255,255,255,0.5); cursor:pointer; margin-top:6px;
 }
-.battle-topbar { width:100%; display:flex; align-items:center; justify-content:space-between; }
+.battle-topbar { width:100%; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; }
 .battle-stat { text-align:center; }
+.battle-stat:last-child { text-align:right; justify-self:end; }
 .battle-lbl { display:block; font-size:8px; color:var(--accent3); letter-spacing:1.5px; }
 .battle-val { font-size:14px; color:var(--accent2); text-shadow:0 0 8px rgba(255,204,0,0.6); }
 .battle-vs { font-size:13px; color:var(--accent); letter-spacing:2px; }
@@ -549,7 +550,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.0</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.1</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1421,6 +1422,8 @@ function resetToTop(){
   document.querySelectorAll('.mini-box').forEach(el=>{
     el.style.display=''; el.style.flex=''; el.style.padding='';
     const v=el.querySelector('.val'); if(v) v.style.fontSize='';
+    el.querySelectorAll('a').forEach(a=>a.style.display='');
+    el.querySelectorAll('.menu-icon-btn').forEach(b=>{b.style.fontSize='';b.style.width='';b.style.height='';});
   });
   document.getElementById('battle-result').style.display='none';
   showTopOverlay();
@@ -1515,6 +1518,12 @@ function startBattleMode(lv){
         el.style.flex='1';
         el.style.padding='8px 6px';
         const v=el.querySelector('.val'); if(v) v.style.fontSize='16px';
+        // MENUのヘルプ/サポートを非表示、アイコンを大きく
+        const lbl2=el.querySelector('.lbl');
+        if(lbl2&&lbl2.textContent==='MENU'){
+          el.querySelectorAll('a').forEach(a=>a.style.display='none');
+          el.querySelectorAll('.menu-icon-btn').forEach(b=>{b.style.fontSize='26px';b.style.width='48px';b.style.height='48px';});
+        }
       }
     });
   }

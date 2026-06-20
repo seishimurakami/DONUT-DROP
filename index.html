@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.1</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -1215,6 +1215,7 @@ function showBattleResult(win){
 
 function returnToModeSelect(){
   gameMode='solo'; gameRunning=false; comRunning=false;
+  const bpm3=document.getElementById('battle-player-mini'); if(bpm3) bpm3.style.paddingTop='';
   document.getElementById('battle-wrapper').style.display='none';
   // NEXT/HOLDボックスを右side-panelの先頭に戻す
   const sidePanel=document.getElementById('right-panel');
@@ -1644,10 +1645,19 @@ function startBattleMode(lv){
   if(cc){ cc.width=CW; cc.height=CH; }
   const cn=document.getElementById('com-name-display');
   if(cn) cn.textContent=COM_INFO[lv].emoji+' Lv'+lv+' '+COM_INFO[lv].name;
-  // battle左パネルにSCORE・LINES COMBO・MENUを表示
+  // battle左パネルにNEXT/HOLD→SCORE・LINES COMBO・MENUを表示
   const bpm=document.getElementById('battle-player-mini');
+  const nextBox=document.getElementById('right-next-box');
+  const holdBox=document.getElementById('right-hold-box');
   if(bpm){
-    bpm.innerHTML=`
+    bpm.innerHTML='';
+    // NEXT/HOLDボックスを移動・縮小
+    const bNS=70, bHW=70, bHH=55;
+    if(nextCanvas){nextCanvas.width=bNS;nextCanvas.height=bNS;}
+    if(holdCanvas){holdCanvas.width=bHW;holdCanvas.height=bHH;}
+    if(nextBox){nextBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';bpm.appendChild(nextBox);}
+    if(holdBox){holdBox.style.cssText='text-align:center;padding:4px 6px;min-width:0;';bpm.appendChild(holdBox);}
+    bpm.insertAdjacentHTML('beforeend',`
       <div class="info-box"><div class="info-label">SCORE</div><div class="info-value" id="battle-left-score">0</div></div>
       <div class="info-box">
         <div class="two-stat">
@@ -1662,9 +1672,9 @@ function startBattleMode(lv){
           <button class="icon-btn" id="btn-settings-pc" title="設定">⚙</button>
         </div>
       </div>
-    `;
-    // ボタンのイベントを再バインド
-    document.getElementById('btn-mute-pc')?.addEventListener('click',()=>toggleMute());
+    `);
+    const bmuteBtn=document.getElementById('btn-mute-pc');
+    if(bmuteBtn){ bmuteBtn.addEventListener('click',()=>toggleMute()); bmuteBtn.textContent=muted?'🔇':'🔊'; }
     document.getElementById('btn-settings-pc')?.addEventListener('click',()=>{ const so=document.getElementById('settings-overlay'); if(so) so.style.display='flex'; });
   }
 
@@ -1683,6 +1693,16 @@ function startBattleMode(lv){
 
   // プレイヤーゲーム開始
   startGame();
+
+  // 左パネルの上端をキャンバスの上端に揃える
+  requestAnimationFrame(()=>{
+    const bpm2=document.getElementById('battle-player-mini');
+    const cvs2=document.getElementById('battle-game-canvas');
+    if(bpm2&&cvs2){
+      const offset=cvs2.getBoundingClientRect().top - bpm2.getBoundingClientRect().top;
+      bpm2.style.paddingTop=Math.max(0,offset)+'px';
+    }
+  });
 }
 
 function endGame() {
