@@ -1,0 +1,53 @@
+import GameKit
+import UIKit
+
+class GameCenterManager {
+    static let shared = GameCenterManager()
+    private(set) var isAuthenticated = false
+
+    // App Store Connect で設定するリーダーボードID
+    static let boardHiScore  = "jp.donutdrop.hiscore"
+    static let boardHiLines  = "jp.donutdrop.hilines"
+    static let boardHiCombo  = "jp.donutdrop.hicombo"
+    static let boardBattleLv = "jp.donutdrop.battlelv"
+
+    func authenticatePlayer() {
+        GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
+            // ログインが必要なときはGame Centerのログイン画面を表示する
+            if let vc = viewController {
+                let rootVC = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .first?.windows.first?.rootViewController
+                rootVC?.present(vc, animated: true)
+            }
+            self?.isAuthenticated = GKLocalPlayer.local.isAuthenticated
+            if let error = error {
+                print("GameCenter auth error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func submitScore(_ score: Int, leaderboardID: String) {
+        guard GKLocalPlayer.local.isAuthenticated else { return }
+        if #available(iOS 14.0, *) {
+            GKLeaderboard.submitScore(
+                score,
+                context: 0,
+                player: GKLocalPlayer.local,
+                leaderboardIDs: [leaderboardID]
+            ) { error in
+                if let error = error {
+                    print("GameCenter submitScore error: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            let entry = GKScore(leaderboardIdentifier: leaderboardID)
+            entry.value = Int64(score)
+            GKScore.report([entry]) { error in
+                if let error = error {
+                    print("GameCenter submitScore error: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+}

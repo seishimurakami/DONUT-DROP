@@ -550,7 +550,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.1</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.0</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1210,12 +1210,19 @@ function drawHold() {
 // ════════════════════════════════════════════════════════
 // UI UPDATES
 // ════════════════════════════════════════════════════════
+// Game Centerにスコアを送信する関数
+function reportToGameCenter(leaderboardID, score) {
+  if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.gameCenter) {
+    window.webkit.messageHandlers.gameCenter.postMessage({type:'submitScore', leaderboardID:leaderboardID, score:score});
+  }
+}
+
 function updateUI() {
   const sd=document.getElementById('score-display'); if(sd)sd.textContent=score.toLocaleString();
   const li=document.getElementById('lines-display'); if(li)li.textContent=lines;
-  if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);}
-  if(lines>hiLines){hiLines=lines;localStorage.setItem('donutHiLines',hiLines);}
-  if(combo>hiCombo){hiCombo=combo;localStorage.setItem('donutHiCombo',hiCombo);}
+  if(score>hiScore){hiScore=score;localStorage.setItem('donutHiScore',hiScore);reportToGameCenter('jp.donutdrop.hiscore',hiScore);}
+  if(lines>hiLines){hiLines=lines;localStorage.setItem('donutHiLines',hiLines);reportToGameCenter('jp.donutdrop.hilines',hiLines);}
+  if(combo>hiCombo){hiCombo=combo;localStorage.setItem('donutHiCombo',hiCombo);reportToGameCenter('jp.donutdrop.hicombo',hiCombo);}
   const hd=document.getElementById('hiscore-display'); if(hd)hd.textContent=hiScore.toLocaleString();
   const hl=document.getElementById('hilines-display'); if(hl)hl.textContent=hiLines.toLocaleString();
   const hc=document.getElementById('hicombo-display'); if(hc)hc.textContent=hiCombo.toLocaleString()+'x';
@@ -1341,6 +1348,11 @@ function endGame(playerWon=false) {
   if(gameMode==='battle'){
     const won=playerWon;
     const newUnlock=won?tryUnlockNextLv(comLv):false;
+    if(won){
+      // 最高撃破LvをGame Centerに登録
+      const hiBeatenLv=parseInt(localStorage.getItem('donutHiBeatenLv')||'0');
+      if(comLv>hiBeatenLv){localStorage.setItem('donutHiBeatenLv',comLv);reportToGameCenter('jp.donutdrop.battlelv',comLv);}
+    }
     if(won) sfxLevelUp(); else sfxGameOver();
     haptic(won?'levelUp':'gameOver');
     setTimeout(()=>{

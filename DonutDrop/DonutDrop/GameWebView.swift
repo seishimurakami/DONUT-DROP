@@ -10,6 +10,8 @@ struct GameWebView: UIViewRepresentable {
         config.mediaTypesRequiringUserActionForPlayback = []
         // JavaScriptからの触覚フィードバック要求を受け取る
         config.userContentController.add(context.coordinator, name: "haptic")
+        // JavaScriptからのGame Centerスコア送信要求を受け取る
+        config.userContentController.add(context.coordinator, name: "gameCenter")
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.isScrollEnabled = false
@@ -53,9 +55,22 @@ struct GameWebView: UIViewRepresentable {
         // ── JavaScriptからのメッセージ受信 ────────────────────
         func userContentController(_ controller: WKUserContentController,
                                     didReceive message: WKScriptMessage) {
-            guard message.name == "haptic",
-                  let body = message.body as? [String: Any],
+            guard let body = message.body as? [String: Any],
                   let type = body["type"] as? String else { return }
+
+            // Game Centerスコア送信
+            if message.name == "gameCenter" {
+                if type == "submitScore",
+                   let leaderboardID = body["leaderboardID"] as? String,
+                   let score = body["score"] as? Int {
+                    DispatchQueue.main.async {
+                        GameCenterManager.shared.submitScore(score, leaderboardID: leaderboardID)
+                    }
+                }
+                return
+            }
+
+            guard message.name == "haptic" else { return }
 
             DispatchQueue.main.async { [weak self] in
                 switch type {
