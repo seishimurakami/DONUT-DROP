@@ -158,7 +158,7 @@ body::before {
   gap: 6px; flex: 1; padding: 5px 4px 2px; min-height: 0;
 }
 [data-mode="mobile"] #game-area.battle-mode {
-  align-items: flex-start; justify-content: center; gap: 4px; padding: 4px 4px 2px;
+  align-items: center; justify-content: center; gap: 4px; padding: 4px 4px 2px;
 }
 .battle-vs-col {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -555,7 +555,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.7</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.8</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1399,24 +1399,26 @@ function resetToTop(){
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea) gameArea.classList.remove('battle-mode');
-  // battle-player-colをアンラップしてNEXT/HOLDを元の場所に戻す
-  const playerCol=document.getElementById('battle-player-col');
-  if(playerCol&&gameArea){
-    const nextEl=document.getElementById('next-canvas');
-    const holdEl=document.getElementById('hold-canvas');
-    // まずNEXT/HOLDキャンバスをmini-boxに戻す
+  // battle-nh-rowを削除してNEXT/HOLDをmini-boxに戻す
+  const nhRow=document.getElementById('battle-nh-row');
+  const nextEl=document.getElementById('next-canvas');
+  const holdEl=document.getElementById('hold-canvas');
+  if(nhRow){
     document.querySelectorAll('.mini-box').forEach(el=>{
       const lbl=el.querySelector('.lbl');
       if(lbl&&lbl.textContent==='NEXT'&&nextEl) el.appendChild(nextEl);
       if(lbl&&lbl.textContent==='HOLD'&&holdEl) el.appendChild(holdEl);
     });
-    // キャンバスラッパーをgameAreaに戻す
+    nhRow.remove();
+    NEXT_SIZE=54; nextEl.width=NEXT_SIZE; nextEl.height=NEXT_SIZE;
+    HOLD_W=54; HOLD_H=44; holdEl.width=HOLD_W; holdEl.height=HOLD_H;
+  }
+  // battle-player-colをアンラップしてキャンバスをgameAreaに戻す
+  const playerCol=document.getElementById('battle-player-col');
+  if(playerCol&&gameArea){
     const canvasWr=gameCanvas.parentElement;
     gameArea.insertBefore(canvasWr,playerCol);
     playerCol.remove();
-    // サイズを元に戻す
-    NEXT_SIZE=54; nextEl.width=NEXT_SIZE; nextEl.height=NEXT_SIZE;
-    HOLD_W=54; HOLD_H=44; holdEl.width=HOLD_W; holdEl.height=HOLD_H;
   }
   // side-miniを元の位置（game-area内）に戻す
   const sideMini=document.querySelector('.side-mini');
@@ -1424,7 +1426,10 @@ function resetToTop(){
     gameArea.insertBefore(sideMini,gameArea.firstChild);
     sideMini.style.cssText='';
   }
-  document.querySelectorAll('.mini-box').forEach(el=>el.style.display='');
+  document.querySelectorAll('.mini-box').forEach(el=>{
+    el.style.display=''; el.style.flex=''; el.style.padding='';
+    const v=el.querySelector('.val'); if(v) v.style.fontSize='';
+  });
   document.getElementById('battle-result').style.display='none';
   showTopOverlay();
 }
@@ -1496,7 +1501,7 @@ function startBattleMode(lv){
         <span class="battle-lbl">YOU</span>
         <span class="battle-val" id="score-display">0</span>
       </div>
-      <div class="battle-vs">⚔️</div>
+      <div class="battle-vs">VS</div>
       <div class="battle-stat" style="text-align:right;">
         <span class="battle-lbl">${COM_INFO[lv].emoji} Lv${lv} ${COM_INFO[lv].name}</span>
         <span class="battle-val" id="com-score-display">0</span>
@@ -1508,46 +1513,54 @@ function startBattleMode(lv){
   const controls=document.getElementById('controls');
   if(sideMini&&controls){
     app.insertBefore(sideMini,controls);
-    sideMini.style.cssText='flex-direction:row;justify-content:space-around;align-items:center;width:100%;padding:2px 8px;flex-shrink:0;gap:5px;box-sizing:border-box;';
-    // SCOREはtopbarにあるので隠す。NEXT/HOLDは横バーに入らないので隠す
+    sideMini.style.cssText='flex-direction:row;justify-content:space-around;align-items:stretch;width:100%;padding:2px 8px;flex-shrink:0;gap:8px;box-sizing:border-box;';
+    // BEST(HI-SCORE)とMENUのみ表示、他は非表示
     document.querySelectorAll('.mini-box').forEach(el=>{
       const lbl=el.querySelector('.lbl');
-      if(lbl&&['SCORE','NEXT','HOLD'].includes(lbl.textContent)) el.style.display='none';
+      const hide=lbl&&['SCORE','NEXT','HOLD','SPEED','LINES'].includes(lbl.textContent);
+      el.style.display=hide?'none':'';
+      if(!hide){
+        el.style.flex='1';
+        el.style.padding='8px 6px';
+        const v=el.querySelector('.val'); if(v) v.style.fontSize='16px';
+      }
     });
   }
 
-  // NEXT/HOLDをプレイキャンバスの上部に移動
+  // NEXT/HOLDをキャンバスの下（game-area外・side-miniの直前）に配置
   const nextEl=document.getElementById('next-canvas');
   const holdEl=document.getElementById('hold-canvas');
-  const battleNS=42; const battleHW=42; const battleHH=34;
+  const battleNS=46; const battleHW=46; const battleHH=38;
   nextEl.width=battleNS; nextEl.height=battleNS;
   holdEl.width=battleHW; holdEl.height=battleHH;
   const canvasWrapper=gameCanvas.parentElement;
   const playerCol=document.createElement('div');
   playerCol.id='battle-player-col';
-  playerCol.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;';
+  playerCol.style.cssText='display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;';
+  playerCol.appendChild(canvasWrapper);
   const nhRow=document.createElement('div');
   nhRow.id='battle-nh-row';
-  nhRow.style.cssText='display:flex;gap:4px;width:100%;';
   const mkNH=(lbl,cvs)=>{
     const d=document.createElement('div');
-    d.style.cssText='flex:1;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,107,205,0.25);border-radius:6px;padding:2px;';
+    d.style.cssText='flex:1;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,107,205,0.25);border-radius:6px;padding:3px 2px;';
     const l=document.createElement('div');
     l.style.cssText='font-size:7px;color:var(--accent3);letter-spacing:1px;margin-bottom:1px;';
     l.textContent=lbl; d.appendChild(l); d.appendChild(cvs); return d;
   };
   nhRow.appendChild(mkNH('NEXT',nextEl));
   nhRow.appendChild(mkNH('HOLD',holdEl));
-  playerCol.appendChild(nhRow);
-  playerCol.appendChild(canvasWrapper);
 
   // COMボードキャンバスを追加（VSなし）
   const old=document.getElementById('com-board-area');if(old)old.remove();
   document.getElementById('battle-vs-el')?.remove();
+  document.getElementById('battle-nh-row')?.remove();
   const gameArea=document.getElementById('game-area');
   if(gameArea){
     gameArea.classList.add('battle-mode');
     gameArea.insertBefore(playerCol,gameArea.firstChild);
+    // nhRowをgame-areaの直後（side-miniの直前）に挿入
+    nhRow.style.cssText='display:flex;gap:6px;padding:3px 4px 0;flex-shrink:0;box-sizing:border-box;width:'+(BCW)+'px;';
+    gameArea.parentElement.insertBefore(nhRow,gameArea.nextSibling);
     const comDiv=document.createElement('div');
     comDiv.id='com-board-area';
     comDiv.style.cssText='position:relative;flex-shrink:0;';
