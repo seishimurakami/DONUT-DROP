@@ -259,9 +259,8 @@ body::before {
 .battle-head { font-size:11px; letter-spacing:3px; color:var(--accent3); text-transform:uppercase; }
 .battle-scorebox { font-size:11px; color:rgba(255,255,255,.5); text-align:center; }
 .battle-scorebox b { display:block; font-size:20px; color:var(--accent2); }
-#battle-vs-col { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; min-width:48px; }
+#battle-vs-col { display:flex; align-items:center; justify-content:center; min-width:48px; align-self:stretch; }
 #battle-vs { font-size:22px; font-weight:bold; color:var(--accent); text-shadow:0 0 16px rgba(255,107,205,.8); letter-spacing:2px; }
-.garbage-pill { background:rgba(255,107,205,.15); border:1px solid rgba(255,107,205,.3); border-radius:8px; padding:4px 8px; font-size:10px; color:rgba(255,255,255,.5); text-align:center; white-space:nowrap; }
 #com-canvas { border:2px solid rgba(255,107,205,.5); border-radius:12px; box-shadow:0 0 20px rgba(255,107,205,.2); display:block; image-rendering:pixelated; }
 #battle-game-canvas { display:block; image-rendering:pixelated; border:2px solid rgba(255,107,205,0.5); border-radius:12px; box-shadow:0 0 30px rgba(255,107,205,0.3); }
 #battle-particle-canvas { position:absolute; inset:0; pointer-events:none; z-index:10; border-radius:12px; }
@@ -378,7 +377,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.2</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.9.3</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -502,7 +501,6 @@ app.innerHTML = `
       </div>
       <div id="battle-vs-col">
         <div id="battle-vs">VS</div>
-        <div class="garbage-pill" id="garbage-indicator">🗑 0</div>
       </div>
       <div class="battle-side">
         <div class="battle-head" id="com-name-display">COM</div>
