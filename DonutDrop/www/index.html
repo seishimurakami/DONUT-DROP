@@ -551,7 +551,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.2</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.3</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1128,7 +1128,7 @@ function checkLines() {
   // spliceしながら同じインデックスを再チェック（clearLinesOnGridと同じ方式）
   let count=0;
   for(let r=ROWS-1;r>=0;r--){
-    if(grid[r].every(c=>c!==null)){
+    if(grid[r].every(c=>c!==null && c!=='G')){
       spawnLineParticles(r);
       grid.splice(r,1); grid.unshift(Array(COLS).fill(null));
       count++; r++;
