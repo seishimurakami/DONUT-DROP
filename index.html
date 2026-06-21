@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.2</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -1067,23 +1067,19 @@ function comSpawnPiece(){
 }
 
 function comLockAndProcess(finalX, finalCells, finalY){
-  // ロック
   finalCells.forEach(({dx,dy})=>{
     const nx=finalX+dx, ny=finalY+dy;
     if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) comGrid[ny][nx]=comCurrentPiece?comCurrentPiece.donutIdx:0;
   });
-  // ライン消去
-  const cleared=[];
-  for(let r=ROWS-1;r>=0;r--) if(comGrid[r].every(c=>c!==null&&c!=='G')) cleared.push(r);
-  if(cleared.length){
-    cleared.forEach(r=>{comGrid.splice(r,1);comGrid.unshift(Array(COLS).fill(null));});
+  // clearLinesOnGrid で正しく消去（iOS版と同じ方式）
+  const n=clearLinesOnGrid(comGrid);
+  if(n>0){
     comCombo++;
-    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*comLevel*comCombo;
-    comScore+=earned; comLines_count+=cleared.length;
+    const earned=[0,100,300,600,1000][Math.min(n,4)]*comLevel*comCombo;
+    comScore+=earned; comLines_count+=n;
     const nl=Math.floor(comLines_count/10)+1;
     if(nl>comLevel) comLevel=nl;
-    // 消した行数分だけゴミラインをプレイヤーへ送る
-    if(cleared.length>0) pendingGarbageForPlayer+=cleared.length;
+    pendingGarbageForPlayer+=n;
     const cbs=document.getElementById('com-battle-score');
     if(cbs) cbs.textContent=comScore.toLocaleString();
   } else { comCombo=0; }
@@ -1091,22 +1087,26 @@ function comLockAndProcess(finalX, finalCells, finalY){
   comSpawnPiece();
 }
 
-// 全候補手をスコア付きで列挙する
+// 全候補手をスコア付きで列挙する（重複回転をSetで除外、iOS版と同じ方式）
 function comAllMoves(piece){
-  const moves=[];
+  const moves=[], seen=new Set();
   let p={...piece, cells:piece.cells.map(c=>({...c}))};
   for(let rot=0;rot<4;rot++){
-    for(let x=0;x<COLS;x++){
-      const candidate={...p, x};
-      if(comCollides(candidate)) continue;
-      const dropped=comHardDrop(candidate);
-      const testGrid=comGrid.map(row=>[...row]);
-      dropped.cells.forEach(({dx,dy})=>{
-        const nx=dropped.x+dx, ny=dropped.y+dy;
-        if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx??0;
-      });
-      const n=clearLinesOnGrid(testGrid);
-      moves.push({x:dropped.x, cells:dropped.cells, y:dropped.y, score:lineBonus(n)+comEvalBoard(testGrid)});
+    const key=JSON.stringify(p.cells);
+    if(!seen.has(key)){
+      seen.add(key);
+      for(let x=0;x<COLS;x++){
+        const candidate={...p, x};
+        if(comCollides(candidate)) continue;
+        const dropped=comHardDrop(candidate);
+        const testGrid=comGrid.map(row=>[...row]);
+        dropped.cells.forEach(({dx,dy})=>{
+          const nx=dropped.x+dx, ny=dropped.y+dy;
+          if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS) testGrid[ny][nx]=dropped.donutIdx??0;
+        });
+        const n=clearLinesOnGrid(testGrid);
+        moves.push({x:dropped.x, cells:dropped.cells, y:dropped.y, score:lineBonus(n)+comEvalBoard(testGrid), lines:n});
+      }
     }
     p=comRotatePiece(p,1);
   }

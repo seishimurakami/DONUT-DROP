@@ -551,7 +551,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.4</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.5</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -933,10 +933,10 @@ function comAllMoves(piece){
 function comLockAndProcess(bx,bCells,by){
   bCells.forEach(({dx,dy})=>{const nx=bx+dx,ny=by+dy;if(ny>=0&&ny<ROWS&&nx>=0&&nx<COLS)comGrid[ny][nx]=comCurrentPiece.donutIdx??0;});
   const n=clearLinesOnGrid(comGrid);
-  comScore+=[0,100,300,600,1000][Math.min(n,4)]*comLevel;
+  if(n>0){ comCombo++; comScore+=[0,100,300,600,1000][Math.min(n,4)]*comLevel*comCombo; pendingGarbageForPlayer+=n; }
+  else { comCombo=0; }
   comLines_count+=n;
   const nl=Math.floor(comLines_count/10)+1;if(nl>comLevel)comLevel=nl;
-  if(n>0)pendingGarbageForPlayer+=n;
   const scoreEl=document.getElementById('com-score-display');if(scoreEl)scoreEl.textContent=comScore.toLocaleString();
   comCurrentPiece=null;comDropTimer=0;
   const next=comNextData||{shapeIdx:weightedRandom(SHAPE_WEIGHTS),donutIdx:Math.floor(Math.random()*DONUTS.length)};
