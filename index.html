@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.5</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.6</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -459,7 +459,7 @@ app.innerHTML = `
           <div class="info-label">CONTROLS</div>
           <div class="controls">
             <b>← →</b> 移動&nbsp;&nbsp;<b>↑</b> 回転<br><b>↓</b> 加速&nbsp;&nbsp;<b>SPACE</b> 一気落とし<br>
-            <b>Z</b> 逆回転&nbsp;&nbsp;<b>C</b> ホールド<br><b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート&nbsp;&nbsp;<b>ESC</b> トップへもどる
+            <b>Z</b> 逆回転&nbsp;&nbsp;<b>H</b> ホールド<br><b>P</b> ポーズ&nbsp;&nbsp;<b>M</b> ミュート&nbsp;&nbsp;<b>ESC</b> トップへもどる
           </div>
         </div>
         <div class="info-box">
@@ -1462,7 +1462,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowUp'){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
   else if(e.key==='z'||e.key==='Z'){currentPiece=rotatePiece(currentPiece,-1);sfxRotate();}
   else if(e.key===' '){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
-  else if(e.key==='c'||e.key==='C'||e.key==='h'||e.key==='H'){holdPiece();}
+  else if(e.key==='h'||e.key==='H'){holdPiece();}
 });
 
 // ════════════════════════════════════════════════════════
