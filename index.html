@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.3</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.4</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -580,7 +580,7 @@ if (legendEl) DONUTS.forEach(d => {
 // PIECE SHAPES
 // ════════════════════════════════════════════════════════
 const SHAPES = [
-  [[0,-1],[1,0],[0,1],[-1,0]],              // 0 diamond (もちもちリング)
+  [[-1,-1],[0,-1],[-1,0],[0,0]],            // 0 square (O型)
   [[-2,0],[-1,0],[0,0],[1,0]],              // 1 I
   [[0,-1],[0,0],[0,1],[1,1]],               // 2 L
   [[0,-1],[0,0],[0,1],[-1,1]],              // 3 J
@@ -1459,7 +1459,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowUp'){currentPiece=rotatePiece(currentPiece,1);sfxRotate();}
   else if(e.key==='z'||e.key==='Z'){currentPiece=rotatePiece(currentPiece,-1);sfxRotate();}
   else if(e.key===' '){const d=hardDrop(currentPiece);score+=(d.y-currentPiece.y)*2;currentPiece=d;lockPiece(currentPiece);updateUI();}
-  else if(e.key==='c'||e.key==='C'){holdPiece();}
+  else if(e.key==='c'||e.key==='C'||e.key==='h'||e.key==='H'){holdPiece();}
 });
 
 // ════════════════════════════════════════════════════════

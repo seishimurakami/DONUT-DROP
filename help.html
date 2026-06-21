@@ -75,6 +75,20 @@ section { margin-bottom:24px; }
   border-radius:6px; padding:2px 8px; font-size:11px;
   color:var(--accent);
 }
+.tetro-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.tetro-item {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:10px 8px;
+  text-align:center;
+}
+.tetro-name { font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
+.tetro-cells { font-size:9px; color:rgba(255,204,0,0.5); margin-top:4px; }
+.tetro-ascii {
+  font-family:monospace; font-size:13px; color:var(--accent2);
+  line-height:1.35; display:inline-block; text-align:left;
+  white-space:pre;
+}
 </style>
 </head>
 <body>
@@ -101,7 +115,7 @@ section { margin-bottom:24px; }
         <tr><td><span class="key">Z</span></td><td>左回転（逆向き）</td></tr>
         <tr><td><span class="key">↓</span></td><td>下に速く落とす</td></tr>
         <tr><td><span class="key">SPACE</span></td><td>一気に落とす（ハードドロップ）</td></tr>
-        <tr><td><span class="key">C</span></td><td>ホールド（ためておく）</td></tr>
+        <tr><td><span class="key">H</span> / <span class="key">C</span></td><td>ホールド（ためておく）</td></tr>
         <tr><td><span class="key">P</span></td><td>ポーズ（一時停止）</td></tr>
         <tr><td><span class="key">M</span></td><td>音のON/OFF</td></tr>
         <tr><td><span class="key">ESC</span></td><td>トップへもどる</td></tr>
@@ -123,6 +137,97 @@ section { margin-bottom:24px; }
         <tr><td><b>HOLD ボタン</b></td><td>ホールド</td></tr>
         <tr><td><b>↺ ↻ ボタン</b></td><td>左回転・右回転</td></tr>
       </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🟡 ブロックの形一覧</div>
+    <div class="card" style="padding:10px;">
+      <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">全部で13種類のブロックがあります。すべて回転できます！</p>
+      <div class="tetro-grid">
+        <div class="tetro-item">
+          <div class="tetro-name">O型</div>
+          <pre class="tetro-ascii">■ ■
+■ ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">I型</div>
+          <pre class="tetro-ascii">■■■■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">L型</div>
+          <pre class="tetro-ascii">■
+■
+■ ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">J型</div>
+          <pre class="tetro-ascii">  ■
+  ■
+■ ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">T型</div>
+          <pre class="tetro-ascii">■ ■ ■
+  ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">S型</div>
+          <pre class="tetro-ascii">  ■ ■
+■ ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">Z型</div>
+          <pre class="tetro-ascii">■ ■
+  ■ ■</pre>
+          <div class="tetro-cells">4マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">十字型</div>
+          <pre class="tetro-ascii">  ■
+■ ■ ■
+  ■</pre>
+          <div class="tetro-cells">5マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">大L型</div>
+          <pre class="tetro-ascii">■
+■
+■
+■ ■</pre>
+          <div class="tetro-cells">5マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">1マス</div>
+          <pre class="tetro-ascii">■</pre>
+          <div class="tetro-cells">1マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">斜め型</div>
+          <pre class="tetro-ascii">■
+  ■
+    ■</pre>
+          <div class="tetro-cells">3マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">U型</div>
+          <pre class="tetro-ascii">■   ■
+■ ■ ■</pre>
+          <div class="tetro-cells">5マス</div>
+        </div>
+        <div class="tetro-item">
+          <div class="tetro-name">コーナー型</div>
+          <pre class="tetro-ascii">■ ■
+■</pre>
+          <div class="tetro-cells">3マス</div>
+        </div>
+      </div>
     </div>
   </section>
 
