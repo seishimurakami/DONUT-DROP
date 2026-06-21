@@ -563,7 +563,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.7</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.8</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -813,8 +813,21 @@ function spawnParticles(x,y,color,count=12) {
     });
   }
 }
-function spawnLineParticles(row) {
-  for(let c=0;c<COLS;c++) spawnParticles(c*CELL+CELL/2,row*CELL+CELL/2,`hsl(${Math.random()*360},100%,70%)`,5);
+function spawnLineParticles(row, lines=1) {
+  const n=5*lines;
+  for(let c=0;c<COLS;c++){
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2, sp=3+Math.random()*7;
+      particles.push({
+        x:c*CELL+CELL/2, y:row*CELL+CELL/2,
+        vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-3,
+        life:1, decay:0.01+Math.random()*.013,
+        size:8+Math.random()*12,
+        color:`hsl(${Math.random()*360},100%,70%)`,
+        shape:Math.random()>.5?'circle':'donut',
+      });
+    }
+  }
 }
 function spawnDropParticles(x,y) {
   for(let i=0;i<6;i++) particles.push({
@@ -1137,16 +1150,15 @@ function lockPiece(p) {
 }
 
 function checkLines() {
-  // spliceしながら同じインデックスを再チェック（clearLinesOnGridと同じ方式）
-  let count=0;
+  const rowsToClear=[];
   for(let r=ROWS-1;r>=0;r--){
-    if(grid[r].every(c=>c!==null && c!=='G')){
-      spawnLineParticles(r);
-      grid.splice(r,1); grid.unshift(Array(COLS).fill(null));
-      count++; r++;
-    }
+    if(grid[r].every(c=>c!==null && c!=='G')) rowsToClear.push(r);
   }
+  const count=rowsToClear.length;
   if(count>0){
+    rowsToClear.forEach(r=>spawnLineParticles(r,count));
+    rowsToClear.forEach(r=>grid.splice(r,1));
+    for(let i=0;i<count;i++) grid.unshift(Array(COLS).fill(null));
     sfxLineClear(count);
     haptic('lineClear',{count});
     combo++; if(combo>1){sfxCombo(combo);haptic('combo',{count:combo});}
