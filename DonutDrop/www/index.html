@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DONUT DROP 🍩</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0015;
@@ -24,8 +26,7 @@
 html, body {
   width: 100%; height: 100%;
   background: var(--bg);
-  /* iPhoneに入っている丸いフォントを使う */
-  font-family: ui-rounded, -apple-system, 'Hiragino Maru Gothic ProN', sans-serif;
+  font-family: 'Fredoka One', 'Kosugi Maru', ui-rounded, sans-serif;
   color: var(--text);
   overflow: hidden;
   touch-action: none;
@@ -150,8 +151,12 @@ body::before {
   flex-shrink: 0;
 }
 [data-mode="mobile"] #title-top {
-  font-size: 16px; color: var(--accent); text-shadow: 0 0 15px rgba(255,107,205,0.8); letter-spacing: 1px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 20px; color: var(--accent); letter-spacing: 2px;
+  text-shadow: var(--glow-pink);
+  animation: titlePulse 3s ease-in-out infinite;
 }
+[data-mode="mobile"] #title-top span { color: var(--accent2); }
 
 [data-mode="mobile"] #game-area {
   display: flex; align-items: flex-start; justify-content: center;
@@ -167,7 +172,7 @@ body::before {
 .battle-vs-col .vs-label {
   font-size: 8px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase;
 }
-[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; width: 66px; }
+[data-mode="mobile"] .side-mini { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; width: 74px; }
 [data-mode="mobile"] .mini-box {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
   border-radius: 10px; padding: 5px 5px; text-align: center; min-width: 0;
@@ -193,7 +198,13 @@ body::before {
 [data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
 [data-mode="mobile"] .menu-mini-link {
   display:block; font-size:8px; color:rgba(255,255,255,0.5);
-  text-decoration:none; padding:2px 0; text-align:center; transition:color .2s;
+  text-decoration:none; padding:2px 0; text-align:left; transition:color .2s;
+}
+[data-mode="mobile"] .mini-box-hi {
+  flex: 2; display: flex; flex-direction: column; justify-content: center; padding: 8px 5px;
+}
+[data-mode="mobile"] .mini-box-menu {
+  flex: 2; display: flex; flex-direction: column; justify-content: center; padding: 8px 5px;
 }
 #copyright {
   position: fixed; bottom: 6px; left: 0; right: 0;
@@ -482,7 +493,7 @@ const app = document.getElementById('app');
 
 app.innerHTML = `
   <div id="topbar">
-    <div id="title-top">🍩 DONUT DROP</div>
+    <div id="title-top">🍩 <span>DONUT DROP</span> 🍩</div>
   </div>
   <div id="game-area">
     <div class="side-mini">
@@ -505,22 +516,24 @@ app.innerHTML = `
           <div><span class="lbl">COMBO</span><span class="val" id="combo-display-box">0x</span></div>
         </div>
       </div>
-      <div class="mini-box">
-        <div style="display:flex;flex-direction:column;gap:1px;">
-          <div><span class="lbl" style="font-size:6px;">HI-SCORE</span><span class="val" id="hiscore-display" style="font-size:10px;display:block;">0</span></div>
-          <div><span class="lbl" style="font-size:6px;">HI-LINES</span><span class="val" id="hilines-display" style="font-size:10px;display:block;">0</span></div>
-          <div><span class="lbl" style="font-size:6px;">HI-COMBO</span><span class="val" id="hicombo-display" style="font-size:10px;display:block;">0</span></div>
+      <div class="mini-box mini-box-hi">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div><span class="lbl">HI-SCORE</span><span class="val" id="hiscore-display" style="font-size:12px;display:block;">0</span></div>
+          <div><span class="lbl">HI-LINES</span><span class="val" id="hilines-display" style="font-size:12px;display:block;">0</span></div>
+          <div><span class="lbl">HI-COMBO</span><span class="val" id="hicombo-display" style="font-size:12px;display:block;">0</span></div>
         </div>
       </div>
-      <div class="mini-box" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+      <div class="mini-box mini-box-menu">
         <span class="lbl">MENU</span>
         <div class="menu-icon-row">
           <button class="menu-icon-btn" id="btn-mute">🔊</button>
           <button class="menu-icon-btn" id="btn-settings">⚙</button>
-          <button class="menu-icon-btn" id="btn-ranking">🏆</button>
         </div>
-        <a class="menu-mini-link" href="https://seishimurakami.github.io/DONUT-DROP/help.html" target="_blank">❓ ヘルプ</a>
-        <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;padding:0 2px;">
+          <a class="menu-mini-link" id="btn-ranking-link" href="#">🏆 ランキング</a>
+          <a class="menu-mini-link" href="https://seishimurakami.github.io/DONUT-DROP/help.html" target="_blank">❓ ヘルプ</a>
+          <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
+        </div>
       </div>
     </div>
     <div style="position:relative;flex-shrink:0;">
@@ -551,7 +564,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.5</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.6</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1335,7 +1348,8 @@ btnTap('btn-pause',  ()=>{
   const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸';
 });
 btnTap('btn-mute',   ()=>toggleMute());
-btnTap('btn-ranking',()=>{
+document.getElementById('btn-ranking-link')?.addEventListener('click',e=>{
+  e.preventDefault();
   if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.gameCenter){
     window.webkit.messageHandlers.gameCenter.postMessage({type:'showLeaderboards'});
   }
@@ -1419,7 +1433,7 @@ function resetToTop(){
   gameCanvas.width=CW;gameCanvas.height=CH;
   pCanvas.width=CW;pCanvas.height=CH;
   const topbar=document.getElementById('topbar');
-  if(topbar) topbar.innerHTML=`<div id="title-top">🍩 DONUT DROP</div>`;
+  if(topbar) topbar.innerHTML=`<div id="title-top">🍩 <span>DONUT DROP</span> 🍩</div>`;
   const comArea=document.getElementById('com-board-area');if(comArea)comArea.remove();
   document.getElementById('battle-vs-el')?.remove();
   const gameArea=document.getElementById('game-area');
