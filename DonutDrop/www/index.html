@@ -145,7 +145,7 @@ body::before {
 
 [data-mode="mobile"] #topbar {
   width: 100%; display: flex; align-items: center; justify-content: center;
-  padding: max(6px, var(--safe-top)) 12px 4px;
+  padding: max(6px, var(--safe-top)) 12px 10px;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,107,205,0.2);
   flex-shrink: 0;
@@ -177,8 +177,8 @@ body::before {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.25);
   border-radius: 10px; padding: 5px 5px; text-align: center; min-width: 0;
 }
-[data-mode="mobile"] .mini-box .lbl { font-size: 7px; color: var(--accent3); letter-spacing: 1px; display: block; margin-bottom: 1px; }
-[data-mode="mobile"] .mini-box .val { font-size: 15px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
+[data-mode="mobile"] .mini-box .lbl { font-size: 9px; color: var(--accent3); letter-spacing: 1px; display: block; margin-bottom: 1px; }
+[data-mode="mobile"] .mini-box .val { font-size: 17px; color: var(--accent2); text-shadow: 0 0 8px rgba(255,204,0,0.5); line-height: 1; }
 [data-mode="mobile"] #game-canvas { border-width: 1.5px; border-radius: 10px; }
 
 [data-mode="mobile"] #controls {
@@ -197,14 +197,14 @@ body::before {
 }
 [data-mode="mobile"] .menu-icon-btn:active { background:rgba(255,107,205,0.3); transform:scale(0.9); }
 [data-mode="mobile"] .menu-mini-link {
-  display:block; font-size:8px; color:rgba(255,255,255,0.5);
+  display:block; font-size:10px; color:rgba(255,255,255,0.5);
   text-decoration:none; padding:2px 0; text-align:left; transition:color .2s;
 }
 [data-mode="mobile"] .mini-box-hi {
-  flex: 2; display: flex; flex-direction: column; justify-content: center; padding: 8px 5px;
+  flex: 3; display: flex; flex-direction: column; justify-content: center; padding: 10px 5px;
 }
 [data-mode="mobile"] .mini-box-menu {
-  flex: 2; display: flex; flex-direction: column; justify-content: center; padding: 8px 5px;
+  flex: 3; display: flex; flex-direction: column; justify-content: center; padding: 10px 5px;
 }
 #copyright {
   position: fixed; bottom: 6px; left: 0; right: 0;
@@ -257,9 +257,8 @@ body::before {
   font-family:ui-rounded,-apple-system,sans-serif; font-size:13px;
   color:rgba(255,255,255,0.5); cursor:pointer; margin-top:6px;
 }
-.battle-topbar { width:100%; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; }
-.battle-stat { text-align:center; }
-.battle-stat:last-child { text-align:right; justify-self:end; }
+.battle-topbar { width:100%; display:flex; justify-content:center; align-items:center; gap:4px; }
+.battle-stat { text-align:center; flex-shrink:0; }
 .battle-lbl { display:block; font-size:8px; color:var(--accent3); letter-spacing:1.5px; }
 .battle-val { font-size:14px; color:var(--accent2); text-shadow:0 0 8px rgba(255,204,0,0.6); }
 .battle-vs { font-size:13px; color:var(--accent); letter-spacing:2px; }
@@ -518,9 +517,9 @@ app.innerHTML = `
       </div>
       <div class="mini-box mini-box-hi">
         <div style="display:flex;flex-direction:column;gap:5px;">
-          <div><span class="lbl">HI-SCORE</span><span class="val" id="hiscore-display" style="font-size:12px;display:block;">0</span></div>
-          <div><span class="lbl">HI-LINES</span><span class="val" id="hilines-display" style="font-size:12px;display:block;">0</span></div>
-          <div><span class="lbl">HI-COMBO</span><span class="val" id="hicombo-display" style="font-size:12px;display:block;">0</span></div>
+          <div><span class="lbl">HI-SCORE</span><span class="val" id="hiscore-display" style="font-size:14px;display:block;">0</span></div>
+          <div><span class="lbl">HI-LINES</span><span class="val" id="hilines-display" style="font-size:14px;display:block;">0</span></div>
+          <div><span class="lbl">HI-COMBO</span><span class="val" id="hicombo-display" style="font-size:14px;display:block;">0</span></div>
         </div>
       </div>
       <div class="mini-box mini-box-menu">
@@ -564,7 +563,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.6</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.7</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1543,11 +1542,15 @@ function startBattleMode(lv){
         <span class="battle-val" id="score-display">0</span>
       </div>
       <div class="battle-vs">VS</div>
-      <div class="battle-stat" style="text-align:right;">
+      <div class="battle-stat">
         <span class="battle-lbl">${COM_INFO[lv].emoji} Lv${lv} ${COM_INFO[lv].name}</span>
         <span class="battle-val" id="com-score-display">0</span>
       </div>
     </div>`;
+  // 各stat幅をキャンバス幅に合わせてセンタリング
+  const stats=topbar.querySelectorAll('.battle-stat');
+  if(stats[0]) stats[0].style.width=CW+'px';
+  if(stats[1]) stats[1].style.width=BCW+'px';
 
   // side-miniを画面下部（controls上）に移動して横並びに
   const sideMini=document.querySelector('.side-mini');
