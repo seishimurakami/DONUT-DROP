@@ -551,7 +551,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.3</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.4</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -882,7 +882,7 @@ let pendingGarbageForPlayer=0,pendingGarbageForCom=0;
 
 function clearLinesOnGrid(g){
   let count=0;
-  for(let r=ROWS-1;r>=0;r--){if(g[r].every(c=>c!==null)){g.splice(r,1);g.unshift(Array(COLS).fill(null));count++;r++;}}
+  for(let r=ROWS-1;r>=0;r--){if(g[r].every(c=>c!==null && c!=='G')){g.splice(r,1);g.unshift(Array(COLS).fill(null));count++;r++;}}
   return count;
 }
 function collidesOnGrid(p,g){
