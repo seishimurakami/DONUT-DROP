@@ -58,13 +58,15 @@ struct GameWebView: UIViewRepresentable {
             guard let body = message.body as? [String: Any],
                   let type = body["type"] as? String else { return }
 
-            // Game Centerスコア送信
+            // Game Centerスコア送信・ランキング表示
             if message.name == "gameCenter" {
-                if type == "submitScore",
-                   let leaderboardID = body["leaderboardID"] as? String,
-                   let score = body["score"] as? Int {
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
+                    if type == "submitScore",
+                       let leaderboardID = body["leaderboardID"] as? String,
+                       let score = body["score"] as? Int {
                         GameCenterManager.shared.submitScore(score, leaderboardID: leaderboardID)
+                    } else if type == "showLeaderboards" {
+                        GameCenterManager.shared.showLeaderboards()
                     }
                 }
                 return

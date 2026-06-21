@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.10.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.1</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -910,23 +910,28 @@ function lockPiece(p) {
 }
 
 function checkLines() {
-  const cleared=[];
-  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null && c!=='G')) cleared.push(r);
-  if(cleared.length){
-    cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
-    sfxLineClear(cleared.length);
+  // spliceしながら同じインデックスを再チェック（clearLinesOnGridと同じ方式）
+  let count=0;
+  for(let r=ROWS-1;r>=0;r--){
+    if(grid[r].every(c=>c!==null && c!=='G')){
+      spawnLineParticles(r);
+      grid.splice(r,1); grid.unshift(Array(COLS).fill(null));
+      count++; r++;
+    }
+  }
+  if(count>0){
+    sfxLineClear(count);
     combo++; if(combo>1) sfxCombo(combo);
     shakeTimer=15;
-    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*level*combo;
-    score+=earned; lines+=cleared.length;
+    const earned=[0,100,300,600,1000][Math.min(count,4)]*level*combo;
+    score+=earned; lines+=count;
     const nl=Math.floor(lines/10)+1;
     if(nl>level){level=nl;dropInterval=Math.max(100,700-(level-1)*60);sfxLevelUp();}
     if(combo>1) showCombo(combo);
     showScorePopup(earned);
     updateUI();
-    // バトルモード時: 消した行数分だけゴミラインをCOMへ送る
     if(gameMode==='battle'){
-      pendingGarbageForCom+=cleared.length;
+      pendingGarbageForCom+=count;
       updateGarbageIndicator();
     }
   } else { combo=0; }

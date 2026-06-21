@@ -517,6 +517,7 @@ app.innerHTML = `
         <div class="menu-icon-row">
           <button class="menu-icon-btn" id="btn-mute">🔊</button>
           <button class="menu-icon-btn" id="btn-settings">⚙</button>
+          <button class="menu-icon-btn" id="btn-ranking">🏆</button>
         </div>
         <a class="menu-mini-link" href="https://seishimurakami.github.io/DONUT-DROP/help.html" target="_blank">❓ ヘルプ</a>
         <a class="menu-mini-link" href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">📩 サポート</a>
@@ -550,7 +551,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.0</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.1</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1124,17 +1125,23 @@ function lockPiece(p) {
 }
 
 function checkLines() {
-  const cleared=[];
-  for(let r=ROWS-1;r>=0;r--) if(grid[r].every(c=>c!==null)) cleared.push(r);
-  if(cleared.length){
-    cleared.forEach(r=>{spawnLineParticles(r);grid.splice(r,1);grid.unshift(Array(COLS).fill(null));});
-    sfxLineClear(cleared.length);
-    haptic('lineClear', {count: cleared.length});
-    combo++; if(combo>1) { sfxCombo(combo); haptic('combo', {count: combo}); }
+  // spliceしながら同じインデックスを再チェック（clearLinesOnGridと同じ方式）
+  let count=0;
+  for(let r=ROWS-1;r>=0;r--){
+    if(grid[r].every(c=>c!==null)){
+      spawnLineParticles(r);
+      grid.splice(r,1); grid.unshift(Array(COLS).fill(null));
+      count++; r++;
+    }
+  }
+  if(count>0){
+    sfxLineClear(count);
+    haptic('lineClear',{count});
+    combo++; if(combo>1){sfxCombo(combo);haptic('combo',{count:combo});}
     shakeTimer=15;
-    const earned=[0,100,300,600,1000][Math.min(cleared.length,4)]*level*combo;
-    score+=earned; lines+=cleared.length;
-    if(gameMode==='battle') pendingGarbageForCom+=cleared.length;
+    const earned=[0,100,300,600,1000][Math.min(count,4)]*level*combo;
+    score+=earned; lines+=count;
+    if(gameMode==='battle') pendingGarbageForCom+=count;
     const nl=Math.floor(lines/10)+1;
     if(nl>level){level=nl;dropInterval=Math.max(100,700-(level-1)*60);sfxLevelUp();}
     if(combo>1) showCombo(combo);
@@ -1320,6 +1327,11 @@ btnTap('btn-pause',  ()=>{
   const b=document.getElementById('btn-pause');if(b)b.textContent=gamePaused?'▶':'⏸';
 });
 btnTap('btn-mute',   ()=>toggleMute());
+btnTap('btn-ranking',()=>{
+  if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.gameCenter){
+    window.webkit.messageHandlers.gameCenter.postMessage({type:'showLeaderboards'});
+  }
+});
 
 const escOverlay=document.getElementById('esc-overlay');
 document.getElementById('esc-cancel')?.addEventListener('click',()=>{ escOverlay.style.display='none'; gamePaused=false; hidePauseBanner(); if(bgmGain&&!muted)bgmGain.gain.value=bgmVolume*0.18; });
