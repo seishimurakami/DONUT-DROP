@@ -551,7 +551,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.1</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.11.2</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1169,8 +1169,16 @@ function drawGrid() {
   ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
   for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(c*CELL,0);ctx.lineTo(c*CELL,CH);ctx.stroke();}
   for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL);ctx.lineTo(CW,r*CELL);ctx.stroke();}
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
-    if(grid[r][c]!==null) drawDonut(ctx,c*CELL+1,r*CELL+1,CELL-2,DONUTS[grid[r][c]],1,gameTime*.05);
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const cell=grid[r][c];
+    if(cell===null) continue;
+    if(cell==='G'){
+      ctx.fillStyle='rgba(150,150,150,0.7)';
+      ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);
+    } else {
+      drawDonut(ctx,c*CELL+1,r*CELL+1,CELL-2,DONUTS[cell],1,gameTime*.05);
+    }
+  }
 }
 
 function drawCurrentPiece() {
