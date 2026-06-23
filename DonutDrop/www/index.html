@@ -563,7 +563,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.1</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.2</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -1615,7 +1615,9 @@ function startBattleMode(lv){
   nhRow.appendChild(mkNH('NEXT',nextEl));
   nhRow.appendChild(mkNH('HOLD',holdEl));
 
-  // COMボードキャンバスを追加（VSなし）
+  // 前回の対戦レイアウトを完全クリーンアップ（リトライ時の空divが残るとgapでずれる）
+  const oldPC=document.getElementById('battle-player-col');
+  if(oldPC){ const cw=gameCanvas.parentElement; if(oldPC.contains(cw)&&oldPC.parentElement) oldPC.parentElement.insertBefore(cw,oldPC); oldPC.remove(); }
   const old=document.getElementById('com-board-area');if(old)old.remove();
   document.getElementById('battle-vs-el')?.remove();
   document.getElementById('battle-nh-row')?.remove();
