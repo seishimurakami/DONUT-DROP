@@ -586,7 +586,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.16.4</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.16.5</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -631,34 +631,47 @@ function recalcCanvasSize(shrinkOnly) {
   BCW = COLS * BATTLE_CELL; BCH = ROWS * BATTLE_CELL;
 }
 
+// ゲーム中かどうかを確認するヘルパー（gameRunningはこの後で定義される）
+function _isGameActive() { return typeof gameRunning!=='undefined'&&gameRunning; }
+
 // double-rAF で初回計測
 requestAnimationFrame(() => {
   requestAnimationFrame(() => { recalcCanvasSize(false); });
 });
 
-// ResizeObserver: env() safe-area が遅れて適用されると topbar/controls がリサイズされる。
-// それを検知して再計算する（setTimeout の固定時間より確実）。
-// ゲーム開始後は不要なので2秒後に監視終了。
+// ResizeObserver: env() safe-area が遅れて適用されると topbar/controls がリサイズされる
 (()=>{
   if(typeof ResizeObserver === 'undefined') {
-    // フォールバック: 300ms後に再計測
-    setTimeout(()=>recalcCanvasSize(true), 300);
+    setTimeout(()=>recalcCanvasSize(false), 300);
     return;
   }
   let _obsTimer=null;
   const _layoutObs = new ResizeObserver(()=>{
     clearTimeout(_obsTimer);
-    _obsTimer = setTimeout(()=>{ recalcCanvasSize(false); }, 16);
+    _obsTimer = setTimeout(()=>{ if(!_isGameActive()) recalcCanvasSize(false); }, 16);
   });
   requestAnimationFrame(()=>{
     const topEl=document.getElementById('topbar');
     const ctrlEl=document.getElementById('controls');
     if(topEl)  _layoutObs.observe(topEl);
     if(ctrlEl) _layoutObs.observe(ctrlEl);
-    // 2秒後に監視終了（ゲーム中の不要な再計算を防ぐ）
-    setTimeout(()=>{ _layoutObs.disconnect(); }, 2000);
+    // iOS 26 のアニメーション完了を待って5秒間監視
+    setTimeout(()=>{ _layoutObs.disconnect(); }, 5000);
   });
 })();
+
+// window.resize: iOS 26 Liquid Glass でビューポートが動的に変わる場合に対応
+{
+  let _winResizeTimer=null;
+  window.addEventListener('resize', ()=>{
+    if(_isGameActive()) return;
+    clearTimeout(_winResizeTimer);
+    _winResizeTimer=setTimeout(()=>recalcCanvasSize(false), 50);
+  });
+}
+
+// 100ms・500ms・1500ms の追加フォールバック（env()遅延 & Liquid Glass安定待ち）
+[100, 500, 1500].forEach(d=>setTimeout(()=>{ if(!_isGameActive()) recalcCanvasSize(false); }, d));
 
 const ctx     = gameCanvas.getContext('2d');
 const pCtx    = pCanvas.getContext('2d');
