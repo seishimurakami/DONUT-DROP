@@ -586,7 +586,7 @@ app.innerHTML = `
     <button class="ctrl-btn large" id="btn-drop">DROP</button>
     <button class="ctrl-btn" id="btn-right">▶</button>
   </div>
-  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.16.3</div>
+  <div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.16.4</div>
 `;
 
 // ════════════════════════════════════════════════════════
@@ -719,12 +719,29 @@ function weightedRandom(weights) {
 // AUDIO ENGINE
 // ════════════════════════════════════════════════════════
 let audioCtx=null, muted=false, bgmGain=null, sfxGain=null, bgmStarted=false, bgmAudio=null;
+let sfxFilter=null, sfxReverb=null, sfxDryGain=null, sfxWetGain=null;
+
+function buildImpulse(ctx, dur=0.8, decay=2.8) {
+  const len=Math.floor(ctx.sampleRate*dur), buf=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);}
+  return buf;
+}
 
 function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   bgmGain = audioCtx.createGain(); bgmGain.gain.value=bgmVolume*0.18; bgmGain.connect(audioCtx.destination);
   sfxGain = audioCtx.createGain(); sfxGain.gain.value=sfxVolume; sfxGain.connect(audioCtx.destination);
+  // ローパスフィルター（1600Hz以上を削る）
+  sfxFilter = audioCtx.createBiquadFilter(); sfxFilter.type='lowpass';
+  sfxFilter.frequency.value=1600; sfxFilter.Q.value=0.7;
+  // リバーブ（0.8秒・小部屋）
+  sfxReverb = audioCtx.createConvolver(); sfxReverb.buffer=buildImpulse(audioCtx);
+  sfxDryGain = audioCtx.createGain(); sfxDryGain.gain.value=0.6;
+  sfxWetGain = audioCtx.createGain(); sfxWetGain.gain.value=0.4;
+  // ルーティング: filter → dry/wet → sfxGain
+  sfxFilter.connect(sfxDryGain); sfxDryGain.connect(sfxGain);
+  sfxFilter.connect(sfxReverb);  sfxReverb.connect(sfxWetGain); sfxWetGain.connect(sfxGain);
   startBGM();
 }
 
@@ -734,7 +751,7 @@ function playTone(freq,type,dur,vol=1,start=0,dest=null) {
   osc.type=type; osc.frequency.value=freq;
   g.gain.setValueAtTime(vol, audioCtx.currentTime+start);
   g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+start+dur);
-  osc.connect(g); g.connect(dest||sfxGain);
+  osc.connect(g); g.connect(dest || sfxFilter || sfxGain);
   osc.start(audioCtx.currentTime+start); osc.stop(audioCtx.currentTime+start+dur);
 }
 
@@ -746,7 +763,7 @@ function sfxLevelUp() { [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'squar
 function sfxGameOver(){ [523,494,440,392,349,294,247].forEach((f,i)=>playTone(f,'sawtooth',0.4,0.4,i*0.12)); haptic('gameOver'); }
 function sfxHold()    { playTone(440,'triangle',0.1,0.3); playTone(660,'triangle',0.1,0.3,0.08); }
 function sfxCombo(n)  { playTone(440*Math.pow(1.2,n),'square',0.15,0.5); }
-function sfxPause()   { if(!audioCtx) return; [[880,0],[1100,0.12]].forEach(([f,d])=>{ const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(sfxGain);o.type='sine';o.frequency.value=f;const t=audioCtx.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);}); }
+function sfxPause()   { if(!audioCtx) return; [[880,0],[1100,0.12]].forEach(([f,d])=>{ const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(sfxFilter||sfxGain);o.type='sine';o.frequency.value=f;const t=audioCtx.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);}); }
 
 // ── 設定（localStorage で保存） ──────────────────────────────
 let bgmVolume    = parseFloat(localStorage.getItem('bgmVolume')    ?? '0.7');
