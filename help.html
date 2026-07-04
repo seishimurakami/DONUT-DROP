@@ -75,20 +75,25 @@ section { margin-bottom:24px; }
   border-radius:6px; padding:2px 8px; font-size:11px;
   color:var(--accent);
 }
-.tetro-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.tetro-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
 .tetro-item {
   background:rgba(255,255,255,0.04);
   border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px; padding:10px 8px;
-  text-align:center;
+  border-radius:10px; padding:10px 10px;
+  display:flex; align-items:center; gap:10px;
 }
-.tetro-name { font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
-.tetro-cells { font-size:9px; color:rgba(255,204,0,0.5); margin-top:4px; }
+.tetro-ascii-wrap { flex:0 0 auto; min-width:52px; }
+.tetro-info { flex:1; }
+.tetro-name { font-size:12px; color:var(--accent2); font-weight:bold; }
+.tetro-color { font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px; }
+.tetro-cells { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
 .tetro-ascii {
-  font-family:monospace; font-size:13px; color:var(--accent2);
-  line-height:1.35; display:inline-block; text-align:left;
+  font-family:monospace; font-size:12px; color:rgba(255,204,0,0.7);
+  line-height:1.4; display:inline-block; text-align:left;
   white-space:pre;
 }
+a.ext { color:var(--accent3); text-decoration:none; }
+a.ext:hover { text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -141,91 +146,120 @@ section { margin-bottom:24px; }
   </section>
 
   <section>
-    <div class="section-title">🟡 ブロックの形一覧</div>
+    <div class="section-title">🟡 ブロックの形と色</div>
     <div class="card" style="padding:10px;">
-      <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">全部で13種類のブロックがあります。すべて回転できます！</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">12種類のブロックがあります。形と色は常に同じ組み合わせ！すべて回転できます。</p>
       <div class="tetro-grid">
         <div class="tetro-item">
-          <div class="tetro-name">O型</div>
-          <pre class="tetro-ascii">■ ■
-■ ■</pre>
-          <div class="tetro-cells">4マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
+■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">O型</div>
+            <div class="tetro-color">🍯 はちみつグレーズ</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">I型</div>
-          <pre class="tetro-ascii">■■■■</pre>
-          <div class="tetro-cells">4マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■■■■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">I型</div>
+            <div class="tetro-color">🩵 ブルーハワイ</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">L型</div>
-          <pre class="tetro-ascii">■
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
 ■
-■ ■</pre>
-          <div class="tetro-cells">4マス</div>
+■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">L型</div>
+            <div class="tetro-color">🍓 ストロベリー</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">J型</div>
-          <pre class="tetro-ascii">  ■
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">  ■
   ■
-■ ■</pre>
-          <div class="tetro-cells">4マス</div>
+■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">J型</div>
+            <div class="tetro-color">🫐 ブルーベリー</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">T型</div>
-          <pre class="tetro-ascii">■ ■ ■
-  ■</pre>
-          <div class="tetro-cells">4マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■ ■
+  ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">T型</div>
+            <div class="tetro-color">🧡 コーラルオレンジ</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">S型</div>
-          <pre class="tetro-ascii">  ■ ■
-■ ■</pre>
-          <div class="tetro-cells">4マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">  ■ ■
+■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">S型</div>
+            <div class="tetro-color">💛 フレンチクルーラー</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">Z型</div>
-          <pre class="tetro-ascii">■ ■
-  ■ ■</pre>
-          <div class="tetro-cells">4マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
+  ■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">Z型</div>
+            <div class="tetro-color">🍵 抹茶グリーン</div>
+            <div class="tetro-cells">4マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">十字型</div>
-          <pre class="tetro-ascii">  ■
-■ ■ ■
-  ■</pre>
-          <div class="tetro-cells">5マス</div>
-        </div>
-        <div class="tetro-item">
-          <div class="tetro-name">大L型</div>
-          <pre class="tetro-ascii">■
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
 ■
 ■
-■ ■</pre>
-          <div class="tetro-cells">5マス</div>
+■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">大L型</div>
+            <div class="tetro-color">💙 ネイビー</div>
+            <div class="tetro-cells">5マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">1マス</div>
-          <pre class="tetro-ascii">■</pre>
-          <div class="tetro-cells">1マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">1マス</div>
+            <div class="tetro-color">🍫 チョコリング</div>
+            <div class="tetro-cells">1マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">斜め型</div>
-          <pre class="tetro-ascii">■
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
   ■
-    ■</pre>
-          <div class="tetro-cells">3マス</div>
+    ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">斜め型</div>
+            <div class="tetro-color">🍩 もちもちリング</div>
+            <div class="tetro-cells">3マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">U型</div>
-          <pre class="tetro-ascii">■   ■
-■ ■ ■</pre>
-          <div class="tetro-cells">5マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■   ■
+■ ■ ■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">U型</div>
+            <div class="tetro-color">🤍 ミルキーホワイト</div>
+            <div class="tetro-cells">5マス</div>
+          </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-name">コーナー型</div>
-          <pre class="tetro-ascii">■ ■
-■</pre>
-          <div class="tetro-cells">3マス</div>
+          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
+■</pre></div>
+          <div class="tetro-info">
+            <div class="tetro-name">コーナー型</div>
+            <div class="tetro-color">🤎 オールドファッション</div>
+            <div class="tetro-cells">3マス</div>
+          </div>
         </div>
       </div>
     </div>
@@ -234,7 +268,7 @@ section { margin-bottom:24px; }
   <section>
     <div class="section-title">💡 テクニック</div>
     <div class="card">
-      <b style="color:var(--accent2)">ホールド</b>：今のブロックをためておいて、あとで使えます。<span class="badge">C キー</span><br>
+      <b style="color:var(--accent2)">ホールド</b>：今のブロックをためておいて、あとで使えます。<span class="badge">H キー / HOLDボタン</span><br>
       <b style="color:var(--accent2)">コンボ</b>：ラインを消したあと、次のブロックでもラインを消すとコンボが続きます！<br>
       コンボ数はスコアにかけ算されるので、3コンボなら3倍、5コンボなら5倍に！<br>
       <span style="color:var(--accent);font-size:12px;">⚠️ ブロックが置かれてラインが消えなかった瞬間にコンボがリセット。</span><br>
@@ -272,6 +306,8 @@ section { margin-bottom:24px; }
       <div class="donut-item"><span class="emoji">🩵</span>ブルーハワイ<br><span class="pts">16pt</span></div>
       <div class="donut-item"><span class="emoji">🤍</span>ミルキーホワイト<br><span class="pts">22pt</span></div>
       <div class="donut-item"><span class="emoji">💙</span>ネイビー<br><span class="pts">14pt</span></div>
+      <div class="donut-item"><span class="emoji">🧡</span>コーラルオレンジ<br><span class="pts">15pt</span></div>
+      <div class="donut-item"><span class="emoji">🍵</span>抹茶グリーン<br><span class="pts">13pt</span></div>
     </div>
   </section>
 
@@ -285,6 +321,15 @@ section { margin-bottom:24px; }
         <tr><td>4ライン消し</td><td>1000点 × スピード × コンボ</td></tr>
         <tr><td>ハードドロップ</td><td>落とした段数 × 2点</td></tr>
       </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🎵 BGM</div>
+    <div class="card">
+      <b style="color:var(--accent2)">"Donut Drop"</b> — Seishi Murakami オリジナル楽曲<br>
+      <span style="font-size:12px;color:rgba(255,255,255,0.55);">Produced with SUNO AI</span><br>
+      <a class="ext" href="https://suno.com/s/Wqo2vZe6dF5GoImk" target="_blank">🔗 suno.com/s/Wqo2vZe6dF5GoImk</a>
     </div>
   </section>
 
