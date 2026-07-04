@@ -10,6 +10,7 @@ class GameCenterManager: NSObject, GKGameCenterControllerDelegate {
     static let boardHiLines  = "jp.donutdrop.hilines"
     static let boardHiCombo  = "jp.donutdrop.hicombo"
     static let boardBattleLv = "jp.donutdrop.battlelv"
+    static let boardWins = "WINS"
 
     func authenticatePlayer() {
         GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
