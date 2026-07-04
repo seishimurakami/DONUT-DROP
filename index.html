@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.4</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.5</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -611,7 +611,7 @@ function weightedRandom(weights) {
 // ════════════════════════════════════════════════════════
 let audioCtx=null, muted=false, bgmAudio=null, sfxGain=null, bgmStarted=false;
 let bgmVolume=parseFloat(localStorage.getItem('donutBgmVolume')?? '0.3');
-let sfxVolume=parseFloat(localStorage.getItem('donutSfxVolume')?? '0.5');
+let sfxVolume=parseFloat(localStorage.getItem('donutSfxVolume')?? '0.3');
 
 function initAudio() {
   if(audioCtx) return;
