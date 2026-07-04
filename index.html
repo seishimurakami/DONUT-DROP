@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.6</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.7</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -623,17 +623,22 @@ function buildImpulse(ctx, dur=0.8, decay=2.8) {
 function initAudio() {
   if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  audioCtx.resume().catch(()=>{});
   sfxGain = audioCtx.createGain(); sfxGain.gain.value=sfxVolume; sfxGain.connect(audioCtx.destination);
-  // ローパスフィルター（1600Hz以上を削る）
+  // ローパスフィルター
   sfxFilter = audioCtx.createBiquadFilter(); sfxFilter.type='lowpass';
   sfxFilter.frequency.value=1600; sfxFilter.Q.value=0.7;
-  // リバーブ（0.8秒・小部屋）
-  sfxReverb = audioCtx.createConvolver(); sfxReverb.buffer=buildImpulse(audioCtx);
-  sfxDryGain = audioCtx.createGain(); sfxDryGain.gain.value=0.6;
-  sfxWetGain = audioCtx.createGain(); sfxWetGain.gain.value=0.4;
-  // ルーティング: filter → dry/wet → sfxGain
-  sfxFilter.connect(sfxDryGain); sfxDryGain.connect(sfxGain);
-  sfxFilter.connect(sfxReverb);  sfxReverb.connect(sfxWetGain); sfxWetGain.connect(sfxGain);
+  // リバーブ: 失敗してもフィルター経由で音が出るよう try-catch
+  try {
+    sfxReverb = audioCtx.createConvolver(); sfxReverb.buffer=buildImpulse(audioCtx);
+    sfxDryGain = audioCtx.createGain(); sfxDryGain.gain.value=0.6;
+    sfxWetGain = audioCtx.createGain(); sfxWetGain.gain.value=0.4;
+    sfxFilter.connect(sfxDryGain); sfxDryGain.connect(sfxGain);
+    sfxFilter.connect(sfxReverb);  sfxReverb.connect(sfxWetGain); sfxWetGain.connect(sfxGain);
+  } catch(e) {
+    sfxReverb=null;
+    sfxFilter.connect(sfxGain); // リバーブ失敗 → フィルターのみ直結
+  }
   startBGM();
 }
 
