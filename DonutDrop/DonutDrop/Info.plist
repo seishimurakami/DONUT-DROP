@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleGetInfoString</key>
+	<string></string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-8655833266772741~1219353529</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_donutdrop._tcp</string>
+		<string>_donutdrop._udp</string>
+	</array>
+</dict>
+</plist>

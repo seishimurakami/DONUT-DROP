@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BB44DD652FDBA6CA00ADF2FA /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = BB44DD642FDB9F1100ADF2FA /* index.html */; };
+		BBC168432FF8D3B1005C5C8F /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = BBC168422FF8D3B1005C5C8F /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BBC168432FF8D3B1005C5C8F /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +94,7 @@
 			);
 			name = DonutDrop;
 			packageProductDependencies = (
+				BBC168422FF8D3B1005C5C8F /* GoogleMobileAds */,
 			);
 			productName = DonutDrop;
 			productReference = BB44DD522FDB9E0300ADF2FA /* DonutDrop.app */;
@@ -121,6 +124,9 @@
 			);
 			mainGroup = BB44DD492FDB9E0300ADF2FA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BBC168412FF8D3B1005C5C8F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB44DD532FDB9E0300ADF2FA /* Products */;
 			projectDirPath = "";
@@ -278,8 +284,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DonutDrop/DonutDrop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 56Q4R8SKFD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -287,6 +294,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "DONUT-DROP";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "近くのiPhoneと対戦するために使います";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -297,7 +305,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.17;
 				PRODUCT_BUNDLE_IDENTIFIER = seishimurakami.DonutDrop;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -320,8 +328,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DonutDrop/DonutDrop.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 56Q4R8SKFD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -329,6 +338,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "DONUT-DROP";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "近くのiPhoneと対戦するために使います";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -339,7 +349,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.17;
 				PRODUCT_BUNDLE_IDENTIFIER = seishimurakami.DonutDrop;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -378,6 +388,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BBC168412FF8D3B1005C5C8F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BBC168422FF8D3B1005C5C8F /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BBC168412FF8D3B1005C5C8F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BB44DD4A2FDB9E0300ADF2FA /* Project object */;
 }

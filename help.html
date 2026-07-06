@@ -82,16 +82,11 @@ section { margin-bottom:24px; }
   border-radius:10px; padding:10px 10px;
   display:flex; align-items:center; gap:10px;
 }
-.tetro-ascii-wrap { flex:0 0 auto; min-width:52px; }
+.shape-canvas { flex:0 0 auto; display:block; }
 .tetro-info { flex:1; }
 .tetro-name { font-size:12px; color:var(--accent2); font-weight:bold; }
 .tetro-color { font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px; }
 .tetro-cells { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
-.tetro-ascii {
-  font-family:monospace; font-size:12px; color:rgba(255,204,0,0.7);
-  line-height:1.4; display:inline-block; text-align:left;
-  white-space:pre;
-}
 a.ext { color:var(--accent3); text-decoration:none; }
 a.ext:hover { text-decoration:underline; }
 </style>
@@ -151,8 +146,7 @@ a.ext:hover { text-decoration:underline; }
       <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">12種類のブロックがあります。形と色は常に同じ組み合わせ！すべて回転できます。</p>
       <div class="tetro-grid">
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
-■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-0"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">O型</div>
             <div class="tetro-color">🍯 はちみつグレーズ</div>
@@ -160,7 +154,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■■■■</pre></div>
+          <canvas class="shape-canvas" id="shape-1"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">I型</div>
             <div class="tetro-color">🩵 ブルーハワイ</div>
@@ -168,9 +162,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
-■
-■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-2"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">L型</div>
             <div class="tetro-color">🍓 ストロベリー</div>
@@ -178,9 +170,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">  ■
-  ■
-■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-3"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">J型</div>
             <div class="tetro-color">🫐 ブルーベリー</div>
@@ -188,8 +178,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■ ■
-  ■</pre></div>
+          <canvas class="shape-canvas" id="shape-4"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">T型</div>
             <div class="tetro-color">🧡 コーラルオレンジ</div>
@@ -197,8 +186,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">  ■ ■
-■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-5"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">S型</div>
             <div class="tetro-color">💛 フレンチクルーラー</div>
@@ -206,8 +194,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
-  ■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-6"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">Z型</div>
             <div class="tetro-color">🍵 抹茶グリーン</div>
@@ -215,10 +202,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
-■
-■
-■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-7"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">大L型</div>
             <div class="tetro-color">💙 ネイビー</div>
@@ -226,7 +210,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■</pre></div>
+          <canvas class="shape-canvas" id="shape-8"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">1マス</div>
             <div class="tetro-color">🍫 チョコリング</div>
@@ -234,9 +218,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■
-  ■
-    ■</pre></div>
+          <canvas class="shape-canvas" id="shape-9"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">斜め型</div>
             <div class="tetro-color">🍩 もちもちリング</div>
@@ -244,8 +226,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■   ■
-■ ■ ■</pre></div>
+          <canvas class="shape-canvas" id="shape-10"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">U型</div>
             <div class="tetro-color">🤍 ミルキーホワイト</div>
@@ -253,8 +234,7 @@ a.ext:hover { text-decoration:underline; }
           </div>
         </div>
         <div class="tetro-item">
-          <div class="tetro-ascii-wrap"><pre class="tetro-ascii">■ ■
-■</pre></div>
+          <canvas class="shape-canvas" id="shape-11"></canvas>
           <div class="tetro-info">
             <div class="tetro-name">コーナー型</div>
             <div class="tetro-color">🤎 オールドファッション</div>
@@ -289,6 +269,17 @@ a.ext:hover { text-decoration:underline; }
       ★★★ むずかしい（Lv.5〜6）<br>
       💀 かなりきつい（Lv.7〜8）<br>
       💀💀 むちゃくちゃ（Lv.9）
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🤖 COMのAIについて</div>
+    <div class="card">
+      <b style="color:var(--accent2)">アルゴリズム</b>：貪欲法（グリーディ法）＋ Dellacherie 式 盤面評価<br><br>
+      毎回、全ての回転と列にブロックを置いたときの盤面を計算し、もっとも良い手を選びます。<br>
+      盤面の評価には、穴の数・積み上げ高さ・凹凸・井戸の深さなど 6 つの特徴量を組み合わせた <b style="color:var(--accent3)">Dellacherie 式</b> を使っています。<br><br>
+      <b style="color:var(--accent2)">オリジナル実装</b>：外部ライブラリは使用せず、ゼロから書いたオリジナルコードです。<br>
+      難易度は「ベスト手を選ぶ確率」と「候補のプール幅」で調整しています。
     </div>
   </section>
 
@@ -338,5 +329,106 @@ a.ext:hover { text-decoration:underline; }
   </div>
   <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.3);margin-top:20px;">© 2026 Seishi Murakami</p>
 </div>
+<script>
+// ── ゲームと同じドーナツデータ ────────────────────────────
+const DONUTS = [
+  { body:'#F5DEB3', glaze:'#DEB887', sprinkles:['#FF69B4','#4169E1','#32CD32'], special:'ring'      },
+  { body:'#4A1C00', glaze:'#6B2D00', sprinkles:['#FFD700','#FFFFFF'],            special:'choco'     },
+  { body:'#FFB6C1', glaze:'#FF69B4', sprinkles:['#FFFFFF','#FF1493','#FFD700'],  special:'strawberry'},
+  { body:'#FFD700', glaze:'#FFA500', sprinkles:[],                               special:'honey'     },
+  { body:'#C4813A', glaze:'#A0522D', sprinkles:[],                               special:'crinkle'   },
+  { body:'#7B68EE', glaze:'#6A5ACD', sprinkles:['#FFFFFF','#B0C4DE'],            special:'berry'     },
+  { body:'#FFFACD', glaze:'#FFE66D', sprinkles:['#FF6347'],                      special:'cruller'   },
+  { body:'#FFF8DC', glaze:'#FFEAA7', sprinkles:['#FFD700','#FF69B4'],            special:'cream'     },
+  { body:'#40C4FF', glaze:'#0091EA', sprinkles:['#FFFFFF','#E1F5FE'],            special:'blue'      },
+  { body:'#F0F8FF', glaze:'#BBDEFB', sprinkles:['#81D4FA','#CE93D8','#FFE082'], special:'white'     },
+  { body:'#3949AB', glaze:'#1A237E', sprinkles:['#FFFFFF','#9FA8DA'],            special:'navy'      },
+  { body:'#FF8C69', glaze:'#FF4500', sprinkles:['#FFFFFF','#FFD700','#FFF0E0'],  special:'coral'     },
+  { body:'#A8D8A8', glaze:'#5A9E5A', sprinkles:['#FFFFFF','#C8F0C8'],            special:'matcha'    },
+];
+const SHAPES = [
+  [[-1,-1],[0,-1],[-1,0],[0,0]],
+  [[-2,0],[-1,0],[0,0],[1,0]],
+  [[0,-1],[0,0],[0,1],[1,1]],
+  [[0,-1],[0,0],[0,1],[-1,1]],
+  [[-1,0],[0,0],[1,0],[0,-1]],
+  [[0,0],[1,0],[0,1],[-1,1]],
+  [[-1,0],[0,0],[0,1],[1,1]],
+  [[0,-1],[0,0],[0,1],[0,2],[1,2]],
+  [[0,0]],
+  [[-1,-1],[0,0],[1,1]],
+  [[-1,0],[1,0],[-1,1],[0,1],[1,1]],
+  [[0,0],[1,0],[0,1]],
+];
+const SHAPE_DONUT_MAP = [3,8,2,5,11,6,12,10,1,0,9,4];
+
+// ── ゲームと同じ drawDonut 関数 ──────────────────────────
+function drawDonut(c,x,y,sz,donut,alpha,time){
+  alpha=alpha??1; time=time??0;
+  c.save(); c.globalAlpha=alpha; c.translate(x+sz/2,y+sz/2);
+  const r=sz*.42, hr=sz*.16;
+  if(donut.special==='ring'){
+    const bumpR=r*.28, bc=8;
+    c.beginPath(); c.arc(0,0,r*.72,0,Math.PI*2); c.arc(0,0,r*.38,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#FFF8E7'); g.addColorStop(.5,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+    for(let i=0;i<bc;i++){
+      const a=(Math.PI*2/bc)*i, bx=Math.cos(a)*r*.56, by=Math.sin(a)*r*.56;
+      const g2=c.createRadialGradient(bx-bumpR*.3,by-bumpR*.3,0,bx,by,bumpR);
+      g2.addColorStop(0,'#FFF8E7'); g2.addColorStop(1,donut.body);
+      c.beginPath(); c.arc(bx,by,bumpR,0,Math.PI*2); c.fillStyle=g2; c.fill();
+    }
+  } else if(donut.special==='crinkle'){
+    c.beginPath();
+    const pts=16;
+    for(let i=0;i<=pts;i++){
+      const a=(Math.PI*2/pts)*i, rr=r*(1+.1*Math.sin(a*6));
+      if(i===0) c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
+    }
+    c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#D4A574'); g.addColorStop(.6,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+  } else {
+    c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.25,-r*.25,hr*.5,0,0,r);
+    g.addColorStop(0,'#FFFFFF55'); g.addColorStop(.3,donut.body+'EE'); g.addColorStop(1,donut.glaze+'CC');
+    c.fillStyle=g; c.fill();
+    c.beginPath(); c.arc(0,-r*.05,r*.75,Math.PI+.5,-.5); c.arc(0,-r*.05,hr*1.1,-.5,Math.PI+.5,true);
+    c.fillStyle=donut.glaze+'AA'; c.fill();
+  }
+  if(donut.sprinkles.length>0){
+    for(let i=0;i<8;i++){
+      const sa=(Math.PI*2/8)*i, sr=hr+(r-hr)*.55+Math.sin(sa*3)*2;
+      c.save(); c.translate(Math.cos(sa)*sr,Math.sin(sa)*sr); c.rotate(sa+Math.PI/4);
+      c.fillStyle=donut.sprinkles[i%donut.sprinkles.length]; c.fillRect(-3,-1,6,2); c.restore();
+    }
+  }
+  c.beginPath(); c.arc(-r*.2,-r*.3,r*.18,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+  c.shadowColor=donut.glaze; c.shadowBlur=8;
+  c.beginPath(); c.arc(0,0,r*1.05,0,Math.PI*2); c.arc(0,0,hr*.9,0,Math.PI*2,true);
+  c.strokeStyle=donut.glaze+'44'; c.lineWidth=2; c.stroke();
+  c.restore();
+}
+
+// ── 各形状をCanvasに描画 ──────────────────────────────────
+const CELL = 28, PAD = 5;
+SHAPES.forEach((cells, shapeIdx) => {
+  const canvas = document.getElementById('shape-' + shapeIdx);
+  if (!canvas) return;
+  const xs = cells.map(([dx]) => dx);
+  const ys = cells.map(([,dy]) => dy);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  canvas.width  = (maxX - minX + 1) * CELL + PAD * 2;
+  canvas.height = (maxY - minY + 1) * CELL + PAD * 2;
+  const ctx = canvas.getContext('2d');
+  const donut = DONUTS[SHAPE_DONUT_MAP[shapeIdx]];
+  cells.forEach(([dx, dy]) => {
+    drawDonut(ctx, (dx - minX) * CELL + PAD, (dy - minY) * CELL + PAD, CELL, donut, 1, 0);
+  });
+});
+</script>
 </body>
 </html>

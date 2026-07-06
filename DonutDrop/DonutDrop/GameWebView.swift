@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 import CoreHaptics
+import AVFoundation
 
 struct GameWebView: UIViewRepresentable {
 
@@ -12,6 +13,12 @@ struct GameWebView: UIViewRepresentable {
         config.userContentController.add(context.coordinator, name: "haptic")
         // JavaScriptからのGame Centerスコア送信要求を受け取る
         config.userContentController.add(context.coordinator, name: "gameCenter")
+        // JavaScriptからのマルチプレイ操作を受け取る
+        config.userContentController.add(context.coordinator, name: "multiplayer")
+        // JavaScriptからのBGM制御を受け取る
+        config.userContentController.add(context.coordinator, name: "bgm")
+        // JavaScriptからの広告表示リクエストを受け取る
+        config.userContentController.add(context.coordinator, name: "ad")
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.isScrollEnabled = false
@@ -24,6 +31,8 @@ struct GameWebView: UIViewRepresentable {
         if let url = Bundle.main.url(forResource: "index", withExtension: "html") {
             webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
         }
+        context.coordinator.webView = webView
+        MultiplayerManager.shared.webView = webView
         return webView
     }
 
@@ -33,11 +42,47 @@ struct GameWebView: UIViewRepresentable {
 
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
 
+        weak var webView: WKWebView?
         private var hapticEngine: CHHapticEngine?
+        private var bgmPlayer: AVAudioPlayer?
 
         override init() {
             super.init()
             prepareHaptics()
+            prepareBGM()
+        }
+
+        // ── BGMプレイヤーの準備 ──────────────────────────────
+        private func prepareBGM() {
+            guard let url = Bundle.main.url(forResource: "DonutDrop", withExtension: "mp3") else { return }
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
+                try AVAudioSession.sharedInstance().setActive(true)
+                bgmPlayer = try AVAudioPlayer(contentsOf: url)
+                bgmPlayer?.numberOfLoops = -1
+                bgmPlayer?.volume = 0.3
+                bgmPlayer?.prepareToPlay()
+            } catch {}
+        }
+
+        private func handleBGM(type: String, body: [String: Any]) {
+            switch type {
+            case "play":
+                let vol = (body["volume"] as? Double).map { Float($0) } ?? 0.3
+                bgmPlayer?.volume = vol
+                bgmPlayer?.play()
+            case "pause":
+                bgmPlayer?.volume = 0
+            case "resume":
+                let vol = (body["volume"] as? Double).map { Float($0) } ?? 0.3
+                bgmPlayer?.volume = vol
+            case "setVolume":
+                let vol = (body["volume"] as? Double).map { Float($0) } ?? 0.3
+                bgmPlayer?.volume = vol
+            case "stop":
+                bgmPlayer?.stop(); bgmPlayer?.currentTime = 0
+            default: break
+            }
         }
 
         // ── CoreHapticsエンジンの準備 ──────────────────────────
@@ -58,6 +103,31 @@ struct GameWebView: UIViewRepresentable {
             guard let body = message.body as? [String: Any],
                   let type = body["type"] as? String else { return }
 
+            // マルチプレイ操作
+            if message.name == "multiplayer" {
+                DispatchQueue.main.async {
+                    let mp = MultiplayerManager.shared
+                    switch type {
+                    case "startLobby":   mp.startBrowsing()
+                    case "cancelLobby":  mp.disconnect()
+                    case "invite":
+                        if let peerId = body["peerId"] as? String { mp.invite(peerId: peerId) }
+                    case "acceptInvite": mp.acceptInvitation()
+                    case "declineInvite": mp.declineInvitation()
+                    case "send":
+                        if let data = body["data"] as? [String: Any] { mp.send(dict: data) }
+                    case "sendUnreliable":
+                        if let data = body["data"] as? [String: Any] { mp.send(dict: data, reliable: false) }
+                    case "disconnect":   mp.disconnect()
+                    case "playerWon":
+                        let v = (body["wins"] as? Int) ?? 1
+                        GameCenterManager.shared.submitScore(v, leaderboardID: GameCenterManager.boardWins)
+                    default: break
+                    }
+                }
+                return
+            }
+
             // Game Centerスコア送信・ランキング表示
             if message.name == "gameCenter" {
                 DispatchQueue.main.async {
@@ -67,6 +137,32 @@ struct GameWebView: UIViewRepresentable {
                         GameCenterManager.shared.submitScore(score, leaderboardID: leaderboardID)
                     } else if type == "showLeaderboards" {
                         GameCenterManager.shared.showLeaderboards()
+                    }
+                }
+                return
+            }
+
+            // BGM制御
+            if message.name == "bgm" {
+                DispatchQueue.main.async { [weak self] in
+                    self?.handleBGM(type: type, body: body)
+                }
+                return
+            }
+
+            // 広告表示リクエスト（「もう一度！」ボタン）
+            if message.name == "ad", type == "showAd" {
+                DispatchQueue.main.async { [weak self] in
+                    guard let webView = self?.webView else { return }
+                    guard let rootVC = UIApplication.shared.connectedScenes
+                        .compactMap({ $0 as? UIWindowScene })
+                        .first?.windows.first?.rootViewController else {
+                        // 画面取得失敗 → 即遷移
+                        webView.evaluateJavaScript("window.adCallback()", completionHandler: nil)
+                        return
+                    }
+                    AdManager.shared.requestShow(from: rootVC) {
+                        webView.evaluateJavaScript("window.adCallback()", completionHandler: nil)
                     }
                 }
                 return
