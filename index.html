@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.7</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.8</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -757,8 +757,8 @@ function drawStar(c,cx,cy,spikes,outerR,innerR){
 // DONUT DRAWING
 // ════════════════════════════════════════════════════════
 function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
-  // 極小サイズ（バトルボードCOM側など）のみ軽量描画
-  if(sz<16){
+  // バトルボード（sz≒20）など小さいサイズは軽量描画
+  if(sz<24){
     c.save(); c.globalAlpha=alpha;
     const cx=x+sz/2, cy=y+sz/2, r=sz*.42, hr=sz*.16;
     c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2); c.arc(cx,cy,hr,0,Math.PI*2,true);
