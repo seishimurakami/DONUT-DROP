@@ -395,15 +395,9 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.11</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.12</div>
 
 <script>
-// 診断用エラーハンドラー
-window.onerror=function(msg,src,line,col,err){
-  const el=document.getElementById('copyright');
-  if(el) el.textContent='JS ERROR: '+msg+' (line '+line+')';
-  return false;
-};
 // ════════════════════════════════════════════════════════
 // DEVICE DETECTION
 // ════════════════════════════════════════════════════════
@@ -803,10 +797,10 @@ function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
   } else {
     c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.arc(0,0,hr,0,Math.PI*2,true);
     const g=c.createRadialGradient(-r*.25,-r*.25,hr*.5,0,0,r);
-    g.addColorStop(0,'#FFFFFF55'); g.addColorStop(.3,donut.body+'EE'); g.addColorStop(1,donut.glaze+'CC');
+    g.addColorStop(0,'rgba(255,255,255,0.33)'); g.addColorStop(.3,donut.body); g.addColorStop(1,donut.glaze);
     c.fillStyle=g; c.fill();
     c.beginPath(); c.arc(0,-r*.05,r*.75,Math.PI+.5,-.5); c.arc(0,-r*.05,hr*1.1,-.5,Math.PI+.5,true);
-    c.fillStyle=donut.glaze+'AA'; c.fill();
+    c.save(); c.globalAlpha=0.67; c.fillStyle=donut.glaze; c.fill(); c.restore();
   }
 
   if(donut.sprinkles.length>0){
@@ -819,7 +813,7 @@ function drawDonut(c,x,y,sz,donut,alpha=1,time=0) {
   c.beginPath(); c.arc(-r*.2,-r*.3,r*.18,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
   c.shadowColor=donut.glaze; c.shadowBlur=8;
   c.beginPath(); c.arc(0,0,r*1.05,0,Math.PI*2); c.arc(0,0,hr*.9,0,Math.PI*2,true);
-  c.strokeStyle=donut.glaze+'44'; c.lineWidth=2; c.stroke();
+  c.save(); c.globalAlpha=0.27; c.strokeStyle=donut.glaze; c.lineWidth=2; c.stroke(); c.restore();
   c.restore();
 }
 
@@ -1428,20 +1422,8 @@ function gameLoop(ts) {
   const dt=ts-lastTime; lastTime=ts; gameTime++;
   drawBg();
 
-  // 診断: 画面に直接テキスト表示
-  let dbgEl=document.getElementById('__dbg__');
-  if(!dbgEl){dbgEl=document.createElement('div');dbgEl.id='__dbg__';dbgEl.style.cssText='position:fixed;top:4px;left:50%;transform:translateX(-50%);background:red;color:white;font-size:11px;padding:2px 8px;z-index:99999;border-radius:4px;font-family:monospace;pointer-events:none;';document.body.appendChild(dbgEl);}
-  const ov__=document.getElementById('overlay');
   const dc = getDrawCtx();
-  // canvas中心のDOM要素を特定（何が上に乗っているか）
-  const _cvs=gameMode==='battle'?battleGameCanvas:gameCanvas;
-  let _topId='?';
-  if(_cvs){const _r=_cvs.getBoundingClientRect();const _el=document.elementFromPoint(_r.left+_r.width/2,_r.top+_r.height/2);_topId=_el?(_el.id||_el.tagName):'null';}
-  dbgEl.textContent='LOOP mode='+gameMode+' CW='+CW+' CH='+CH+' ovr='+(ov__?ov__.style.display:'?')+' dc='+(dc?'ok':'null')+' top='+_topId;
-
   dc.clearRect(0,0,CW,CH);
-  // 診断: canvas全体を明るい赤で塗りつぶす → 見えなければ何かが上を覆っている
-  dc.fillStyle='rgb(255,0,0)'; dc.fillRect(0,0,CW,CH);
   dc.save();
   if(!gamePaused){
     if(shakeTimer>0){const a=shakeTimer*.5;dc.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
