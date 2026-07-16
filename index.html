@@ -395,7 +395,7 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.9</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.10</div>
 
 <script>
 // 診断用エラーハンドラー
@@ -1427,6 +1427,12 @@ function gameLoop(ts) {
   if(!gameRunning) return;
   const dt=ts-lastTime; lastTime=ts; gameTime++;
   drawBg();
+
+  // 診断: 画面に直接テキスト表示
+  let dbgEl=document.getElementById('__dbg__');
+  if(!dbgEl){dbgEl=document.createElement('div');dbgEl.id='__dbg__';dbgEl.style.cssText='position:fixed;top:4px;left:50%;transform:translateX(-50%);background:red;color:white;font-size:11px;padding:2px 8px;z-index:99999;border-radius:4px;font-family:monospace;pointer-events:none;';document.body.appendChild(dbgEl);}
+  const ov__=document.getElementById('overlay');
+  dbgEl.textContent='LOOP mode='+gameMode+' CW='+CW+' CH='+CH+' ovr='+(ov__?ov__.style.display:'?')+' dc='+(getDrawCtx()?'ok':'null');
 
   const dc = getDrawCtx();
   dc.clearRect(0,0,CW,CH);
