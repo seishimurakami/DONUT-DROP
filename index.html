@@ -395,9 +395,15 @@ body::before {
   </div>
 </div>
 <div id="app"></div>
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.8</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; v1.13.9</div>
 
 <script>
+// 診断用エラーハンドラー
+window.onerror=function(msg,src,line,col,err){
+  const el=document.getElementById('copyright');
+  if(el) el.textContent='JS ERROR: '+msg+' (line '+line+')';
+  return false;
+};
 // ════════════════════════════════════════════════════════
 // DEVICE DETECTION
 // ════════════════════════════════════════════════════════
@@ -1423,7 +1429,10 @@ function gameLoop(ts) {
   drawBg();
 
   const dc = getDrawCtx();
-  dc.clearRect(0,0,CW,CH); dc.save();
+  dc.clearRect(0,0,CW,CH);
+  // 診断: 赤い四角形 → 見えればcanvas描画は正常
+  dc.fillStyle='rgba(255,0,0,0.9)'; dc.fillRect(5,5,40,40);
+  dc.save();
   if(!gamePaused){
     if(shakeTimer>0){const a=shakeTimer*.5;dc.translate((Math.random()-.5)*a,(Math.random()-.5)*a);shakeTimer--;}
     if(currentPiece) currentPiece.time++;
@@ -1433,7 +1442,12 @@ function gameLoop(ts) {
       if(currentPiece){const m={...currentPiece,y:currentPiece.y+1};if(!collides(m))currentPiece=m;else lockPiece(currentPiece);}
     }
   }
-  drawGrid(); drawCurrentPiece(); dc.restore();
+  try{ drawGrid(); drawCurrentPiece(); }
+  catch(e){
+    const dbg=document.getElementById('copyright');
+    if(dbg) dbg.textContent='DRAW ERROR: '+e.message;
+  }
+  dc.restore();
   updateParticles(); drawParticles(); drawNext();
 
   // COM tick (バトルモード時のみ・ポーズ中は停止)
