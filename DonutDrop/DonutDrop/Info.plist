@@ -6,6 +6,8 @@
 	<string></string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-8655833266772741~1219353529</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>広告をあなたの興味に合わせて表示するために使います。</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_donutdrop._tcp</string>
