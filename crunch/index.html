@@ -335,7 +335,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.3.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.4.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -343,7 +343,7 @@ body::before {
 // ═══════════════════════════════════════════════════════════
 
 // ── キャンバス設定 ──
-const CW = 300, CH = 600;
+const CW = 300, CH = 480;
 const gameCanvas = document.getElementById('game-canvas');
 const bgCanvas   = document.getElementById('bg-canvas');
 gameCanvas.width = CW; gameCanvas.height = CH;
@@ -356,8 +356,8 @@ resizeBg(); window.addEventListener('resize', resizeBg);
 const COLS = 9;
 const BLOCK_W = 30, BH = 16, BGAP = 2;
 const GRID_X = 7;   // (300 - (9*30 + 8*2)) / 2
-const GRID_Y = 52;
-const PADDLE_Y = 538;
+const GRID_Y = 96;   // ブロック開始Y（上部20%を天井ゾーンに）
+const PADDLE_Y = 430;
 const PADDLE_DEF_W = 75;
 const BALL_R = 6;
 const BASE_SPEED = 2.8;
@@ -519,6 +519,7 @@ let stageBestTime = 0;  // 現在ステージのベストタイム（ms、0=未�
 let balls = [], paddle = {}, blocks = [], fallingItems = [], lasers = [], particles = [];
 let powerupTimers = {};
 let hasShield = false, stickBall = null, laserCooldown = 0;
+let losingLife = false; // 多重loseLife防止フラグ
 let comboCount = 0, comboTimer = 0, maxComboSession = 0;
 let frameTime = 0, lastTime = 0, titleTime = 0;
 let flashColor = null, flashAlpha = 0;
@@ -588,7 +589,7 @@ function initLevel(lvl) {
   level = lvl;
   blocks = buildBlocks(lvl);
   balls = []; fallingItems = []; lasers = []; particles = [];
-  powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0;
+  powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0; losingLife = false;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
   stageBestTime = getStageBestTime(lvl);
@@ -920,7 +921,7 @@ function updateLasers(){
         hitBlock(b,null,false,false); hit=true; break;
       }
     }
-    if(hit||lasers[i].y<GRID_Y)lasers.splice(i,1);
+    if(hit||lasers[i].y<0)lasers.splice(i,1);
   }
 }
 function drawLasers(){
@@ -935,45 +936,73 @@ function drawLasers(){
 // ───────────────────────────────────────────────────────────
 function drawStageInfo(time) {
   ctx.save();
-  ctx.fillStyle='rgba(10,0,21,0.75)'; ctx.fillRect(0,0,CW,GRID_Y-2);
-  const isBonus=level%5===0;
-  const hue=(time*0.05)%360;
-  ctx.font='bold 13px "Fredoka One", cursive'; ctx.textAlign='center';
-  if(isBonus){
-    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=8;
-    ctx.fillText(`✨ STAGE ${level} ✨ BONUS！`, CW/2, 18);
-  } else {
-    ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.shadowBlur=0;
-    ctx.fillText(`STAGE ${level}`, CW/2, 18);
+
+  // ── 天井ゾーン背景（0〜GRID_Y）──
+  const skyGrad=ctx.createLinearGradient(0,0,0,GRID_Y);
+  skyGrad.addColorStop(0,'rgba(0,245,212,0.10)');
+  skyGrad.addColorStop(0.5,'rgba(10,0,21,0.78)');
+  skyGrad.addColorStop(1,'rgba(10,0,21,0.70)');
+  ctx.fillStyle=skyGrad; ctx.fillRect(0,0,CW,GRID_Y-1);
+
+  // ── 天井ライン（ボールが跳ね返る壁）──
+  const ceilHue=(time*0.03)%360;
+  ctx.save();
+  ctx.shadowColor=`hsl(${ceilHue},100%,65%)`; ctx.shadowBlur=12;
+  ctx.fillStyle=`hsl(${ceilHue},100%,65%)`;
+  ctx.fillRect(0,0,CW,3); // 天井バー本体
+  // 左右の角マーカー（四角い角）
+  ctx.fillRect(0,0,10,10);
+  ctx.fillRect(CW-10,0,10,10);
+  // 点滅するダッシュライン
+  if(Math.floor(time*0.04)%2===0){
+    ctx.globalAlpha=0.4;
+    for(let x=20;x<CW-20;x+=18){ctx.fillRect(x,1,10,1);}
+    ctx.globalAlpha=1;
   }
   ctx.shadowBlur=0;
-  // パワーアップ中の表示
+  ctx.restore();
+
+  // ── ステージ名 ──
+  const isBonus=level%5===0;
+  const hue=(time*0.05)%360;
+  ctx.font='bold 14px "Fredoka One", cursive'; ctx.textAlign='center';
+  if(isBonus){
+    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=8;
+    ctx.fillText(`✨ STAGE ${level} ✨ BONUS！`, CW/2, 26);
+  } else {
+    ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.shadowBlur=0;
+    ctx.fillText(`STAGE ${level}`, CW/2, 26);
+  }
+  ctx.shadowBlur=0;
+
+  // ── アクティブパワーアップ ──
   const actives=Object.keys(powerupTimers).filter(k=>powerupTimers[k]>frameTime);
   actives.forEach((id,i)=>{
     const pu=POWERUP_TYPES.find(p=>p.id===id);
     if(!pu)return;
     const rem=((powerupTimers[id]-frameTime)/1000).toFixed(1);
     ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='left';
-    ctx.fillStyle=pu.color; ctx.fillText(`${pu.emoji}${rem}s`, 6+i*52, 36);
+    ctx.fillStyle=pu.color; ctx.fillText(`${pu.emoji}${rem}s`, 4+i*52, 50);
   });
   if(hasShield){
     ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='right'; ctx.fillStyle='#4169E1';
-    ctx.fillText('🛡️',CW-6,36);
+    ctx.fillText('🛡️',CW-4,50);
   }
-  // パワーアップ取得表示
+
+  // ── パワーアップ取得フラッシュ ──
   if(selectedPowerupTimer>0){
     ctx.globalAlpha=Math.min(1,selectedPowerupTimer/20);
     ctx.font='bold 14px "Fredoka One", cursive'; ctx.textAlign='center';
     ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=12;
-    ctx.fillText(selectedPowerupLabel||'',CW/2,CH-100);
+    ctx.fillText(selectedPowerupLabel||'',CW/2,CH-80);
     ctx.shadowBlur=0; ctx.globalAlpha=1;
   }
-  // コンボ表示
+  // ── コンボ ──
   if(comboCount>1&&comboTimer>0){
     ctx.globalAlpha=Math.min(1,comboTimer/30);
     ctx.font='bold 16px "Fredoka One", cursive'; ctx.textAlign='center';
     ctx.fillStyle='#ff6bcd'; ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=10;
-    ctx.fillText(`コンボ ×${comboCount}！`,CW/2,CH-120);
+    ctx.fillText(`コンボ ×${comboCount}！`,CW/2,CH-100);
     ctx.shadowBlur=0; ctx.globalAlpha=1;
   }
   ctx.restore();
@@ -1098,7 +1127,7 @@ function updateBalls(dt) {
     ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
     if(ball.x-BALL_R<0){ball.x=BALL_R;ball.vx=Math.abs(ball.vx);playSound('wall');}
     if(ball.x+BALL_R>CW){ball.x=CW-BALL_R;ball.vx=-Math.abs(ball.vx);playSound('wall');}
-    if(ball.y-BALL_R<GRID_Y-2){ball.y=GRID_Y-2+BALL_R;ball.vy=Math.abs(ball.vy);playSound('wall');}
+    if(ball.y-BALL_R<0){ball.y=BALL_R;ball.vy=Math.abs(ball.vy);playSound('wall');}
     // パドル衝突
     if(ball.vy>0&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w&&
        ball.y+BALL_R>paddle.y&&ball.y-BALL_R<paddle.y+paddle.h){
@@ -1130,7 +1159,7 @@ function updateBalls(dt) {
     }
   });
   balls=balls.filter(ball=>{ if(ball.y>CH+20){if(stickBall===ball)stickBall=null;return false;}return true;});
-  if(balls.length===0) loseLife();
+  if(balls.length===0&&!losingLife) loseLife();
 }
 
 function intersectBlock(ball,b){
@@ -1180,9 +1209,10 @@ function hitBlock(b,ball,isBomb,isFire=false){
 }
 
 function loseLife(){
+  losingLife = true;
   lives--; flashColor='#FF0000'; flashAlpha=0.35; playSound('die'); updateDOM();
-  if(lives<=0){ saveHi(); state='gameover'; }
-  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; },700);
+  if(lives<=0){ saveHi(); state='gameover'; losingLife=false; }
+  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; losingLife=false; },700);
 }
 
 // ───────────────────────────────────────────────────────────
@@ -1215,7 +1245,15 @@ function activatePowerup(donutIdx){
 function updatePowerupTimers(){
   for(const id of Object.keys(powerupTimers)){
     if(powerupTimers[id]<=frameTime){
-      if(id==='WIDE')paddle.w=PADDLE_DEF_W;
+      if(id==='WIDE') paddle.w=PADDLE_DEF_W;
+      if(id==='SLOW'){
+        // スロー終了時にボール速度を通常速度に戻す
+        const baseSpd=getLevelConfig(level).ballSpeed;
+        balls.forEach(b=>{
+          const a=Math.atan2(b.vy,b.vx);
+          b.vx=Math.cos(a)*baseSpd; b.vy=Math.sin(a)*baseSpd;
+        });
+      }
       delete powerupTimers[id];
     }
   }
