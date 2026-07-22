@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ヘルプ | DONUT-DROP CRUNCH! 🍩</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap');
+
+:root {
+  --bg: #0a0015;
+  --accent:  #ff6bcd;
+  --accent2: #ffcc00;
+  --accent3: #00f5d4;
+  --text: #fff5ff;
+  --glow-pink:   0 0 20px #ff6bcd88, 0 0 40px #ff6bcd44;
+  --glow-yellow: 0 0 20px #ffcc0088, 0 0 40px #ffcc0044;
+  --glow-cyan:   0 0 20px #00f5d488, 0 0 40px #00f5d444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Kosugi Maru', sans-serif;
+  min-height: 100%;
+}
+
+/* ── 浮かぶドーナツ背景 ── */
+#bg-canvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+
+/* ── スキャンライン ── */
+.scanlines {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
+  );
+}
+
+/* ── ページ全体 ── */
+#page {
+  position: relative; z-index: 2;
+  max-width: 760px; margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+/* ── タイトルヘッダー ── */
+.page-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(22px, 5vw, 34px);
+  color: var(--accent2);
+  text-shadow: var(--glow-yellow);
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: 2px;
+}
+.page-sub {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 28px;
+  letter-spacing: 1px;
+}
+
+/* ── 戻るボタン ── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px; letter-spacing: 1px;
+  color: white;
+  background: rgba(255,107,205,0.12);
+  border: 1px solid rgba(255,107,205,0.4);
+  border-radius: 12px; padding: 8px 18px;
+  text-decoration: none; transition: all 0.2s;
+  margin-bottom: 28px;
+}
+.back-btn:hover {
+  background: rgba(255,107,205,0.28);
+  box-shadow: 0 0 18px rgba(255,107,205,0.5);
+}
+
+/* ── セクション見出し ── */
+.section-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 16px; letter-spacing: 3px;
+  color: var(--accent3);
+  text-shadow: var(--glow-cyan);
+  text-transform: uppercase;
+  margin: 36px 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0,245,212,0.2);
+}
+
+/* ── カード ── */
+.card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,107,205,0.25);
+  border-radius: 16px; padding: 18px 22px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(10px);
+}
+.card-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 17px; color: var(--accent2);
+  text-shadow: var(--glow-yellow);
+  margin-bottom: 8px;
+}
+
+/* ── 操作キー表 ── */
+.key-table { width: 100%; border-collapse: collapse; }
+.key-table td {
+  padding: 7px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  vertical-align: middle;
+}
+.key-table tr:last-child td { border-bottom: none; }
+.key-table td:first-child {
+  white-space: nowrap;
+  color: var(--accent); font-weight: bold;
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px;
+  width: 160px;
+}
+.kbd {
+  display: inline-block;
+  background: rgba(255,107,205,0.12);
+  border: 1px solid rgba(255,107,205,0.35);
+  border-radius: 6px; padding: 1px 7px;
+  font-size: 12px; font-family: monospace;
+  margin-right: 2px;
+}
+
+/* ── パワーアップグリッド ── */
+.pu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.pu-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,107,205,0.2);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+  transition: box-shadow 0.2s;
+}
+.pu-card:hover {
+  box-shadow: 0 0 14px rgba(255,107,205,0.2);
+}
+.pu-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.pu-info {}
+.pu-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px; color: var(--accent2);
+  margin-bottom: 3px;
+}
+.pu-donut {
+  font-size: 10px; color: var(--accent3);
+  margin-bottom: 4px;
+}
+.pu-desc { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.55; }
+.pu-dur {
+  display: inline-block; margin-top: 4px;
+  font-size: 10px; color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px; padding: 1px 5px;
+}
+
+/* ── ブロック種類 ── */
+.block-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+}
+.block-row:last-child { border-bottom: none; }
+.block-icon {
+  width: 32px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: bold; color: white;
+}
+
+/* ── スコア説明 ── */
+.score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+}
+.score-row:last-child { border-bottom: none; }
+.score-val {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px; color: var(--accent2);
+  text-shadow: var(--glow-yellow);
+}
+
+/* ── ヒントリスト ── */
+.tip-list { list-style: none; }
+.tip-list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px; line-height: 1.6;
+  color: rgba(255,255,255,0.82);
+}
+.tip-list li:last-child { border-bottom: none; }
+.tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── フッター ── */
+.help-footer {
+  text-align: center;
+  margin-top: 48px;
+  font-size: 11px; color: rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+}
+.help-footer a { color: var(--accent); text-decoration: none; }
+.help-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+
+<div id="page">
+
+  <a href="index.html" class="back-btn">← ゲームにもどる</a>
+
+  <h1 class="page-title">🍩 DONUT-DROP CRUNCH! 🍩</h1>
+  <p class="page-sub">HELP / ヘルプ</p>
+
+  <!-- ── ゲームについて ── -->
+  <div class="section-title">🎮 ゲームについて</div>
+  <div class="card">
+    <p style="font-size:14px; line-height:1.8; color:rgba(255,255,255,0.85);">
+      <strong style="color:var(--accent2);">DONUT-DROP CRUNCH!</strong> は、ブロック崩しゲームです。<br>
+      パドルを動かしてボールをはじき返し、画面の上にあるブロックをすべてこわすとステージクリアです。<br>
+      ブロックをこわすと <strong style="color:var(--accent3);">ドーナツ</strong> が落ちてきます。
+      パドルでキャッチすると <strong style="color:var(--accent);">パワーアップ</strong> が発動します！<br>
+      全100ステージを目指してがんばろう！
+    </p>
+  </div>
+
+  <!-- ── 操作方法 ── -->
+  <div class="section-title">⌨️ そうさほうほう</div>
+  <div class="card">
+    <table class="key-table">
+      <tr>
+        <td><span class="kbd">← →</span> / <span class="kbd">A</span><span class="kbd">D</span></td>
+        <td>パドルを左右に動かす</td>
+      </tr>
+      <tr>
+        <td><span class="kbd">SPACE</span> / クリック</td>
+        <td>ゲームスタート・ボールを打ち出す<br>
+          <span style="font-size:11px;color:rgba(255,255,255,0.45);">レーザー装備中はレーザーを発射</span></td>
+      </tr>
+      <tr>
+        <td><span class="kbd">M</span></td>
+        <td>音楽・効果音のオン／オフ</td>
+      </tr>
+      <tr>
+        <td><span class="kbd">ESC</span></td>
+        <td>タイトルにもどる（確認あり）</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── ブロックの種類 ── -->
+  <div class="section-title">🧱 ブロックのしゅるい</div>
+  <div class="card">
+    <div class="block-row">
+      <div class="block-icon" style="background:#8B6914; border:1px solid #FFD700;">1</div>
+      <div>
+        <strong style="color:var(--accent2);">ふつうのブロック（1HP）</strong><br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">1回当たるとこわれる。種類によってとくてんがちがう。</span>
+      </div>
+    </div>
+    <div class="block-row">
+      <div class="block-icon" style="background:#4169E1; border:1px solid #87CEEB;">2</div>
+      <div>
+        <strong style="color:var(--accent2);">かたいブロック（2HP）</strong><br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">2回当たるとこわれる。1回当たると色が変わる。</span>
+      </div>
+    </div>
+    <div class="block-row">
+      <div class="block-icon" style="background:#8B0000; border:1px solid #FF4444;">3</div>
+      <div>
+        <strong style="color:var(--accent2);">とてもかたいブロック（3HP）</strong><br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">3回当たるとこわれる。段々と色が変わっていく。</span>
+      </div>
+    </div>
+    <div class="block-row">
+      <div class="block-icon" style="background:#333; border:1px solid #888;">∞</div>
+      <div>
+        <strong style="color:var(--accent2);">こわせないブロック</strong><br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">何回当てても消えない。邪魔にならないようにうまく避けよう。</span>
+      </div>
+    </div>
+    <div class="block-row">
+      <div class="block-icon" style="background:linear-gradient(135deg,#ff6bcd,#b44fff); border:1px solid #ff6bcd;">🎁</div>
+      <div>
+        <strong style="color:var(--accent2);">かならずドーナツが出るブロック</strong><br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">こわすとかならずパワーアップドーナツが落ちてくる。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── パワーアップ ── -->
+  <div class="section-title">🍩 パワーアップいちらん</div>
+  <p style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:14px;">
+    パドルで落ちてくるドーナツをキャッチすると発動！ドーナツの種類によって効果がちがいます。
+  </p>
+
+  <div class="pu-grid">
+    <div class="pu-card">
+      <div class="pu-emoji">↔️</div>
+      <div class="pu-info">
+        <div class="pu-name">ワイドパドル</div>
+        <div class="pu-donut">🍩 もちもちリング</div>
+        <div class="pu-desc">パドルが広くなってボールを受けやすくなる。</div>
+        <span class="pu-dur">⏱ 12秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🎱</div>
+      <div class="pu-info">
+        <div class="pu-name">マルチボール</div>
+        <div class="pu-donut">🍫 チョコリング</div>
+        <div class="pu-desc">ボールが2つに増える！たくさんのブロックを一気にこわせる。</div>
+        <span class="pu-dur">効果はずっと続く</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🐢</div>
+      <div class="pu-info">
+        <div class="pu-name">スローボール</div>
+        <div class="pu-donut">🍓 ストロベリー</div>
+        <div class="pu-desc">ボールがゆっくりになる。ねらいをさだめやすくなる。</div>
+        <span class="pu-dur">⏱ 10秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">⚡</div>
+      <div class="pu-info">
+        <div class="pu-name">レーザー砲</div>
+        <div class="pu-donut">🍯 はちみつグレーズ</div>
+        <div class="pu-desc">SPACEキーを押すとパドルからレーザーが出る！</div>
+        <span class="pu-dur">⏱ 12秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🔥</div>
+      <div class="pu-info">
+        <div class="pu-name">ファイアーボール</div>
+        <div class="pu-donut">🤎 オールドファッション</div>
+        <div class="pu-desc">ボールが燃えてブロックをつらぬく！かたいブロックも一撃。</div>
+        <span class="pu-dur">⏱ 8秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🛡️</div>
+      <div class="pu-info">
+        <div class="pu-name">シールド</div>
+        <div class="pu-donut">🫐 ブルーベリー</div>
+        <div class="pu-desc">パドルの下にバリアが張られる。ボールが落ちても1回だけ守れる。</div>
+        <span class="pu-dur">1回使い切り</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🧲</div>
+      <div class="pu-info">
+        <div class="pu-name">スティッキー</div>
+        <div class="pu-donut">💛 フレンチクルーラー</div>
+        <div class="pu-desc">ボールがパドルにくっつく。SPACEで好きなタイミングで発射できる。</div>
+        <span class="pu-dur">次に当たるまで</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">❤️</div>
+      <div class="pu-info">
+        <div class="pu-name">エクストラライフ</div>
+        <div class="pu-donut">👼 クリームボール</div>
+        <div class="pu-desc">ライフが1つ増える！最大5つまで持てる。</div>
+        <span class="pu-dur">即時発動</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">👻</div>
+      <div class="pu-info">
+        <div class="pu-name">ゴーストボール</div>
+        <div class="pu-donut">🩵 ブルーハワイ</div>
+        <div class="pu-desc">ボールが透明になってブロックをすり抜ける。どんなブロックも関係なし！</div>
+        <span class="pu-dur">⏱ 8秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">✨</div>
+      <div class="pu-info">
+        <div class="pu-name">スコア2倍</div>
+        <div class="pu-donut">🤍 ミルキーホワイト</div>
+        <div class="pu-desc">ブロックをこわしたときの得点が2倍になる。コンボ中に使うとさらにお得！</div>
+        <span class="pu-dur">⏱ 15秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">💥</div>
+      <div class="pu-info">
+        <div class="pu-name">爆発ボール</div>
+        <div class="pu-donut">💙 ネイビー</div>
+        <div class="pu-desc">ボールがブロックに当たると、周りのブロックも一緒に爆発してこわれる。</div>
+        <span class="pu-dur">⏱ 8秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">💜</div>
+      <div class="pu-info">
+        <div class="pu-name">マグネット</div>
+        <div class="pu-donut">🧡 コーラルオレンジ</div>
+        <div class="pu-desc">落ちてくるドーナツアイテムがパドルに引き寄せられる。取り逃がしが減る！</div>
+        <span class="pu-dur">⏱ 8秒</span>
+      </div>
+    </div>
+    <div class="pu-card">
+      <div class="pu-emoji">🍵</div>
+      <div class="pu-info">
+        <div class="pu-name">ボーナス +500点</div>
+        <div class="pu-donut">🍵 抹茶グリーン</div>
+        <div class="pu-desc">パワーアップはなし。キャッチするだけで500点もらえる！</div>
+        <span class="pu-dur">即時発動</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── スコア ── -->
+  <div class="section-title">⭐ スコアのかせぎかた</div>
+  <div class="card">
+    <div class="score-row">
+      <span>ブロックをこわす</span>
+      <span class="score-val">8〜22点（種類による）</span>
+    </div>
+    <div class="score-row">
+      <span>コンボ（連続でこわす）</span>
+      <span class="score-val">コンボ数 × 5点ボーナス</span>
+    </div>
+    <div class="score-row">
+      <span>スコア2倍中</span>
+      <span class="score-val">全ての得点が2倍</span>
+    </div>
+    <div class="score-row">
+      <span>抹茶ドーナツをキャッチ</span>
+      <span class="score-val">+500点</span>
+    </div>
+    <div class="score-row">
+      <span>ステージクリア</span>
+      <span class="score-val">ステージ番号 × 100点</span>
+    </div>
+  </div>
+
+  <!-- ── ステージについて ── -->
+  <div class="section-title">🏁 ステージについて</div>
+  <div class="card">
+    <div class="score-row">
+      <span>全ステージ数</span>
+      <span class="score-val">100ステージ</span>
+    </div>
+    <div class="score-row">
+      <span>ボーナスステージ</span>
+      <span class="score-val">5・10・15…（5の倍数）</span>
+    </div>
+    <div class="score-row">
+      <span>ライフ</span>
+      <span class="score-val">はじめ3つ（最大5つ）</span>
+    </div>
+    <div class="score-row">
+      <span>ボールの速さ</span>
+      <span class="score-val">ステージが上がるほど速くなる</span>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:12px;">
+      ボーナスステージはちょっと難しいけど、ブロックの配置がユニーク！クリアするとたくさんのドーナツが落ちてくるよ。
+    </p>
+  </div>
+
+  <!-- ── ヒント ── -->
+  <div class="section-title">💡 ヒント</div>
+  <div class="card">
+    <ul class="tip-list">
+      <li>
+        <span class="tip-icon">🎯</span>
+        <span>パドルの左はしで当てると左に、右はしで当てると右に角度がつく。ねらったところにボールを飛ばそう！</span>
+      </li>
+      <li>
+        <span class="tip-icon">🔥</span>
+        <span>ファイアーボール＋マルチボールの組み合わせが強力。ブロックをあっという間にほぼ全滅できる。</span>
+      </li>
+      <li>
+        <span class="tip-icon">✨</span>
+        <span>スコア2倍中にコンボを重ねると得点がどんどん増える。まずスロー（🐢）でコンボをつなごう。</span>
+      </li>
+      <li>
+        <span class="tip-icon">🧲</span>
+        <span>マグネット（💜）を使うとドーナツが自動で近づいてくる。重要なパワーアップを取り逃さずにすむ。</span>
+      </li>
+      <li>
+        <span class="tip-icon">🛡️</span>
+        <span>シールドは自動で張られる。ライフを守るためにブルーベリードーナツを積極的にねらおう。</span>
+      </li>
+      <li>
+        <span class="tip-icon">⏱</span>
+        <span>クリアタイムが記録される。速くクリアするほど短い時間が BEST TIME として残る。</span>
+      </li>
+      <li>
+        <span class="tip-icon">🍩</span>
+        <span>パドルに当たるたびにボールが少しだけ速くなる（+0.3%）。長く続けるほど難しくなるよ！</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="help-footer">
+    © 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! &nbsp;·&nbsp;
+    <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank">サポート</a>
+    &nbsp;·&nbsp;
+    <a href="https://x.com/donutdropjp" target="_blank">𝕏 X公式</a>
+  </div>
+
+</div>
+
+<script>
+// ── 浮かぶドーナツ背景（index.htmlと同じロジック） ──
+const bgc = document.getElementById('bg-canvas');
+const bgx = bgc.getContext('2d');
+bgc.width  = window.innerWidth;
+bgc.height = window.innerHeight;
+
+const DONUTS_BG = [
+  {body:'#F5DEB3',glaze:'#DEB887'},
+  {body:'#4A1C00',glaze:'#6B2D00'},
+  {body:'#FFB6C1',glaze:'#FF69B4'},
+  {body:'#FFD700',glaze:'#FFA500'},
+  {body:'#C4813A',glaze:'#A0522D'},
+  {body:'#7B68EE',glaze:'#6A5ACD'},
+  {body:'#FFFACD',glaze:'#FFE66D'},
+  {body:'#FFF8DC',glaze:'#FFEAA7'},
+  {body:'#40C4FF',glaze:'#0091EA'},
+  {body:'#F0F8FF',glaze:'#BBDEFB'},
+];
+
+const bgDonuts = Array.from({length:14},(_,i)=>({
+  x: Math.random()*bgc.width,
+  y: Math.random()*bgc.height,
+  r: 20+Math.random()*22,
+  vy: 0.25+Math.random()*0.35,
+  angle: Math.random()*Math.PI*2,
+  spin: (Math.random()-0.5)*0.012,
+  d: DONUTS_BG[i%DONUTS_BG.length],
+}));
+
+function drawBgDonut(cx,cy,r,d,angle){
+  bgx.save(); bgx.translate(cx,cy); bgx.rotate(angle);
+  const gr=bgx.createRadialGradient(0,0,r*0.25,0,0,r);
+  gr.addColorStop(0,d.glaze); gr.addColorStop(1,d.body);
+  bgx.beginPath(); bgx.arc(0,0,r,0,Math.PI*2);
+  bgx.fillStyle=gr; bgx.fill();
+  bgx.beginPath(); bgx.arc(0,0,r*0.38,0,Math.PI*2);
+  bgx.fillStyle='rgba(10,0,21,0.85)'; bgx.fill();
+  bgx.restore();
+}
+
+function animBg(){
+  bgx.clearRect(0,0,bgc.width,bgc.height);
+  bgDonuts.forEach(d=>{
+    d.y-=d.vy; d.angle+=d.spin;
+    if(d.y+d.r<0){d.y=bgc.height+d.r; d.x=Math.random()*bgc.width;}
+    drawBgDonut(d.x,d.y,d.r,d.d,d.angle);
+  });
+  requestAnimationFrame(animBg);
+}
+animBg();
+
+window.addEventListener('resize',()=>{
+  bgc.width=window.innerWidth; bgc.height=window.innerHeight;
+});
+</script>
+</body>
+</html>
