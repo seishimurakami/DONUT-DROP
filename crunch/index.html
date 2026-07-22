@@ -158,6 +158,42 @@ body::before {
 #lives-display {
   font-size: 18px; letter-spacing: 2px; margin-top: 4px;
 }
+
+/* ── ESC確認ポップアップ ── */
+#quit-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+  z-index: 9999; align-items: center; justify-content: center;
+}
+#quit-overlay.active { display: flex; }
+#quit-dialog {
+  background: linear-gradient(145deg, rgba(20,10,40,0.97), rgba(40,10,60,0.97));
+  border: 2px solid rgba(255,107,205,0.6); border-radius: 20px;
+  padding: 32px 36px; text-align: center; min-width: 260px;
+  box-shadow: 0 0 40px rgba(255,107,205,0.4), 0 0 80px rgba(255,107,205,0.15);
+}
+#quit-dialog p {
+  font-family: 'Kosugi Maru', sans-serif; font-size: 15px;
+  color: rgba(255,255,255,0.9); margin: 0 0 8px;
+}
+#quit-dialog .quit-sub {
+  font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 24px;
+}
+.quit-btn {
+  font-family: 'Fredoka One', cursive; font-size: 16px; cursor: pointer;
+  border: none; border-radius: 12px; padding: 10px 28px; margin: 0 6px;
+  transition: all 0.18s; letter-spacing: 1px;
+}
+#quit-yes {
+  background: linear-gradient(135deg,#ff6bcd,#b44fff);
+  color: white; box-shadow: 0 0 16px rgba(255,107,205,0.5);
+}
+#quit-yes:hover { transform: scale(1.07); box-shadow: 0 0 24px rgba(255,107,205,0.8); }
+#quit-no {
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+#quit-no:hover { background: rgba(255,255,255,0.15); color: white; transform: scale(1.05); }
 </style>
 </head>
 <body>
@@ -239,7 +275,16 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.1.0</div>
+<div id="quit-overlay">
+  <div id="quit-dialog">
+    <p>🍩 ゲームをやめますか？</p>
+    <p class="quit-sub">タイトル画面にもどります</p>
+    <button class="quit-btn" id="quit-yes">やめる</button>
+    <button class="quit-btn" id="quit-no">続ける</button>
+  </div>
+</div>
+
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.1.1</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1095,7 +1140,10 @@ document.addEventListener('keydown',e=>{
     document.getElementById('btn-mute').textContent=muted?'🔇':'🔊';
     if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
   }
-  if(e.code==='Escape'){ if(state==='playing'){state='title';} }
+  if(e.code==='Escape'){
+    if(state==='playing'){ showQuitDialog(); }
+    else if(document.getElementById('quit-overlay').classList.contains('active')){ hideQuitDialog(); }
+  }
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
 
@@ -1162,8 +1210,32 @@ document.getElementById('btn-mute').addEventListener('click',()=>{
   if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
 });
 function showHelp(){
-  alert('DONUT-DROP CRUNCH! 操作方法\n\n← → / A D キー: パドルを動かす\nSPACE / クリック: ボールを打ち出す\n\nパワーアップドーナツをパドルで取ると特殊効果が発動！\n\nM キー: 音のON/OFF\nESC キー: タイトルへ');
+  alert('DONUT-DROP CRUNCH! 操作方法\n\n← → / A D キー: パドルを動かす\nSPACE / クリック: ボールを打ち出す\n\nパワーアップドーナツをパドルで取ると特殊効果が発動！\n\nM キー: 音のON/OFF\nESC キー: タイトルへもどる（確認あり）');
 }
+
+// ESC確認ポップアップ
+let statBeforeQuit = null;
+function showQuitDialog(){
+  statBeforeQuit = state;
+  state = 'paused';
+  document.getElementById('quit-overlay').classList.add('active');
+  document.getElementById('quit-no').focus();
+}
+function hideQuitDialog(){
+  document.getElementById('quit-overlay').classList.remove('active');
+  if(statBeforeQuit) state = statBeforeQuit;
+  statBeforeQuit = null;
+}
+document.getElementById('quit-yes').addEventListener('click',()=>{
+  document.getElementById('quit-overlay').classList.remove('active');
+  statBeforeQuit = null;
+  state = 'title';
+});
+document.getElementById('quit-no').addEventListener('click', hideQuitDialog);
+// オーバーレイ外クリックで閉じる
+document.getElementById('quit-overlay').addEventListener('click', e=>{
+  if(e.target === document.getElementById('quit-overlay')) hideQuitDialog();
+});
 
 // ───────────────────────────────────────────────────────────
 // オーディオ
@@ -1237,33 +1309,42 @@ function gameLoop(ts){
     drawGameOver(titleTime);
     requestAnimationFrame(gameLoop); return;
   }
-
-  // === playing ===
-  updatePaddleInput();
-  if(laserCooldown>0)laserCooldown--;
-  if(comboTimer>0)comboTimer--; else comboCount=0;
-  if(selectedPowerupTimer>0)selectedPowerupTimer--;
-  updatePowerupTimers();
-  updateBalls(dt);
-  updateFallingItems();
-  updateLasers();
-  updateParticles();
-  blocks.forEach(b=>{if(b.hitFlash>0)b.hitFlash--;});
-
-  blocks.forEach(b=>drawBlock(b,titleTime));
-  drawFallingItems(titleTime);
-  drawLasers();
-  drawParticles();
-  drawShield(titleTime);
-  drawPaddle();
-  balls.forEach(b=>drawBall(b));
-
-  if(flashAlpha>0){
-    ctx.save(); ctx.globalAlpha=flashAlpha; ctx.fillStyle=flashColor||'#ffffff';
-    ctx.fillRect(0,0,CW,CH); ctx.restore();
-    flashAlpha=Math.max(0,flashAlpha-0.04);
+  // === playing / paused ===
+  if(state==='playing'){
+    updatePaddleInput();
+    if(laserCooldown>0)laserCooldown--;
+    if(comboTimer>0)comboTimer--; else comboCount=0;
+    if(selectedPowerupTimer>0)selectedPowerupTimer--;
+    updatePowerupTimers();
+    updateBalls(dt);
+    updateFallingItems();
+    updateLasers();
+    updateParticles();
+    blocks.forEach(b=>{if(b.hitFlash>0)b.hitFlash--;});
   }
-  drawStageInfo(titleTime);
+
+  if(state==='playing'||state==='paused'){
+    blocks.forEach(b=>drawBlock(b,titleTime));
+    drawFallingItems(titleTime);
+    drawLasers();
+    drawParticles();
+    drawShield(titleTime);
+    drawPaddle();
+    balls.forEach(b=>drawBall(b));
+
+    if(flashAlpha>0){
+      ctx.save(); ctx.globalAlpha=flashAlpha; ctx.fillStyle=flashColor||'#ffffff';
+      ctx.fillRect(0,0,CW,CH); ctx.restore();
+      if(state==='playing') flashAlpha=Math.max(0,flashAlpha-0.04);
+    }
+    drawStageInfo(titleTime);
+  }
+
+  if(state==='paused'){
+    // 薄暗いオーバーレイをcanvas上に重ねる（ポップアップとの組み合わせ）
+    ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='#000'; ctx.fillRect(0,0,CW,CH); ctx.restore();
+    requestAnimationFrame(gameLoop); return;
+  }
 
   // DOM更新（60フレームに1回で十分）
   if(titleTime%4===0)updateDOM();
