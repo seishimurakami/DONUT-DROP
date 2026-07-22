@@ -284,7 +284,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.1.3</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.1.4</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -452,7 +452,14 @@ let level = 1, score = 0, lives = 3;
 let hiScore    = parseInt(localStorage.getItem('dcHiScore')    || '0');
 let hiStage    = parseInt(localStorage.getItem('dcHiStage')    || '0');
 let hiCombo    = parseInt(localStorage.getItem('dcHiCombo')    || '0');
-let hiBestTime = parseInt(localStorage.getItem('dcBestTime')   || '0'); // 0 = no record (ms)
+// ステージ別ベストタイム（キー: 'dcBestTime_<ステージ番号>'）
+function getStageBestTime(lvl) {
+  return parseInt(localStorage.getItem('dcBestTime_' + lvl) || '0');
+}
+function setStageBestTime(lvl, ms) {
+  localStorage.setItem('dcBestTime_' + lvl, ms);
+}
+let stageBestTime = 0;  // 現在ステージのベストタイム（ms、0=未記録）
 let balls = [], paddle = {}, blocks = [], fallingItems = [], lasers = [], particles = [];
 let powerupTimers = {};
 let hasShield = false, stickBall = null, laserCooldown = 0;
@@ -489,7 +496,7 @@ function updateDOM() {
     el('time-display').textContent = formatTime(elapsed);
   }
   if (el('besttime-display')) {
-    el('besttime-display').textContent = hiBestTime > 0 ? formatTime(hiBestTime) : '—';
+    el('besttime-display').textContent = stageBestTime > 0 ? formatTime(stageBestTime) : '—';
   }
   // lives
   const ld = el('lives-display');
@@ -512,10 +519,10 @@ function saveHi(clearTimeMs = 0) {
   if (level > hiStage)  { hiStage = level;  localStorage.setItem('dcHiStage', hiStage); }
   if (maxComboSession > hiCombo) { hiCombo = maxComboSession; localStorage.setItem('dcHiCombo', hiCombo); }
   if (clearTimeMs > 0) {
-    isNewBestTime = (hiBestTime === 0 || clearTimeMs < hiBestTime);
+    isNewBestTime = (stageBestTime === 0 || clearTimeMs < stageBestTime);
     if (isNewBestTime) {
-      hiBestTime = clearTimeMs;
-      localStorage.setItem('dcBestTime', hiBestTime);
+      stageBestTime = clearTimeMs;
+      setStageBestTime(level, clearTimeMs);
     }
   }
 }
@@ -528,6 +535,7 @@ function initLevel(lvl) {
   powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
+  stageBestTime = getStageBestTime(lvl);
   levelStartTime = Date.now();
   stageClearTime = 0;
   isNewBestTime = false;
@@ -1005,7 +1013,7 @@ function updateBalls(dt) {
       const rel=(ball.x-(paddle.x+paddle.w/2))/(paddle.w/2);
       const angle=-Math.PI/2+rel*0.7;
       const maxSpd=getLevelConfig(level).ballSpeed*3.0;
-      const spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.003,maxSpd);
+      const spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.01,maxSpd);
       ball.vx=Math.cos(angle)*spd; ball.vy=Math.sin(angle)*spd;
       ball.y=paddle.y-BALL_R-1;
       if(powerupTimers['STICKY']>frameTime){ball.stuck=true;stickBall=ball;}
