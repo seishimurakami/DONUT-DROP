@@ -159,6 +159,48 @@ body::before {
   font-size: 18px; letter-spacing: 2px; margin-top: 4px;
 }
 
+/* ── タイトルUI overlay ── */
+#title-ui {
+  display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  flex-direction: column; align-items: center; justify-content: flex-end;
+  padding-bottom: 7%; z-index: 5;
+}
+#title-ui.active { display: flex; }
+.title-btn {
+  font-family: 'Fredoka One', cursive; font-size: 15px; letter-spacing: 1px;
+  border: none; border-radius: 14px; padding: 11px 0; margin: 4px 0;
+  cursor: pointer; transition: all 0.18s; width: 84%; display: block;
+}
+.title-btn-primary {
+  background: linear-gradient(135deg,#ff6bcd,#b44fff); color: white;
+  box-shadow: 0 0 18px rgba(255,107,205,0.45);
+}
+.title-btn-primary:hover { transform: scale(1.04); box-shadow: 0 0 28px rgba(255,107,205,0.75); }
+.title-btn-continue {
+  background: linear-gradient(135deg,#00f5d4,#0078a8); color: white;
+  box-shadow: 0 0 18px rgba(0,245,212,0.35);
+}
+.title-btn-continue:hover { transform: scale(1.04); box-shadow: 0 0 28px rgba(0,245,212,0.65); }
+.title-select-row {
+  display: flex; gap: 6px; align-items: center; width: 84%; margin-top: 2px;
+}
+#stage-select {
+  flex: 1; background: rgba(30,0,50,0.85); border: 1px solid rgba(255,107,205,0.4);
+  border-radius: 10px; color: white; font-family: 'Fredoka One', cursive;
+  font-size: 14px; padding: 9px 10px; cursor: pointer; outline: none;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff6bcd' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+}
+#stage-select option { background: #1a0030; }
+.title-btn-sel {
+  font-family: 'Fredoka One', cursive; font-size: 14px; letter-spacing: 0.5px;
+  background: rgba(255,107,205,0.15); border: 1px solid rgba(255,107,205,0.4);
+  color: white; border-radius: 10px; padding: 9px 14px; cursor: pointer;
+  white-space: nowrap; transition: all 0.18s;
+}
+.title-btn-sel:hover { background: rgba(255,107,205,0.35); transform: scale(1.05); }
+
 /* ── ESC確認ポップアップ ── */
 #quit-overlay {
   display: none; position: fixed; inset: 0;
@@ -244,6 +286,15 @@ body::before {
     <!-- センター：ゲームキャンバス -->
     <div style="position:relative;">
       <canvas id="game-canvas"></canvas>
+      <!-- タイトル画面のUI overlay -->
+      <div id="title-ui">
+        <button class="title-btn title-btn-primary" id="btn-start1">ステージ 1 からスタート</button>
+        <button class="title-btn title-btn-continue" id="btn-continue" style="display:none;">続きのステージ 1 から再開</button>
+        <div class="title-select-row">
+          <select id="stage-select"></select>
+          <button class="title-btn-sel" id="btn-start-select">▶ スタート</button>
+        </div>
+      </div>
     </div>
 
     <!-- 右パネル -->
@@ -284,7 +335,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.2.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.3.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -453,9 +504,10 @@ function buildBlocks(lvl) {
 // ───────────────────────────────────────────────────────────
 let state = 'title';
 let level = 1, score = 0, lives = 3;
-let hiScore    = parseInt(localStorage.getItem('dcHiScore')    || '0');
-let hiStage    = parseInt(localStorage.getItem('dcHiStage')    || '0');
-let hiCombo    = parseInt(localStorage.getItem('dcHiCombo')    || '0');
+let hiScore       = parseInt(localStorage.getItem('dcHiScore')       || '0');
+let hiStage       = parseInt(localStorage.getItem('dcHiStage')       || '0');
+let hiCombo       = parseInt(localStorage.getItem('dcHiCombo')       || '0');
+let continueStage = parseInt(localStorage.getItem('dcContinueStage') || '0'); // 0=未記録
 // ステージ別ベストタイム（キー: 'dcBestTime_<ステージ番号>'）
 function getStageBestTime(lvl) {
   return parseInt(localStorage.getItem('dcBestTime_' + lvl) || '0');
@@ -949,12 +1001,10 @@ function drawTitleCanvas(time) {
     drawDonut(ctx,dx-15,dy-15,30,DONUTS[i*4],0.75,dT+i);
   }
   ctx.font='13px "Kosugi Maru", sans-serif'; ctx.fillStyle='#ffcc00';
-  ctx.fillText(`ハイスコア: ${hiScore}`, CW/2, CH/2+35);
-  if(Math.floor(time*0.04)%2===0){
-    ctx.font='14px "Fredoka One", cursive'; ctx.fillStyle='#ff6bcd';
-    ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=8;
-    ctx.fillText('タップしてスタート！', CW/2, CH/2+75);
-    ctx.shadowBlur=0;
+  ctx.fillText(`ハイスコア: ${hiScore}`, CW/2, CH/2+30);
+  if(hiStage > 0){
+    ctx.font='11px "Kosugi Maru", sans-serif'; ctx.fillStyle='rgba(0,245,212,0.75)';
+    ctx.fillText(`最高ステージ: ${hiStage}`, CW/2, CH/2+52);
   }
   ctx.restore();
 }
@@ -1100,6 +1150,10 @@ function destroyBlock(b){
 function checkLevelClear(){
   if(blocks.filter(b=>!b.indestr).length===0&&state==='playing'){
     stageClearTime = Date.now() - levelStartTime;
+    // 次回コンティニュー先を保存
+    const next = Math.min(level + 1, 100);
+    continueStage = next;
+    localStorage.setItem('dcContinueStage', next);
     saveHi(stageClearTime); updateDOM();
     setTimeout(()=>{state='levelclear';levelClearTimer=0;},300);
   }
@@ -1181,7 +1235,7 @@ document.addEventListener('keydown',e=>{
       if(stickBall){releaseStick();}
       else if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;}
     }
-    if(state==='title'){initAudio();startBgm();initLevel(1);}
+    if(state==='title'){startFromTitle(1);}
     if(state==='levelclear'){startNextLevel();}
     if(state==='gameover'){resetGame();}
   }
@@ -1220,7 +1274,7 @@ gameCanvas.addEventListener('mousemove',e=>{
 gameCanvas.addEventListener('mouseup',()=>{touchX=null;});
 
 function handleTap(x){
-  if(state==='title'){initAudio();startBgm();initLevel(1);return;}
+  if(state==='title'){return;} // タイトルはDOMボタンで操作
   if(state==='levelclear'){startNextLevel();return;}
   if(state==='gameover'){resetGame();return;}
   if(state==='playing'){
@@ -1280,11 +1334,52 @@ document.getElementById('quit-yes').addEventListener('click',()=>{
   document.getElementById('quit-overlay').classList.remove('active');
   statBeforeQuit = null;
   state = 'title';
+  showTitleUI();
 });
 document.getElementById('quit-no').addEventListener('click', hideQuitDialog);
 // オーバーレイ外クリックで閉じる
 document.getElementById('quit-overlay').addEventListener('click', e=>{
   if(e.target === document.getElementById('quit-overlay')) hideQuitDialog();
+});
+
+// ───────────────────────────────────────────────────────────
+// タイトルUI（ステージ選択・コンティニュー）
+// ───────────────────────────────────────────────────────────
+(function setupTitleUI(){
+  // ステージ選択プルダウンを1〜100で生成
+  const sel = document.getElementById('stage-select');
+  for(let i = 1; i <= 100; i++){
+    const opt = document.createElement('option');
+    opt.value = i;
+    const isBonus = i % 5 === 0;
+    opt.textContent = `STAGE ${i}${isBonus ? ' ⭐BONUS' : ''}`;
+    sel.appendChild(opt);
+  }
+})();
+
+function showTitleUI(){
+  const cont = document.getElementById('btn-continue');
+  if(continueStage > 1){
+    cont.textContent = `続きのステージ ${continueStage} から再開`;
+    cont.style.display = '';
+  } else {
+    cont.style.display = 'none';
+  }
+  document.getElementById('title-ui').classList.add('active');
+}
+function hideTitleUI(){
+  document.getElementById('title-ui').classList.remove('active');
+}
+
+function startFromTitle(lvl){
+  initAudio(); startBgm(); hideTitleUI(); initLevel(lvl);
+}
+
+document.getElementById('btn-start1').addEventListener('click', () => startFromTitle(1));
+document.getElementById('btn-continue').addEventListener('click', () => startFromTitle(continueStage));
+document.getElementById('btn-start-select').addEventListener('click', () => {
+  const lvl = parseInt(document.getElementById('stage-select').value);
+  startFromTitle(lvl);
 });
 
 // ───────────────────────────────────────────────────────────
@@ -1408,6 +1503,7 @@ function gameLoop(ts){
 document.addEventListener('click',()=>{initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();});
 document.addEventListener('touchstart',()=>{initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();},{passive:true});
 state='title';
+showTitleUI();
 requestAnimationFrame(ts=>{lastTime=ts;gameLoop(ts);});
 </script>
 </body>
