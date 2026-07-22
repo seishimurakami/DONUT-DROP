@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>DONUT-DROP CRUNCH! 🍩</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Kosugi+Maru&display=swap');
+
+:root {
+  --bg: #0a0015;
+  --accent: #ff6bcd;
+  --accent2: #ffcc00;
+  --accent3: #00f5d4;
+  --text: #fff5ff;
+  --glow-pink: 0 0 20px #ff6bcd88, 0 0 40px #ff6bcd44;
+  --glow-yellow: 0 0 20px #ffcc0088, 0 0 40px #ffcc0044;
+  --glow-cyan: 0 0 20px #00f5d488, 0 0 40px #00f5d444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: 'Fredoka One', 'Kosugi Maru', cursive;
+  color: var(--text);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, #2a004488 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, #00223388 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, #330044aa 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+#bg-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.4; pointer-events: none; }
+
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events: none; z-index: 50;
+}
+
+#copyright {
+  position: fixed; bottom: 8px; left: 0; right: 0;
+  text-align: center;
+  font-size: 10px; color: rgba(255,255,255,0.4);
+  z-index: 50; letter-spacing: 0.5px;
+}
+
+/* ── App Layout ── */
+#app {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: 100dvh;
+}
+
+#title {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 10; font-size: 22px; letter-spacing: 2px;
+  color: var(--accent); text-shadow: var(--glow-pink); white-space: nowrap;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+#title span { color: var(--accent2); }
+@keyframes titlePulse {
+  0%,100%{text-shadow:var(--glow-pink);}
+  50%{text-shadow:0 0 30px #ff6bcdcc,0 0 60px #ff6bcd66;}
+}
+
+#game-wrapper {
+  display: flex; gap: 20px; align-items: flex-start; justify-content: center;
+}
+
+.side-panel { display: flex; flex-direction: column; gap: 10px; width: 160px; }
+
+.info-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,107,205,0.3); border-radius: 16px;
+  padding: 10px 14px; backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 20px rgba(255,107,205,0.05); transition: box-shadow 0.3s;
+}
+.info-box:hover {
+  box-shadow: inset 0 0 20px rgba(255,107,205,0.1), 0 0 20px rgba(255,107,205,0.15);
+}
+.info-label {
+  font-size: 11px; letter-spacing: 3px; color: var(--accent3);
+  text-transform: uppercase; margin-bottom: 4px; text-shadow: var(--glow-cyan);
+}
+.info-value {
+  font-size: 26px; color: var(--accent2); text-shadow: var(--glow-yellow);
+  font-family: 'Fredoka One', cursive; line-height: 1;
+}
+.info-value.small { font-size: 18px; }
+
+.controls-text {
+  font-size: 10px; color: rgba(255,255,255,0.35); line-height: 1.6; letter-spacing: 0.5px;
+}
+.controls-text b { color: rgba(255,107,205,0.7); font-weight: normal; }
+
+.powerup-legend {
+  display: grid; grid-template-columns: 1.4em 1fr; gap: 2px 4px;
+  font-size: 9.5px; color: rgba(255,255,255,0.5);
+  font-family: 'Kosugi Maru', sans-serif; line-height: 1.55;
+  margin-top: 4px;
+}
+.powerup-legend span:nth-child(2n) {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.icon-btn {
+  background: rgba(255,107,205,0.1); border: 1px solid rgba(255,107,205,0.3);
+  border-radius: 10px; width: 48px; height: 48px; font-size: 22px;
+  cursor: pointer; color: white; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover {
+  background: rgba(255,107,205,0.25); box-shadow: 0 0 14px rgba(255,107,205,0.5);
+  transform: scale(1.08);
+}
+.icon-btn:active { transform: scale(0.95); }
+
+.menu-link {
+  display: block; color: rgba(255,255,255,0.6);
+  font-family: 'Kosugi Maru', sans-serif; font-size: 11px;
+  text-decoration: none; border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 5px 8px; text-align: center; transition: all .2s;
+}
+.menu-link:hover { border-color: rgba(255,255,255,0.5); color: white; }
+
+/* ── Game canvas ── */
+#game-canvas {
+  display: block; image-rendering: pixelated;
+  border: 2px solid rgba(255,107,205,0.5); border-radius: 12px;
+  box-shadow: 0 0 30px rgba(255,107,205,0.3), 0 0 60px rgba(255,107,205,0.1);
+}
+
+/* ── Powerup active pills ── */
+.pu-active-row {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+}
+.pu-pill {
+  font-size: 9px; font-family: 'Kosugi Maru', sans-serif;
+  background: rgba(255,107,205,0.15); border: 1px solid rgba(255,107,205,0.4);
+  border-radius: 6px; padding: 2px 5px; color: rgba(255,255,255,0.8);
+  transition: opacity 0.3s;
+}
+
+/* lives display */
+#lives-display {
+  font-size: 18px; letter-spacing: 2px; margin-top: 4px;
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+  <div id="title">🍩 <span>DONUT-DROP CRUNCH!</span> 🍩</div>
+  <div id="game-wrapper">
+
+    <!-- 左パネル -->
+    <div class="side-panel">
+      <div class="info-box">
+        <div class="info-label">SCORE</div>
+        <div class="info-value" id="score-display">0</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">STAGE</div>
+        <div class="info-value" id="stage-display">1</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">LIVES</div>
+        <div id="lives-display">❤️❤️❤️</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">CONTROLS</div>
+        <div class="controls-text">
+          <b>← →</b> パドル移動<br>
+          <b>SPACE</b> ボール打出<br>
+          <b>クリック</b> レーザー発射<br>
+          <b>M</b> ミュート<br>
+          <b>ESC</b> タイトルへ
+        </div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">MENU</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+          <button class="icon-btn" id="btn-mute" title="ミュート (M)">🔊</button>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+          <a href="#" class="menu-link" onclick="showHelp();return false;">❓ ヘルプ</a>
+          <a href="https://forms.gle/p6uPiMjevGbG39Dd6" target="_blank" class="menu-link">📩 サポート</a>
+          <a href="https://x.com/donutdropjp" target="_blank" class="menu-link">𝕏 X公式</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- センター：ゲームキャンバス -->
+    <div style="position:relative;">
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- 右パネル -->
+    <div class="side-panel">
+      <div class="info-box">
+        <div class="info-label">HI-SCORE</div>
+        <div class="info-value small" id="hiscore-display">0</div>
+        <div class="info-label" style="margin-top:8px;">HI-STAGE</div>
+        <div class="info-value small" id="histage-display">0</div>
+        <div class="info-label" style="margin-top:8px;">HI-COMBO</div>
+        <div class="info-value small" id="hicombo-display">0x</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">ACTIVE</div>
+        <div class="pu-active-row" id="active-pu-row">—</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">POWERUPS</div>
+        <div class="powerup-legend" id="powerup-legend"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.0.0</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DONUT-DROP CRUNCH! — ブロック崩しゲーム
+// ═══════════════════════════════════════════════════════════
+
+// ── キャンバス設定 ──
+const CW = 300, CH = 600;
+const gameCanvas = document.getElementById('game-canvas');
+const bgCanvas   = document.getElementById('bg-canvas');
+gameCanvas.width = CW; gameCanvas.height = CH;
+const ctx   = gameCanvas.getContext('2d');
+const bgCtx = bgCanvas.getContext('2d');
+function resizeBg(){ bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; }
+resizeBg(); window.addEventListener('resize', resizeBg);
+
+// ── ゲーム定数 ──
+const COLS = 9;
+const BLOCK_W = 30, BH = 16, BGAP = 2;
+const GRID_X = 7;   // (300 - (9*30 + 8*2)) / 2
+const GRID_Y = 52;
+const PADDLE_Y = 538;
+const PADDLE_DEF_W = 75;
+const BALL_R = 6;
+const BASE_SPEED = 2.8;
+
+// ───────────────────────────────────────────────────────────
+// ドーナツデータ
+// ───────────────────────────────────────────────────────────
+const DONUTS = [
+  {id:0,  name:'もちもちリング',    emoji:'🍩',body:'#F5DEB3',glaze:'#DEB887',hole:'#8B4513',sprinkles:['#FF69B4','#4169E1','#32CD32'],special:'ring',     points:10},
+  {id:1,  name:'チョコリング',      emoji:'🍫',body:'#4A1C00',glaze:'#6B2D00',hole:'#2A0A00',sprinkles:['#FFD700','#FFFFFF'],           special:'choco',    points:12},
+  {id:2,  name:'ストロベリー',      emoji:'🍓',body:'#FFB6C1',glaze:'#FF69B4',hole:'#8B0030',sprinkles:['#FFFFFF','#FF1493','#FFD700'], special:'strawberry',points:15},
+  {id:3,  name:'はちみつグレーズ',  emoji:'🍯',body:'#FFD700',glaze:'#FFA500',hole:'#8B6914',sprinkles:[],                              special:'honey',    points:10},
+  {id:4,  name:'オールドファッション',emoji:'🤎',body:'#C4813A',glaze:'#A0522D',hole:'#5C2A00',sprinkles:[],                             special:'crinkle',  points:8},
+  {id:5,  name:'ブルーベリー',      emoji:'🫐',body:'#7B68EE',glaze:'#6A5ACD',hole:'#2E1A6E',sprinkles:['#FFFFFF','#B0C4DE'],           special:'berry',    points:18},
+  {id:6,  name:'フレンチクルーラー',emoji:'💛',body:'#FFFACD',glaze:'#FFE66D',hole:'#B8860B',sprinkles:['#FF6347'],                     special:'cruller',  points:14},
+  {id:7,  name:'クリームボール',    emoji:'👼',body:'#FFF8DC',glaze:'#FFEAA7',hole:'#D4A017',sprinkles:['#FFD700','#FF69B4'],           special:'cream',    points:20},
+  {id:8,  name:'ブルーハワイ',      emoji:'🩵',body:'#40C4FF',glaze:'#0091EA',hole:'#004D90',sprinkles:['#FFFFFF','#E1F5FE'],           special:'blue',     points:16},
+  {id:9,  name:'ミルキーホワイト',  emoji:'🤍',body:'#F0F8FF',glaze:'#BBDEFB',hole:'#90A4AE',sprinkles:['#81D4FA','#CE93D8','#FFE082'],special:'white',    points:22},
+  {id:10, name:'ネイビー',          emoji:'💙',body:'#3949AB',glaze:'#1A237E',hole:'#0D1245',sprinkles:['#FFFFFF','#9FA8DA'],           special:'navy',     points:14},
+  {id:11, name:'コーラルオレンジ',  emoji:'🧡',body:'#FF8C69',glaze:'#FF4500',hole:'#8B2500',sprinkles:['#FFFFFF','#FFD700'],           special:'coral',    points:15},
+  {id:12, name:'抹茶グリーン',      emoji:'🍵',body:'#A8D8A8',glaze:'#5A9E5A',hole:'#2E5C2E',sprinkles:['#FFFFFF','#C8F0C8'],          special:'matcha',   points:13},
+];
+
+// ───────────────────────────────────────────────────────────
+// パワーアップ定義
+// ───────────────────────────────────────────────────────────
+const POWERUP_TYPES = [
+  {id:'WIDE',   name:'ワイドパドル',    emoji:'↔️', color:'#FFD700',donutIdx:0,  duration:12000},
+  {id:'MULTI',  name:'マルチボール',    emoji:'🎱', color:'#FF69B4',donutIdx:1,  duration:0},
+  {id:'SLOW',   name:'スローボール',    emoji:'🐢', color:'#98FB98',donutIdx:2,  duration:10000},
+  {id:'LASER',  name:'レーザー砲',      emoji:'⚡', color:'#FFD700',donutIdx:3,  duration:12000},
+  {id:'FIRE',   name:'ファイアーボール',emoji:'🔥', color:'#FF4500',donutIdx:4,  duration:8000},
+  {id:'SHIELD', name:'シールド',        emoji:'🛡️', color:'#4169E1',donutIdx:5,  duration:0},
+  {id:'STICKY', name:'スティッキー',    emoji:'🧲', color:'#DEB887',donutIdx:6,  duration:0},
+  {id:'LIFE',   name:'エクストラライフ',emoji:'❤️', color:'#FF1493',donutIdx:7,  duration:0},
+  {id:'GHOST',  name:'ゴーストボール',  emoji:'👻', color:'#E6E6FA',donutIdx:8,  duration:8000},
+  {id:'SCORE2', name:'スコア2倍',       emoji:'✨', color:'#FFD700',donutIdx:9,  duration:15000},
+  {id:'BOMB',   name:'爆発ボール',      emoji:'💥', color:'#FF6347',donutIdx:10, duration:8000},
+  {id:'MAGNET', name:'マグネット',      emoji:'💜', color:'#9370DB',donutIdx:11, duration:8000},
+  // donutIdx:12(抹茶) = ボーナス +500点
+];
+
+// パワーアップ一覧を右パネルに表示
+const puLegend = document.getElementById('powerup-legend');
+if (puLegend) {
+  POWERUP_TYPES.forEach(pu => {
+    puLegend.innerHTML += `<span>${DONUTS[pu.donutIdx].emoji}</span><span>${pu.name}</span>`;
+  });
+  puLegend.innerHTML += `<span>${DONUTS[12].emoji}</span><span>+500点ボーナス</span>`;
+}
+
+// ───────────────────────────────────────────────────────────
+// レベルパターン
+// ───────────────────────────────────────────────────────────
+const REGULAR_PATTERNS = [
+  ['012345678','876543210','012345678','876543210'],
+  ['0.1.2.3.4','.5.6.7.8.','4.3.2.1.0','.8.7.6.5.','0.1.2.3.4'],
+  ['....0....','...010...','..01210..','..23432..','012345678'],
+  ['....3....','...333...','..33333..','...333...','....3....','..22222..','...222...','....2....'],
+  ['000......','...000...','......000','...000...','000......','...111...','......111'],
+  ['....0....','....0....','000000000','....0....','....0....','....1....','111111111','....1....','....1....'],
+  ['0........','01.......','012......','0123.....','01234....','012345...','0123456..'],
+  ['0.1.2.3.4','0.1.2.3.4','0.1.2.3.4','0.1.2.3.4','0.1.2.3.4','0.1.2.3.4'],
+  ['0.......8','.0.....8.','..0...8..','...0.8...','....4....','...0.8...','..0...8..'],
+  ['000000000','0.......0','0.......0','0.......0','0.......0','000000000'],
+  ['0..1..2..','..3..4..5','6..7..8..','..0..1..2','3..4..5..'],
+  ['012345678','012345678','012345678','..01234..','....0....'],
+  ['....0....','..01210..','012345210','012345678','012345678'],
+  ['000000000','.........','111111111','.........','222222222'],
+  ['012......','345......','678......','......012','......345','......678'],
+  ['0.......8','00.....88','000...888','0000.8888','000000000'],
+];
+
+const BONUS_PATTERNS = [
+  ['.........','.0.....0.','000...000','.........','2.......2','.2.....2.','..22222..'],
+  ['.111.111.','111111111','111111111','.1111111.','..11111..','...111...','....1....'],
+  ['....0....','..0.0.0..','000000000','..00000..','0..0.0..0','....0....','....0....'],
+  ['...000...','..0...0..','00.....00','0.......0','00.....00','..0...0..','...000...'],
+  ['..0.0.0..','..00000..','000000000','..00000..','..0.0.0..','....0....','....0....'],
+];
+
+function getLevelConfig(lvl) {
+  const tier = Math.min(4, Math.floor((lvl - 1) / 20));
+  const isBonus = lvl % 5 === 0;
+  return {
+    ballSpeed: BASE_SPEED + tier * 0.35 + (isBonus ? -0.3 : (lvl % 5) * 0.04),
+    hardChance: tier === 0 ? 0 : tier === 1 ? 0.15 : tier === 2 ? 0.3 : tier === 3 ? 0.4 : 0.5,
+    superChance: tier < 2 ? 0 : tier === 2 ? 0.08 : tier === 3 ? 0.15 : 0.22,
+    powerupRate: isBonus ? 0.5 : Math.max(0.12, 0.3 - tier * 0.04),
+    isBonus,
+  };
+}
+
+function getPatternForLevel(lvl) {
+  if (lvl % 5 === 0) return BONUS_PATTERNS[(lvl / 5 - 1) % BONUS_PATTERNS.length];
+  const reg = lvl - Math.floor(lvl / 5);
+  return REGULAR_PATTERNS[(reg - 1) % REGULAR_PATTERNS.length];
+}
+
+function charToDonutIdx(ch, col, row) {
+  const map = {'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,
+    'A':10,'B':11,'C':12,'H':(col+row*3)%13,'S':(col*2+row)%13,'$':(col+row)%12,'X':(col+row*2)%13};
+  return map[ch] ?? 0;
+}
+
+function buildBlocks(lvl) {
+  const pattern = getPatternForLevel(lvl);
+  const cfg = getLevelConfig(lvl);
+  const blocks = [];
+  pattern.forEach((rowStr, row) => {
+    for (let col = 0; col < COLS; col++) {
+      const ch = rowStr[col] ?? '.';
+      if (ch === '.') continue;
+      let hp = 1, maxHp = 1, indestr = false, hasPowerup = false;
+      const donutIdx = charToDonutIdx(ch, col, row);
+      if (ch === '$') { hasPowerup = true; }
+      else if (ch === 'H') { hp = 2; maxHp = 2; }
+      else if (ch === 'S') { hp = 3; maxHp = 3; }
+      else if (ch === 'X') { indestr = true; }
+      else {
+        const r = Math.random();
+        if (r < cfg.superChance) { hp = 3; maxHp = 3; }
+        else if (r < cfg.hardChance + cfg.superChance) { hp = 2; maxHp = 2; }
+        if (Math.random() < cfg.powerupRate && !indestr) hasPowerup = true;
+      }
+      blocks.push({
+        x: GRID_X + col * (BLOCK_W + BGAP),
+        y: GRID_Y + row * (BH + BGAP),
+        w: BLOCK_W, h: BH,
+        donutIdx, hp, maxHp, indestr, hasPowerup,
+        col, row, hitFlash: 0,
+      });
+    }
+  });
+  return blocks;
+}
+
+// ───────────────────────────────────────────────────────────
+// ゲーム状態
+// ───────────────────────────────────────────────────────────
+let state = 'title';
+let level = 1, score = 0, lives = 3;
+let hiScore  = parseInt(localStorage.getItem('dcHiScore')  || '0');
+let hiStage  = parseInt(localStorage.getItem('dcHiStage')  || '0');
+let hiCombo  = parseInt(localStorage.getItem('dcHiCombo')  || '0');
+let balls = [], paddle = {}, blocks = [], fallingItems = [], lasers = [], particles = [];
+let powerupTimers = {};
+let hasShield = false, stickBall = null, laserCooldown = 0;
+let comboCount = 0, comboTimer = 0, maxComboSession = 0;
+let frameTime = 0, lastTime = 0, titleTime = 0;
+let flashColor = null, flashAlpha = 0;
+let selectedPowerupLabel = null, selectedPowerupTimer = 0;
+
+// DOM更新
+function updateDOM() {
+  const el = id => document.getElementById(id);
+  if (el('score-display'))   el('score-display').textContent   = score;
+  if (el('stage-display'))   el('stage-display').textContent   = level;
+  if (el('hiscore-display')) el('hiscore-display').textContent = hiScore;
+  if (el('histage-display')) el('histage-display').textContent = hiStage;
+  if (el('hicombo-display')) el('hicombo-display').textContent = hiCombo + 'x';
+  // lives
+  const ld = el('lives-display');
+  if (ld) ld.textContent = '❤️'.repeat(Math.max(0, lives));
+  // active powerups
+  const row = el('active-pu-row');
+  if (row) {
+    const pills = Object.entries(powerupTimers).map(([id, endT]) => {
+      const pu = POWERUP_TYPES.find(p => p.id === id);
+      const rem = Math.max(0, (endT - frameTime) / 1000).toFixed(1);
+      return pu ? `<span class="pu-pill">${pu.emoji}${rem}s</span>` : '';
+    });
+    if (hasShield) pills.push('<span class="pu-pill">🛡️</span>');
+    row.innerHTML = pills.length ? pills.join('') : '—';
+  }
+}
+
+function saveHi() {
+  if (score > hiScore)  { hiScore = score;  localStorage.setItem('dcHiScore', hiScore); }
+  if (level > hiStage)  { hiStage = level;  localStorage.setItem('dcHiStage', hiStage); }
+  if (maxComboSession > hiCombo) { hiCombo = maxComboSession; localStorage.setItem('dcHiCombo', hiCombo); }
+}
+updateDOM();
+
+function initLevel(lvl) {
+  level = lvl;
+  blocks = buildBlocks(lvl);
+  balls = []; fallingItems = []; lasers = []; particles = [];
+  powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0;
+  comboCount = 0; comboTimer = 0;
+  paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
+  spawnBall();
+  state = 'playing';
+  updateDOM();
+}
+
+function spawnBall(from) {
+  const bx   = from ? from.x : paddle.x + paddle.w / 2;
+  const by   = from ? from.y : paddle.y - BALL_R - 2;
+  const ang  = from ? from.angle : -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
+  const spd  = getLevelConfig(level).ballSpeed * (powerupTimers['SLOW'] > frameTime ? 0.5 : 1);
+  balls.push({ x: bx, y: by, vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd, stuck: !from });
+}
+
+// ───────────────────────────────────────────────────────────
+// drawDonut（Donut Dropと同じ）
+// ───────────────────────────────────────────────────────────
+function drawDonut(c, x, y, sz, donut, alpha=1, time=0) {
+  if (sz < 16) {
+    c.save(); c.globalAlpha = alpha;
+    const cx=x+sz/2, cy=y+sz/2, r=sz*.42, hr=sz*.16;
+    c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2); c.arc(cx,cy,hr,0,Math.PI*2,true);
+    c.fillStyle=donut.body; c.fill();
+    c.strokeStyle=donut.glaze; c.lineWidth=2; c.stroke();
+    c.beginPath(); c.arc(cx-r*.2,cy-r*.3,r*.18,0,Math.PI*2);
+    c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+    c.restore(); return;
+  }
+  c.save(); c.globalAlpha=alpha; c.translate(x+sz/2,y+sz/2);
+  const r=sz*.42, hr=sz*.16;
+  if (donut.special==='ring') {
+    const bumpR=r*.28, bc=8;
+    c.beginPath(); c.arc(0,0,r*.72,0,Math.PI*2); c.arc(0,0,r*.38,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#FFF8E7'); g.addColorStop(.5,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+    for(let i=0;i<bc;i++){
+      const a=(Math.PI*2/bc)*i+time*.3, bx=Math.cos(a)*r*.56, by=Math.sin(a)*r*.56;
+      const g2=c.createRadialGradient(bx-bumpR*.3,by-bumpR*.3,0,bx,by,bumpR);
+      g2.addColorStop(0,'#FFF8E7'); g2.addColorStop(1,donut.body);
+      c.beginPath(); c.arc(bx,by,bumpR,0,Math.PI*2); c.fillStyle=g2; c.fill();
+    }
+  } else if (donut.special==='crinkle') {
+    c.beginPath(); const pts=16;
+    for(let i=0;i<=pts;i++){
+      const a=(Math.PI*2/pts)*i, rr=r*(1+.1*Math.sin(a*6));
+      if(i===0)c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
+    }
+    c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.2,-r*.2,0,0,0,r);
+    g.addColorStop(0,'#D4A574'); g.addColorStop(.6,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+  } else {
+    c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.arc(0,0,hr,0,Math.PI*2,true);
+    const g=c.createRadialGradient(-r*.25,-r*.25,hr*.5,0,0,r);
+    g.addColorStop(0,'rgba(255,255,255,0.33)'); g.addColorStop(.3,donut.body); g.addColorStop(1,donut.glaze);
+    c.fillStyle=g; c.fill();
+    c.beginPath(); c.arc(0,-r*.05,r*.75,Math.PI+.5,-.5); c.arc(0,-r*.05,hr*1.1,-.5,Math.PI+.5,true);
+    c.save(); c.globalAlpha=0.67; c.fillStyle=donut.glaze; c.fill(); c.restore();
+  }
+  if (donut.sprinkles.length>0) {
+    for(let i=0;i<8;i++){
+      const sa=(Math.PI*2/8)*i+time*.1, sr=hr+(r-hr)*.55+Math.sin(sa*3)*2;
+      c.save(); c.translate(Math.cos(sa)*sr,Math.sin(sa)*sr); c.rotate(sa+Math.PI/4);
+      c.fillStyle=donut.sprinkles[i%donut.sprinkles.length]; c.fillRect(-3,-1,6,2); c.restore();
+    }
+  }
+  c.beginPath(); c.arc(-r*.2,-r*.3,r*.18,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.35)'; c.fill();
+  c.shadowColor=donut.glaze; c.shadowBlur=8;
+  c.beginPath(); c.arc(0,0,r*1.05,0,Math.PI*2); c.arc(0,0,hr*.9,0,Math.PI*2,true);
+  c.save(); c.globalAlpha=0.27; c.strokeStyle=donut.glaze; c.lineWidth=2; c.stroke(); c.restore();
+  c.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// 背景（浮き上がるドーナツ）
+// ───────────────────────────────────────────────────────────
+let bgTime = 0;
+const bgDonuts = Array.from({length:15}, () => ({
+  x: Math.random()*window.innerWidth,
+  y: Math.random()*window.innerHeight,
+  r: 20+Math.random()*50,
+  speed: .2+Math.random()*.5,
+  donut: DONUTS[Math.floor(Math.random()*DONUTS.length)],
+  phase: Math.random()*Math.PI*2,
+  alpha: .05+Math.random()*.12,
+}));
+
+function drawBg() {
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  bgTime += .005;
+  bgDonuts.forEach(d => {
+    d.y -= d.speed;
+    if (d.y < -100) { d.y = bgCanvas.height+100; d.x = Math.random()*bgCanvas.width; }
+    bgCtx.save();
+    bgCtx.globalAlpha = d.alpha + .05*Math.sin(bgTime+d.phase);
+    drawDonut(bgCtx, d.x-d.r, d.y-d.r, d.r*2, d.donut, 1, bgTime);
+    bgCtx.restore();
+  });
+}
+
+// ───────────────────────────────────────────────────────────
+// ヘルパー関数
+// ───────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+function rgbaStr(hex, a) {
+  const {r,g,b}=hexToRgb(hex); return `rgba(${r},${g},${b},${a})`;
+}
+function roundRect(c, x, y, w, h, r) {
+  c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y);
+  c.quadraticCurveTo(x+w,y,x+w,y+r); c.lineTo(x+w,y+h-r);
+  c.quadraticCurveTo(x+w,y+h,x+w-r,y+h); c.lineTo(x+r,y+h);
+  c.quadraticCurveTo(x,y+h,x,y+h-r); c.lineTo(x,y+r);
+  c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+}
+
+// ───────────────────────────────────────────────────────────
+// ブロック描画
+// ───────────────────────────────────────────────────────────
+function drawBlock(b, time) {
+  const donut = DONUTS[b.donutIdx];
+  const {x,y,w,h} = b;
+  ctx.save();
+  if (b.indestr) {
+    roundRect(ctx,x,y,w,h,3);
+    ctx.fillStyle='#333'; ctx.fill();
+    ctx.strokeStyle='#666'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
+    for(let i=6;i<w;i+=6){ctx.beginPath();ctx.moveTo(x+i,y);ctx.lineTo(x+i,y+h);ctx.stroke();}
+    ctx.restore(); return;
+  }
+  const flash = b.hitFlash > 0 ? Math.min(1, b.hitFlash / 8) : 0;
+  const alpha = b.hp === b.maxHp ? 1 : b.hp === b.maxHp-1 ? 0.8 : 0.6;
+  roundRect(ctx,x,y,w,h,3);
+  ctx.fillStyle = rgbaStr(donut.body, alpha); ctx.fill();
+  roundRect(ctx,x+1,y+1,w-2,Math.floor(h*0.5),3);
+  ctx.fillStyle = rgbaStr(donut.glaze, alpha * 0.5); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+w/2,y+h/2,h*0.2,0,Math.PI*2);
+  ctx.fillStyle='rgba(10,0,21,0.6)'; ctx.fill();
+  if (donut.sprinkles.length>0) {
+    for(let i=0;i<3;i++){
+      const sx=x+6+(i*8), sy=y+(i%2===0?3:h-6);
+      ctx.save(); ctx.translate(sx,sy); ctx.rotate(i*0.9);
+      ctx.fillStyle=donut.sprinkles[i%donut.sprinkles.length];
+      ctx.fillRect(-3,-1,6,2); ctx.restore();
+    }
+  }
+  if (b.hp < b.maxHp && b.maxHp>1) {
+    ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.lineWidth=1.5;
+    if (b.maxHp-b.hp>=1){ctx.beginPath();ctx.moveTo(x+w*0.3,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.2,y+h);ctx.stroke();}
+    if (b.maxHp-b.hp>=2){ctx.beginPath();ctx.moveTo(x+w*0.7,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.8,y+h);ctx.stroke();}
+  }
+  if (b.hasPowerup) {
+    const hue=(time*0.1)%360;
+    roundRect(ctx,x-0.5,y-0.5,w+1,h+1,4);
+    ctx.strokeStyle=`hsl(${hue},100%,65%)`; ctx.lineWidth=2;
+    ctx.shadowColor=`hsl(${hue},100%,65%)`; ctx.shadowBlur=5; ctx.stroke();
+  } else {
+    roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3);
+    ctx.strokeStyle=rgbaStr(donut.glaze,alpha*0.8); ctx.lineWidth=1; ctx.stroke();
+  }
+  if (flash>0){roundRect(ctx,x,y,w,h,3);ctx.fillStyle=`rgba(255,255,255,${flash*0.7})`;ctx.fill();}
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// パドル描画
+// ───────────────────────────────────────────────────────────
+function drawPaddle() {
+  const p = paddle;
+  ctx.save();
+  const grd = ctx.createLinearGradient(p.x,p.y,p.x,p.y+p.h);
+  if (powerupTimers['WIDE']>frameTime){grd.addColorStop(0,'#FFD700');grd.addColorStop(1,'#FFA500');}
+  else if (stickBall){grd.addColorStop(0,'#DEB887');grd.addColorStop(1,'#A0522D');}
+  else{grd.addColorStop(0,'#ff6bcd');grd.addColorStop(1,'#cc00aa');}
+  roundRect(ctx,p.x,p.y,p.w,p.h,5);
+  ctx.fillStyle=grd; ctx.fill();
+  roundRect(ctx,p.x+2,p.y+1,p.w-4,p.h/2,4);
+  ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fill();
+  ctx.shadowColor=powerupTimers['WIDE']>frameTime?'#FFD700':'#ff6bcd'; ctx.shadowBlur=10;
+  roundRect(ctx,p.x,p.y,p.w,p.h,5); ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;ctx.stroke();
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// ボール描画
+// ───────────────────────────────────────────────────────────
+function drawBall(ball) {
+  ctx.save();
+  const isGhost=powerupTimers['GHOST']>frameTime;
+  const isFire=powerupTimers['FIRE']>frameTime;
+  const isBomb=powerupTimers['BOMB']>frameTime;
+  let color='#fff5ff';
+  if(isGhost)color='rgba(200,190,255,0.6)';
+  else if(isFire)color='#FF4500';
+  else if(isBomb)color='#FF6347';
+  ctx.shadowColor=isFire||isBomb?color:'#ff6bcd'; ctx.shadowBlur=isFire||isBomb?18:12;
+  const g=ctx.createRadialGradient(ball.x-1,ball.y-1,0,ball.x,ball.y,BALL_R);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(0.5,color);
+  g.addColorStop(1,rgbaStr(isFire?'#FF0000':'#ff6bcd',isGhost?0.3:0.7));
+  ctx.beginPath(); ctx.arc(ball.x,ball.y,BALL_R,0,Math.PI*2);
+  ctx.fillStyle=g; ctx.fill();
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// シールド描画
+// ───────────────────────────────────────────────────────────
+function drawShield(time) {
+  if (!hasShield) return;
+  ctx.save();
+  const sy=paddle.y+paddle.h+12, osc=Math.sin(time*0.05)*2;
+  const g=ctx.createLinearGradient(0,sy,0,sy+5);
+  g.addColorStop(0,'rgba(65,105,225,0.9)'); g.addColorStop(1,'rgba(65,105,225,0.1)');
+  ctx.fillStyle=g; roundRect(ctx,8,sy+osc,CW-16,5,3); ctx.fill();
+  ctx.shadowColor='#4169E1'; ctx.shadowBlur=10;
+  ctx.strokeStyle='rgba(100,149,237,0.8)'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// パーティクル
+// ───────────────────────────────────────────────────────────
+function spawnParticles(x,y,color,count=8) {
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2, spd=1+Math.random()*3;
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,
+      life:40+Math.random()*30,maxLife:70,color,r:2+Math.random()*3});
+  }
+}
+function spawnExplosion(x,y,color){spawnParticles(x,y,color,18);}
+function updateParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.vx*=0.97; p.life--;
+    if(p.life<=0)particles.splice(i,1);
+  }
+}
+function drawParticles(){
+  ctx.save();
+  particles.forEach(p=>{ctx.globalAlpha=p.life/p.maxLife;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();});
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// 落下ドーナツアイテム
+// ───────────────────────────────────────────────────────────
+function spawnFallingItem(bx,by,donutIdx){
+  fallingItems.push({x:bx,y:by,donutIdx,vy:2.0+Math.random(),angle:0});
+}
+function updateFallingItems(){
+  for(let i=fallingItems.length-1;i>=0;i--){
+    const item=fallingItems[i]; item.y+=item.vy; item.angle+=0.05;
+    if(item.y+13>paddle.y&&item.y-13<paddle.y+paddle.h&&item.x>paddle.x-8&&item.x<paddle.x+paddle.w+8){
+      activatePowerup(item.donutIdx);
+      spawnParticles(item.x,paddle.y,DONUTS[item.donutIdx].glaze,8);
+      fallingItems.splice(i,1); continue;
+    }
+    if(item.y>CH+30)fallingItems.splice(i,1);
+  }
+}
+function drawFallingItems(time){
+  fallingItems.forEach(item=>{
+    drawDonut(ctx,item.x-12,item.y-12,24,DONUTS[item.donutIdx],1,item.angle);
+    const pu=POWERUP_TYPES.find(p=>p.donutIdx===item.donutIdx);
+    if(pu){
+      ctx.save(); ctx.strokeStyle=pu.color; ctx.lineWidth=1.5;
+      ctx.shadowColor=pu.color; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.arc(item.x,item.y,15,0,Math.PI*2); ctx.stroke(); ctx.restore();
+    }
+  });
+}
+
+// ───────────────────────────────────────────────────────────
+// レーザー
+// ───────────────────────────────────────────────────────────
+function updateLasers(){
+  for(let i=lasers.length-1;i>=0;i--){
+    lasers[i].y-=8;
+    let hit=false;
+    for(let j=blocks.length-1;j>=0;j--){
+      const b=blocks[j];
+      if(!b.indestr&&lasers[i].x>b.x&&lasers[i].x<b.x+b.w&&lasers[i].y>b.y&&lasers[i].y<b.y+b.h){
+        hitBlock(b,null,false,false); hit=true; break;
+      }
+    }
+    if(hit||lasers[i].y<GRID_Y)lasers.splice(i,1);
+  }
+}
+function drawLasers(){
+  ctx.save(); ctx.strokeStyle='#FFD700'; ctx.lineWidth=2;
+  ctx.shadowColor='#FFD700'; ctx.shadowBlur=8;
+  lasers.forEach(l=>{ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(l.x,l.y-12);ctx.stroke();});
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// ステージ情報（キャンバス上部）
+// ───────────────────────────────────────────────────────────
+function drawStageInfo(time) {
+  ctx.save();
+  ctx.fillStyle='rgba(10,0,21,0.75)'; ctx.fillRect(0,0,CW,GRID_Y-2);
+  const isBonus=level%5===0;
+  const hue=(time*0.05)%360;
+  ctx.font='bold 13px "Fredoka One", cursive'; ctx.textAlign='center';
+  if(isBonus){
+    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=8;
+    ctx.fillText(`✨ STAGE ${level} ✨ BONUS！`, CW/2, 18);
+  } else {
+    ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.shadowBlur=0;
+    ctx.fillText(`STAGE ${level}`, CW/2, 18);
+  }
+  ctx.shadowBlur=0;
+  // パワーアップ中の表示
+  const actives=Object.keys(powerupTimers).filter(k=>powerupTimers[k]>frameTime);
+  actives.forEach((id,i)=>{
+    const pu=POWERUP_TYPES.find(p=>p.id===id);
+    if(!pu)return;
+    const rem=((powerupTimers[id]-frameTime)/1000).toFixed(1);
+    ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='left';
+    ctx.fillStyle=pu.color; ctx.fillText(`${pu.emoji}${rem}s`, 6+i*52, 36);
+  });
+  if(hasShield){
+    ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='right'; ctx.fillStyle='#4169E1';
+    ctx.fillText('🛡️',CW-6,36);
+  }
+  // パワーアップ取得表示
+  if(selectedPowerupTimer>0){
+    ctx.globalAlpha=Math.min(1,selectedPowerupTimer/20);
+    ctx.font='bold 14px "Fredoka One", cursive'; ctx.textAlign='center';
+    ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=12;
+    ctx.fillText(selectedPowerupLabel||'',CW/2,CH-100);
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+  }
+  // コンボ表示
+  if(comboCount>1&&comboTimer>0){
+    ctx.globalAlpha=Math.min(1,comboTimer/30);
+    ctx.font='bold 16px "Fredoka One", cursive'; ctx.textAlign='center';
+    ctx.fillStyle='#ff6bcd'; ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=10;
+    ctx.fillText(`コンボ ×${comboCount}！`,CW/2,CH-120);
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// タイトル画面（キャンバス上）
+// ───────────────────────────────────────────────────────────
+function drawTitleCanvas(time) {
+  ctx.save();
+  ctx.fillStyle='rgba(10,0,21,0.85)'; ctx.fillRect(0,0,CW,CH);
+  const hue=(time*0.04)%360;
+  ctx.font='bold 36px "Fredoka One", cursive'; ctx.textAlign='center';
+  ctx.fillStyle=`hsl(${hue},100%,72%)`; ctx.shadowColor=`hsl(${hue},100%,72%)`; ctx.shadowBlur=20;
+  ctx.fillText('DONUT-DROP', CW/2, CH/2-80);
+  ctx.fillStyle=`hsl(${(hue+120)%360},100%,72%)`;
+  ctx.fillText('CRUNCH!', CW/2, CH/2-35);
+  ctx.shadowBlur=0;
+  ctx.font='12px "Kosugi Maru", sans-serif'; ctx.fillStyle='rgba(255,255,255,0.65)';
+  ctx.fillText('ドーナツブロック崩し', CW/2, CH/2+5);
+  // 落ちてくるドーナツ
+  const dT=time*0.015;
+  for(let i=0;i<3;i++){
+    const dx=55+i*90, dy=((dT*25+i*55)%380)+80;
+    drawDonut(ctx,dx-15,dy-15,30,DONUTS[i*4],0.75,dT+i);
+  }
+  ctx.font='13px "Kosugi Maru", sans-serif'; ctx.fillStyle='#ffcc00';
+  ctx.fillText(`ハイスコア: ${hiScore}`, CW/2, CH/2+35);
+  if(Math.floor(time*0.04)%2===0){
+    ctx.font='14px "Fredoka One", cursive'; ctx.fillStyle='#ff6bcd';
+    ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=8;
+    ctx.fillText('タップしてスタート！', CW/2, CH/2+75);
+    ctx.shadowBlur=0;
+  }
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// レベルクリア画面
+// ───────────────────────────────────────────────────────────
+let levelClearTimer = 0;
+function drawLevelClear(time) {
+  ctx.save();
+  ctx.fillStyle='rgba(10,0,21,0.82)'; ctx.fillRect(0,0,CW,CH);
+  const hue=(time*0.06)%360;
+  ctx.font='bold 30px "Fredoka One", cursive'; ctx.textAlign='center';
+  ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=16;
+  ctx.fillText('クリア！🎉',CW/2,CH/2-55);
+  ctx.shadowBlur=0;
+  ctx.font='16px "Fredoka One", cursive'; ctx.fillStyle='#ffcc00';
+  ctx.fillText(`STAGE ${level} クリア！`,CW/2,CH/2-15);
+  ctx.font='13px "Kosugi Maru", sans-serif'; ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.fillText(`スコア: ${score}`,CW/2,CH/2+15);
+  for(let i=0;i<5;i++){
+    const t=(time*0.025+i*0.75)%1, dx=30+i*60, dy=t*CH-20;
+    drawDonut(ctx,dx-12,dy-12,24,DONUTS[i*2%DONUTS.length],0.8,time*0.02+i);
+  }
+  if(Math.floor(time*0.04)%2===0){
+    ctx.font='13px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
+    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=6;
+    ctx.fillText('タップして次のステージへ',CW/2,CH/2+60);
+    ctx.shadowBlur=0;
+  }
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// ゲームオーバー画面
+// ───────────────────────────────────────────────────────────
+function drawGameOver(time) {
+  ctx.save();
+  ctx.fillStyle='rgba(10,0,21,0.88)'; ctx.fillRect(0,0,CW,CH);
+  ctx.font='bold 30px "Fredoka One", cursive'; ctx.textAlign='center';
+  ctx.fillStyle='#ff4444'; ctx.shadowColor='#ff4444'; ctx.shadowBlur=18;
+  ctx.fillText('ゲームオーバー',CW/2,CH/2-70);
+  ctx.shadowBlur=0;
+  ctx.font='16px "Fredoka One", cursive'; ctx.fillStyle='#ffcc00';
+  ctx.fillText(`スコア: ${score}`,CW/2,CH/2-30);
+  if(score>=hiScore&&score>0){
+    ctx.fillStyle='#ff6bcd'; ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=8;
+    ctx.fillText('🏆 ハイスコア更新！',CW/2,CH/2+5);
+    ctx.shadowBlur=0;
+  }
+  ctx.font='12px "Kosugi Maru", sans-serif'; ctx.fillStyle='rgba(255,255,255,0.55)';
+  ctx.fillText(`STAGE ${level} まで進んだ！`,CW/2,CH/2+35);
+  if(Math.floor(time*0.04)%2===0){
+    ctx.font='13px "Fredoka One", cursive'; ctx.fillStyle='#ff6bcd';
+    ctx.fillText('タップしてもう一度！',CW/2,CH/2+80);
+  }
+  ctx.restore();
+}
+
+// ───────────────────────────────────────────────────────────
+// 物理・コリジョン
+// ───────────────────────────────────────────────────────────
+function updateBalls(dt) {
+  const isFire   = powerupTimers['FIRE']   > frameTime;
+  const isGhost  = powerupTimers['GHOST']  > frameTime;
+  const isMagnet = powerupTimers['MAGNET'] > frameTime;
+  const isBomb   = powerupTimers['BOMB']   > frameTime;
+
+  balls.forEach(ball => {
+    if (ball.stuck) { ball.x=paddle.x+paddle.w/2; ball.y=paddle.y-BALL_R-1; return; }
+    if (isMagnet && blocks.length>0) {
+      let nearest=null, minDist=Infinity;
+      blocks.forEach(b=>{const d=Math.hypot((b.x+b.w/2)-ball.x,(b.y+b.h/2)-ball.y);if(d<minDist){minDist=d;nearest=b;}});
+      if(nearest&&minDist>50){
+        const dx=(nearest.x+nearest.w/2)-ball.x, dy=(nearest.y+nearest.h/2)-ball.y, mag=Math.hypot(dx,dy);
+        ball.vx+=dx/mag*0.2; ball.vy+=dy/mag*0.2;
+        const spd=Math.hypot(ball.vx,ball.vy), tgt=getLevelConfig(level).ballSpeed*(powerupTimers['SLOW']>frameTime?0.5:1);
+        if(spd>0){ball.vx=ball.vx/spd*tgt; ball.vy=ball.vy/spd*tgt;}
+      }
+    }
+    ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
+    if(ball.x-BALL_R<0){ball.x=BALL_R;ball.vx=Math.abs(ball.vx);playSound('wall');}
+    if(ball.x+BALL_R>CW){ball.x=CW-BALL_R;ball.vx=-Math.abs(ball.vx);playSound('wall');}
+    if(ball.y-BALL_R<GRID_Y-2){ball.y=GRID_Y-2+BALL_R;ball.vy=Math.abs(ball.vy);playSound('wall');}
+    // パドル衝突
+    if(ball.vy>0&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w&&
+       ball.y+BALL_R>paddle.y&&ball.y-BALL_R<paddle.y+paddle.h){
+      const rel=(ball.x-(paddle.x+paddle.w/2))/(paddle.w/2);
+      const angle=-Math.PI/2+rel*0.7;
+      const spd=Math.hypot(ball.vx,ball.vy);
+      ball.vx=Math.cos(angle)*spd; ball.vy=Math.sin(angle)*spd;
+      ball.y=paddle.y-BALL_R-1;
+      if(powerupTimers['STICKY']>frameTime){ball.stuck=true;stickBall=ball;}
+      playSound('paddle'); spawnParticles(ball.x,paddle.y,'#ff6bcd',4);
+    }
+    // シールド衝突
+    if(hasShield&&ball.vy>0&&ball.y+BALL_R>paddle.y+paddle.h+8&&ball.y+BALL_R<paddle.y+paddle.h+22&&ball.x>8&&ball.x<CW-8){
+      ball.vy=-Math.abs(ball.vy); ball.y=paddle.y+paddle.h+8-BALL_R;
+      hasShield=false; playSound('shield'); spawnParticles(ball.x,paddle.y+paddle.h+12,'#4169E1',10);
+    }
+    // ブロック衝突
+    if(!isGhost){
+      for(let i=blocks.length-1;i>=0;i--){
+        const b=blocks[i]; if(!b)continue;
+        if(b.indestr){if(intersectBlock(ball,b)){reflectBall(ball,b);break;}continue;}
+        if(intersectBlock(ball,b)){
+          if(!isFire)reflectBall(ball,b);
+          hitBlock(b,ball,isBomb,isFire);
+          if(!isFire)break;
+        }
+      }
+    }
+  });
+  balls=balls.filter(ball=>{ if(ball.y>CH+20){if(stickBall===ball)stickBall=null;return false;}return true;});
+  if(balls.length===0) loseLife();
+}
+
+function intersectBlock(ball,b){
+  return ball.x+BALL_R>b.x&&ball.x-BALL_R<b.x+b.w&&ball.y+BALL_R>b.y&&ball.y-BALL_R<b.y+b.h;
+}
+function reflectBall(ball,b){
+  const ol=(ball.x+BALL_R)-b.x, or=(b.x+b.w)-(ball.x-BALL_R);
+  const ot=(ball.y+BALL_R)-b.y, ob=(b.y+b.h)-(ball.y-BALL_R);
+  const minO=Math.min(ol,or,ot,ob);
+  if(minO===ot||minO===ob)ball.vy=-ball.vy; else ball.vx=-ball.vx;
+}
+
+function destroyBlock(b){
+  if(b.hasPowerup||Math.random()<0.08) spawnFallingItem(b.x+b.w/2,b.y+b.h/2,b.donutIdx);
+  const idx=blocks.indexOf(b); if(idx>=0)blocks.splice(idx,1);
+}
+function checkLevelClear(){
+  if(blocks.filter(b=>!b.indestr).length===0&&state==='playing'){
+    saveHi(); updateDOM();
+    setTimeout(()=>{state='levelclear';levelClearTimer=0;},300);
+  }
+}
+
+function hitBlock(b,ball,isBomb,isFire=false){
+  if(!b||b.indestr)return;
+  b.hitFlash=10;
+  const donut=DONUTS[b.donutIdx];
+  b.hp--; if(isFire)b.hp=0;
+  comboCount++; comboTimer=60;
+  if(comboCount>maxComboSession)maxComboSession=comboCount;
+  const mul=powerupTimers['SCORE2']>frameTime?2:1;
+  const pts=(donut.points+(b.maxHp-1)*5+(comboCount>1?comboCount*2:0))*mul;
+  score+=pts; saveHi(); updateDOM();
+  spawnParticles(b.x+b.w/2,b.y+b.h/2,donut.glaze,6); playSound('hit');
+  if(isBomb){
+    const bx=b.x+b.w/2, by=b.y+b.h/2;
+    const targets=blocks.filter(nb=>nb!==b&&!nb.indestr&&Math.hypot(nb.x+nb.w/2-bx,nb.y+nb.h/2-by)<75);
+    targets.forEach(nb=>{score+=DONUTS[nb.donutIdx].points*mul;spawnParticles(nb.x+nb.w/2,nb.y+nb.h/2,DONUTS[nb.donutIdx].glaze,4);destroyBlock(nb);});
+    spawnExplosion(bx,by,'#FF6347'); flashColor='#FF6347'; flashAlpha=0.25; playSound('explode');
+  }
+  if(b.hp<=0){destroyBlock(b);checkLevelClear();}
+}
+
+function loseLife(){
+  lives--; flashColor='#FF0000'; flashAlpha=0.35; playSound('die'); updateDOM();
+  if(lives<=0){ saveHi(); state='gameover'; }
+  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; },700);
+}
+
+// ───────────────────────────────────────────────────────────
+// パワーアップ処理
+// ───────────────────────────────────────────────────────────
+function activatePowerup(donutIdx){
+  const pu=POWERUP_TYPES.find(p=>p.donutIdx===donutIdx);
+  if(!pu){ score+=500; selectedPowerupLabel='抹茶 +500点！'; selectedPowerupTimer=60; updateDOM(); return; }
+  selectedPowerupLabel=`${pu.emoji} ${pu.name}！`; selectedPowerupTimer=70; playSound('powerup');
+  switch(pu.id){
+    case 'WIDE': paddle.w=125; powerupTimers['WIDE']=frameTime+pu.duration; break;
+    case 'MULTI':
+      if(balls.length<5){const b=balls[0];if(b){spawnBall({x:b.x,y:b.y,angle:-Math.PI/2+0.5});spawnBall({x:b.x,y:b.y,angle:-Math.PI/2-0.5});}} break;
+    case 'SLOW':
+      powerupTimers['SLOW']=frameTime+pu.duration;
+      balls.forEach(b=>{const s=Math.hypot(b.vx,b.vy)*0.5,a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*s;b.vy=Math.sin(a)*s;}); break;
+    case 'LASER': powerupTimers['LASER']=frameTime+pu.duration; break;
+    case 'FIRE':  powerupTimers['FIRE']=frameTime+pu.duration; break;
+    case 'SHIELD': hasShield=true; break;
+    case 'STICKY': powerupTimers['STICKY']=frameTime+pu.duration; break;
+    case 'LIFE':   lives=Math.min(lives+1,5); break;
+    case 'GHOST':  powerupTimers['GHOST']=frameTime+pu.duration; break;
+    case 'SCORE2': powerupTimers['SCORE2']=frameTime+pu.duration; break;
+    case 'BOMB':   powerupTimers['BOMB']=frameTime+pu.duration; break;
+    case 'MAGNET': powerupTimers['MAGNET']=frameTime+pu.duration; break;
+  }
+  updateDOM();
+}
+
+function updatePowerupTimers(){
+  for(const id of Object.keys(powerupTimers)){
+    if(powerupTimers[id]<=frameTime){
+      if(id==='WIDE')paddle.w=PADDLE_DEF_W;
+      delete powerupTimers[id];
+    }
+  }
+}
+
+// ───────────────────────────────────────────────────────────
+// 入力処理
+// ───────────────────────────────────────────────────────────
+const keys={};
+let touchX=null;
+
+document.addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(e.code==='Space'||e.code==='ArrowUp'){
+    e.preventDefault();
+    if(state==='playing'){
+      if(stickBall){releaseStick();}
+      else if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;}
+    }
+    if(state==='title'){initAudio();startBgm();initLevel(1);}
+    if(state==='levelclear'){startNextLevel();}
+    if(state==='gameover'){resetGame();}
+  }
+  if(e.code==='KeyM'){
+    muted=!muted;
+    document.getElementById('btn-mute').textContent=muted?'🔇':'🔊';
+    if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
+  }
+  if(e.code==='Escape'){ if(state==='playing'){state='title';} }
+});
+document.addEventListener('keyup',e=>{keys[e.code]=false;});
+
+gameCanvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const rect=gameCanvas.getBoundingClientRect(), scaleX=CW/rect.width;
+  touchX=(e.touches[0].clientX-rect.left)*scaleX;
+  handleTap(touchX);
+},{passive:false});
+gameCanvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const rect=gameCanvas.getBoundingClientRect(), scaleX=CW/rect.width;
+  touchX=(e.touches[0].clientX-rect.left)*scaleX;
+},{passive:false});
+gameCanvas.addEventListener('touchend',e=>{e.preventDefault();touchX=null;},{passive:false});
+gameCanvas.addEventListener('mousedown',e=>{
+  const rect=gameCanvas.getBoundingClientRect(), mx=(e.clientX-rect.left)*(CW/rect.width);
+  handleTap(mx);
+});
+gameCanvas.addEventListener('mousemove',e=>{
+  const rect=gameCanvas.getBoundingClientRect();
+  touchX=(e.clientX-rect.left)*(CW/rect.width);
+});
+gameCanvas.addEventListener('mouseup',()=>{touchX=null;});
+
+function handleTap(x){
+  if(state==='title'){initAudio();startBgm();initLevel(1);return;}
+  if(state==='levelclear'){startNextLevel();return;}
+  if(state==='gameover'){resetGame();return;}
+  if(state==='playing'){
+    if(stickBall){releaseStick();return;}
+    if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;return;}
+    if(powerupTimers['LASER']>frameTime&&laserCooldown<=0){
+      lasers.push({x:paddle.x+paddle.w/4,y:paddle.y});
+      lasers.push({x:paddle.x+paddle.w*0.75,y:paddle.y});
+      laserCooldown=20; playSound('laser');
+    }
+  }
+}
+function releaseStick(){
+  if(!stickBall)return;
+  stickBall.stuck=false;
+  const angle=-Math.PI/2+(Math.random()-0.5)*0.5;
+  const spd=getLevelConfig(level).ballSpeed;
+  stickBall.vx=Math.cos(angle)*spd; stickBall.vy=Math.sin(angle)*spd;
+  stickBall=null;
+}
+function updatePaddleInput(){
+  if(keys['ArrowLeft']||keys['KeyA'])paddle.x=Math.max(0,paddle.x-6);
+  if(keys['ArrowRight']||keys['KeyD'])paddle.x=Math.min(CW-paddle.w,paddle.x+6);
+  if(touchX!==null){
+    const target=touchX-paddle.w/2;
+    paddle.x+=(target-paddle.x)*0.22;
+    paddle.x=Math.max(0,Math.min(CW-paddle.w,paddle.x));
+  }
+}
+function startNextLevel(){initLevel(level+1);}
+function resetGame(){score=0;lives=3;maxComboSession=0;initLevel(1);}
+
+// MENUボタン
+document.getElementById('btn-mute').addEventListener('click',()=>{
+  muted=!muted;
+  document.getElementById('btn-mute').textContent=muted?'🔇':'🔊';
+  if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
+});
+function showHelp(){
+  alert('DONUT-DROP CRUNCH! 操作方法\n\n← → / A D キー: パドルを動かす\nSPACE / クリック: ボールを打ち出す\n\nパワーアップドーナツをパドルで取ると特殊効果が発動！\n\nM キー: 音のON/OFF\nESC キー: タイトルへ');
+}
+
+// ───────────────────────────────────────────────────────────
+// オーディオ
+// ───────────────────────────────────────────────────────────
+let audioCtx=null, muted=false, bgmAudio=null, bgmStarted=false;
+let bgmVolume=parseFloat(localStorage.getItem('crunchBgmVolume')||'0.3');
+
+function initAudio(){
+  if(audioCtx)return;
+  try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();audioCtx.resume().catch(()=>{});}catch(e){}
+}
+
+function startBgm(){
+  if(bgmStarted)return;
+  bgmStarted=true;
+  bgmAudio=new Audio('DonutDrop.mp3');
+  bgmAudio.loop=true;
+  bgmAudio.volume=muted?0:bgmVolume;
+  bgmAudio.play().catch(()=>{});
+}
+
+function playSound(type){
+  if(muted||!audioCtx)return;
+  try{
+    const now=audioCtx.currentTime, g=audioCtx.createGain(), o=audioCtx.createOscillator();
+    o.connect(g); g.connect(audioCtx.destination);
+    switch(type){
+      case 'hit':    o.frequency.value=440;o.type='square';g.gain.setValueAtTime(.12,now);g.gain.exponentialRampToValueAtTime(.001,now+.08);o.start(now);o.stop(now+.08);break;
+      case 'paddle': o.frequency.value=330;o.type='sine';g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.1);o.start(now);o.stop(now+.1);break;
+      case 'wall':   o.frequency.value=220;o.type='sine';g.gain.setValueAtTime(.08,now);g.gain.exponentialRampToValueAtTime(.001,now+.05);o.start(now);o.stop(now+.05);break;
+      case 'die':    o.frequency.setValueAtTime(440,now);o.frequency.exponentialRampToValueAtTime(110,now+.4);o.type='sawtooth';g.gain.setValueAtTime(.2,now);g.gain.exponentialRampToValueAtTime(.001,now+.4);o.start(now);o.stop(now+.4);break;
+      case 'laser':  o.frequency.setValueAtTime(880,now);o.frequency.exponentialRampToValueAtTime(220,now+.12);o.type='square';g.gain.setValueAtTime(.1,now);g.gain.exponentialRampToValueAtTime(.001,now+.12);o.start(now);o.stop(now+.12);break;
+      case 'shield': o.frequency.value=660;o.type='sine';g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.18);o.start(now);o.stop(now+.18);break;
+      case 'explode':o.frequency.setValueAtTime(200,now);o.frequency.exponentialRampToValueAtTime(50,now+.3);o.type='sawtooth';g.gain.setValueAtTime(.25,now);g.gain.exponentialRampToValueAtTime(.001,now+.3);o.start(now);o.stop(now+.3);break;
+      case 'powerup':
+        [440,550,660,880].forEach((f,i)=>{
+          const oo=audioCtx.createOscillator(),gg=audioCtx.createGain();
+          oo.connect(gg);gg.connect(audioCtx.destination);
+          oo.frequency.value=f;oo.type='sine';
+          gg.gain.setValueAtTime(.12,now+i*.06);gg.gain.exponentialRampToValueAtTime(.001,now+i*.06+.08);
+          oo.start(now+i*.06);oo.stop(now+i*.06+.08);
+        }); return;
+    }
+  }catch(e){}
+}
+
+// ───────────────────────────────────────────────────────────
+// メインゲームループ
+// ───────────────────────────────────────────────────────────
+function gameLoop(ts){
+  const dt=Math.min((ts-lastTime)/16.67,3);
+  lastTime=ts; frameTime=ts; titleTime++;
+
+  drawBg();
+
+  ctx.clearRect(0,0,CW,CH);
+  const bg=ctx.createLinearGradient(0,0,0,CH);
+  bg.addColorStop(0,'#0a0015'); bg.addColorStop(1,'#100020');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,CW,CH);
+
+  if(state==='title'){
+    drawTitleCanvas(titleTime);
+    requestAnimationFrame(gameLoop); return;
+  }
+  if(state==='levelclear'){
+    levelClearTimer++;
+    drawLevelClear(levelClearTimer);
+    requestAnimationFrame(gameLoop); return;
+  }
+  if(state==='gameover'){
+    drawGameOver(titleTime);
+    requestAnimationFrame(gameLoop); return;
+  }
+
+  // === playing ===
+  updatePaddleInput();
+  if(laserCooldown>0)laserCooldown--;
+  if(comboTimer>0)comboTimer--; else comboCount=0;
+  if(selectedPowerupTimer>0)selectedPowerupTimer--;
+  updatePowerupTimers();
+  updateBalls(dt);
+  updateFallingItems();
+  updateLasers();
+  updateParticles();
+  blocks.forEach(b=>{if(b.hitFlash>0)b.hitFlash--;});
+
+  blocks.forEach(b=>drawBlock(b,titleTime));
+  drawFallingItems(titleTime);
+  drawLasers();
+  drawParticles();
+  drawShield(titleTime);
+  drawPaddle();
+  balls.forEach(b=>drawBall(b));
+
+  if(flashAlpha>0){
+    ctx.save(); ctx.globalAlpha=flashAlpha; ctx.fillStyle=flashColor||'#ffffff';
+    ctx.fillRect(0,0,CW,CH); ctx.restore();
+    flashAlpha=Math.max(0,flashAlpha-0.04);
+  }
+  drawStageInfo(titleTime);
+
+  // DOM更新（60フレームに1回で十分）
+  if(titleTime%4===0)updateDOM();
+
+  requestAnimationFrame(gameLoop);
+}
+
+// ───────────────────────────────────────────────────────────
+// スタート
+// ───────────────────────────────────────────────────────────
+document.addEventListener('click',()=>{initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();});
+document.addEventListener('touchstart',()=>{initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();},{passive:true});
+state='title';
+requestAnimationFrame(ts=>{lastTime=ts;gameLoop(ts);});
+</script>
+</body>
+</html>
