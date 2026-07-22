@@ -221,6 +221,12 @@ body::before {
         <div class="info-value small" id="hicombo-display">0x</div>
       </div>
       <div class="info-box">
+        <div class="info-label">TIME</div>
+        <div class="info-value small" id="time-display">—</div>
+        <div class="info-label" style="margin-top:8px;">BEST TIME</div>
+        <div class="info-value small" id="besttime-display">—</div>
+      </div>
+      <div class="info-box">
         <div class="info-label">ACTIVE</div>
         <div class="pu-active-row" id="active-pu-row">—</div>
       </div>
@@ -233,7 +239,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.0.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.1.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -398,9 +404,10 @@ function buildBlocks(lvl) {
 // ───────────────────────────────────────────────────────────
 let state = 'title';
 let level = 1, score = 0, lives = 3;
-let hiScore  = parseInt(localStorage.getItem('dcHiScore')  || '0');
-let hiStage  = parseInt(localStorage.getItem('dcHiStage')  || '0');
-let hiCombo  = parseInt(localStorage.getItem('dcHiCombo')  || '0');
+let hiScore    = parseInt(localStorage.getItem('dcHiScore')    || '0');
+let hiStage    = parseInt(localStorage.getItem('dcHiStage')    || '0');
+let hiCombo    = parseInt(localStorage.getItem('dcHiCombo')    || '0');
+let hiBestTime = parseInt(localStorage.getItem('dcBestTime')   || '0'); // 0 = no record (ms)
 let balls = [], paddle = {}, blocks = [], fallingItems = [], lasers = [], particles = [];
 let powerupTimers = {};
 let hasShield = false, stickBall = null, laserCooldown = 0;
@@ -408,6 +415,18 @@ let comboCount = 0, comboTimer = 0, maxComboSession = 0;
 let frameTime = 0, lastTime = 0, titleTime = 0;
 let flashColor = null, flashAlpha = 0;
 let selectedPowerupLabel = null, selectedPowerupTimer = 0;
+let levelStartTime = 0;  // Date.now() at level start
+let stageClearTime = 0;  // ms taken to clear the stage
+let isNewBestTime = false;
+
+function formatTime(ms) {
+  if (ms <= 0) return '—';
+  const tenths = Math.floor(ms / 100) % 10;
+  const secs   = Math.floor(ms / 1000);
+  const m      = Math.floor(secs / 60);
+  const s      = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}.${tenths}`;
+}
 
 // DOM更新
 function updateDOM() {
@@ -417,6 +436,16 @@ function updateDOM() {
   if (el('hiscore-display')) el('hiscore-display').textContent = hiScore;
   if (el('histage-display')) el('histage-display').textContent = hiStage;
   if (el('hicombo-display')) el('hicombo-display').textContent = hiCombo + 'x';
+  // 経過時間
+  if (el('time-display')) {
+    const elapsed = state === 'playing' && levelStartTime > 0
+      ? Date.now() - levelStartTime
+      : stageClearTime;
+    el('time-display').textContent = formatTime(elapsed);
+  }
+  if (el('besttime-display')) {
+    el('besttime-display').textContent = hiBestTime > 0 ? formatTime(hiBestTime) : '—';
+  }
   // lives
   const ld = el('lives-display');
   if (ld) ld.textContent = '❤️'.repeat(Math.max(0, lives));
@@ -433,10 +462,17 @@ function updateDOM() {
   }
 }
 
-function saveHi() {
+function saveHi(clearTimeMs = 0) {
   if (score > hiScore)  { hiScore = score;  localStorage.setItem('dcHiScore', hiScore); }
   if (level > hiStage)  { hiStage = level;  localStorage.setItem('dcHiStage', hiStage); }
   if (maxComboSession > hiCombo) { hiCombo = maxComboSession; localStorage.setItem('dcHiCombo', hiCombo); }
+  if (clearTimeMs > 0) {
+    isNewBestTime = (hiBestTime === 0 || clearTimeMs < hiBestTime);
+    if (isNewBestTime) {
+      hiBestTime = clearTimeMs;
+      localStorage.setItem('dcBestTime', hiBestTime);
+    }
+  }
 }
 updateDOM();
 
@@ -447,6 +483,9 @@ function initLevel(lvl) {
   powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
+  levelStartTime = Date.now();
+  stageClearTime = 0;
+  isNewBestTime = false;
   spawnBall();
   state = 'playing';
   updateDOM();
@@ -840,7 +879,17 @@ function drawLevelClear(time) {
   ctx.font='16px "Fredoka One", cursive'; ctx.fillStyle='#ffcc00';
   ctx.fillText(`STAGE ${level} クリア！`,CW/2,CH/2-15);
   ctx.font='13px "Kosugi Maru", sans-serif'; ctx.fillStyle='rgba(255,255,255,0.75)';
-  ctx.fillText(`スコア: ${score}`,CW/2,CH/2+15);
+  ctx.fillText(`スコア: ${score}`,CW/2,CH/2+12);
+  // クリアタイム表示
+  ctx.font='13px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
+  ctx.fillText(`TIME: ${formatTime(stageClearTime)}`,CW/2,CH/2+33);
+  if(isNewBestTime){
+    const hue=(time*0.08)%360;
+    ctx.font='bold 13px "Fredoka One", cursive';
+    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=10;
+    ctx.fillText('🏆 BEST TIME!',CW/2,CH/2+53);
+    ctx.shadowBlur=0;
+  }
   for(let i=0;i<5;i++){
     const t=(time*0.025+i*0.75)%1, dx=30+i*60, dy=t*CH-20;
     drawDonut(ctx,dx-12,dy-12,24,DONUTS[i*2%DONUTS.length],0.8,time*0.02+i);
@@ -910,7 +959,8 @@ function updateBalls(dt) {
        ball.y+BALL_R>paddle.y&&ball.y-BALL_R<paddle.y+paddle.h){
       const rel=(ball.x-(paddle.x+paddle.w/2))/(paddle.w/2);
       const angle=-Math.PI/2+rel*0.7;
-      const spd=Math.hypot(ball.vx,ball.vy);
+      const maxSpd=getLevelConfig(level).ballSpeed*3.0;
+      const spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.003,maxSpd);
       ball.vx=Math.cos(angle)*spd; ball.vy=Math.sin(angle)*spd;
       ball.y=paddle.y-BALL_R-1;
       if(powerupTimers['STICKY']>frameTime){ball.stuck=true;stickBall=ball;}
@@ -954,7 +1004,8 @@ function destroyBlock(b){
 }
 function checkLevelClear(){
   if(blocks.filter(b=>!b.indestr).length===0&&state==='playing'){
-    saveHi(); updateDOM();
+    stageClearTime = Date.now() - levelStartTime;
+    saveHi(stageClearTime); updateDOM();
     setTimeout(()=>{state='levelclear';levelClearTimer=0;},300);
   }
 }
