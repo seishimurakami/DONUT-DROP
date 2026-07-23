@@ -376,7 +376,6 @@ body::before {
         <div class="controls-text">
           <b>← →</b> パドル移動<br>
           <b>SPACE</b> ボール打出<br>
-          <b>クリック</b> レーザー発射<br>
           <b>M</b> ミュート<br>
           <b>ESC</b> タイトルへ
         </div>
@@ -494,7 +493,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.6.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.6.1</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -548,7 +547,6 @@ const POWERUP_TYPES = [
   {id:'WIDE',   name:'ワイドパドル',    emoji:'↔️', color:'#FFD700',donutIdx:0,  duration:12000},
   {id:'MULTI',  name:'マルチボール',    emoji:'🎱', color:'#FF69B4',donutIdx:1,  duration:0},
   {id:'SLOW',   name:'スローボール',    emoji:'🐢', color:'#98FB98',donutIdx:2,  duration:5000},
-  {id:'LASER',  name:'レーザー砲',      emoji:'⚡', color:'#FFD700',donutIdx:3,  duration:12000},
   {id:'FIRE',   name:'ファイアーボール',emoji:'🔥', color:'#FF4500',donutIdx:4,  duration:8000},
   {id:'SHIELD', name:'シールド',        emoji:'🛡️', color:'#4169E1',donutIdx:5,  duration:0},
   {id:'STICKY', name:'スティッキー',    emoji:'🧲', color:'#DEB887',donutIdx:6,  duration:0},
@@ -676,9 +674,9 @@ function setStageBestTime(lvl, ms) {
   localStorage.setItem('dcBestTime_' + lvl, ms);
 }
 let stageBestTime = 0;  // 現在ステージのベストタイム（ms、0=未記録）
-let balls = [], paddle = {}, blocks = [], fallingItems = [], lasers = [], particles = [];
+let balls = [], paddle = {}, blocks = [], fallingItems = [], particles = [];
 let powerupTimers = {};
-let hasShield = false, stickBall = null, laserCooldown = 0;
+let hasShield = false, stickBall = null;
 let losingLife = false; // 多重loseLife防止フラグ
 let comboCount = 0, comboTimer = 0, maxComboSession = 0;
 let frameTime = 0, lastTime = 0, titleTime = 0;
@@ -748,8 +746,8 @@ updateDOM();
 function initLevel(lvl) {
   level = lvl;
   blocks = buildBlocks(lvl);
-  balls = []; fallingItems = []; lasers = []; particles = [];
-  powerupTimers = {}; hasShield = false; stickBall = null; laserCooldown = 0; losingLife = false;
+  balls = []; fallingItems = []; particles = [];
+  powerupTimers = {}; hasShield = false; stickBall = null; losingLife = false;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
   stageBestTime = getStageBestTime(lvl);
@@ -1068,28 +1066,6 @@ function drawFallingItems(time){
   });
 }
 
-// ───────────────────────────────────────────────────────────
-// レーザー
-// ───────────────────────────────────────────────────────────
-function updateLasers(){
-  for(let i=lasers.length-1;i>=0;i--){
-    lasers[i].y-=8;
-    let hit=false;
-    for(let j=blocks.length-1;j>=0;j--){
-      const b=blocks[j];
-      if(!b.indestr&&lasers[i].x>b.x&&lasers[i].x<b.x+b.w&&lasers[i].y>b.y&&lasers[i].y<b.y+b.h){
-        hitBlock(b,null,false,false); hit=true; break;
-      }
-    }
-    if(hit||lasers[i].y<CEILING_Y)lasers.splice(i,1);
-  }
-}
-function drawLasers(){
-  ctx.save(); ctx.strokeStyle='#FFD700'; ctx.lineWidth=2;
-  ctx.shadowColor='#FFD700'; ctx.shadowBlur=8;
-  lasers.forEach(l=>{ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(l.x,l.y-12);ctx.stroke();});
-  ctx.restore();
-}
 
 // ───────────────────────────────────────────────────────────
 // ステージ情報（キャンバス上部）
@@ -1390,7 +1366,6 @@ function activatePowerup(donutIdx){
     case 'SLOW':
       powerupTimers['SLOW']=frameTime+pu.duration;
       balls.forEach(b=>{const s=Math.hypot(b.vx,b.vy)*0.5,a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*s;b.vy=Math.sin(a)*s;}); break;
-    case 'LASER': powerupTimers['LASER']=frameTime+pu.duration; break;
     case 'FIRE':  powerupTimers['FIRE']=frameTime+pu.duration; break;
     case 'SHIELD': hasShield=true; break;
     case 'STICKY': powerupTimers['STICKY']=frameTime+pu.duration; break;
@@ -1479,11 +1454,6 @@ function handleTap(x){
   if(state==='playing'){
     if(stickBall){releaseStick();return;}
     if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;return;}
-    if(powerupTimers['LASER']>frameTime&&laserCooldown<=0){
-      lasers.push({x:paddle.x+paddle.w/4,y:paddle.y});
-      lasers.push({x:paddle.x+paddle.w*0.75,y:paddle.y});
-      laserCooldown=20; playSound('laser');
-    }
   }
 }
 function releaseStick(){
@@ -1688,7 +1658,6 @@ function playSound(type){
       case 'paddle': o.frequency.value=330;o.type='sine';g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.1);o.start(now);o.stop(now+.1);break;
       case 'wall':   o.frequency.value=220;o.type='sine';g.gain.setValueAtTime(.08,now);g.gain.exponentialRampToValueAtTime(.001,now+.05);o.start(now);o.stop(now+.05);break;
       case 'die':    o.frequency.setValueAtTime(440,now);o.frequency.exponentialRampToValueAtTime(110,now+.4);o.type='sawtooth';g.gain.setValueAtTime(.2,now);g.gain.exponentialRampToValueAtTime(.001,now+.4);o.start(now);o.stop(now+.4);break;
-      case 'laser':  o.frequency.setValueAtTime(880,now);o.frequency.exponentialRampToValueAtTime(220,now+.12);o.type='square';g.gain.setValueAtTime(.1,now);g.gain.exponentialRampToValueAtTime(.001,now+.12);o.start(now);o.stop(now+.12);break;
       case 'shield': o.frequency.value=660;o.type='sine';g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.18);o.start(now);o.stop(now+.18);break;
       case 'explode':o.frequency.setValueAtTime(200,now);o.frequency.exponentialRampToValueAtTime(50,now+.3);o.type='sawtooth';g.gain.setValueAtTime(.25,now);g.gain.exponentialRampToValueAtTime(.001,now+.3);o.start(now);o.stop(now+.3);break;
       case 'powerup':
@@ -1733,13 +1702,11 @@ function gameLoop(ts){
   // === playing / paused ===
   if(state==='playing'){
     updatePaddleInput();
-    if(laserCooldown>0)laserCooldown--;
     if(comboTimer>0)comboTimer--; else comboCount=0;
     if(selectedPowerupTimer>0)selectedPowerupTimer--;
     updatePowerupTimers();
     updateBalls(dt);
     updateFallingItems();
-    updateLasers();
     updateParticles();
     blocks.forEach(b=>{if(b.hitFlash>0)b.hitFlash--;});
   }
@@ -1747,7 +1714,6 @@ function gameLoop(ts){
   if(state==='playing'||state==='paused'){
     blocks.forEach(b=>drawBlock(b,titleTime));
     drawFallingItems(titleTime);
-    drawLasers();
     drawParticles();
     drawShield(titleTime);
     drawPaddle();
