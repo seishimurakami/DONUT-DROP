@@ -578,8 +578,11 @@ window.addEventListener('resize',()=>{
   ];
 
   // ── ゲームと同じdrawBlockロジック ──
-  function drawSampleBlock(ctx,{x,y,w,h,maxHp=1,hp=1,indestr=false,hasPowerup=false,donutIdx=0,hue=300}){
+  function drawSampleBlock(ctx,{x,y,w,h,maxHp=1,hp=1,indestr=false,hasPowerup=false,hue=300},time=0){
     ctx.save();
+    const dmg=maxHp-hp, alpha=dmg===0?1:dmg===1?.80:.62;
+
+    // ── 壊せないブロック ──
     if(indestr){
       const g=ctx.createLinearGradient(x,y,x,y+h);
       g.addColorStop(0,'#555');g.addColorStop(1,'#1c1c1c');
@@ -591,57 +594,140 @@ window.addEventListener('resize',()=>{
       ctx.fillStyle='rgba(255,255,255,0.52)';ctx.fillText('∞',x+w/2,y+h/2+1);
       ctx.restore();return;
     }
-    const dmg=maxHp-hp, alpha=dmg===0?1:dmg===1?.80:.62;
-    let colTop,colBot;
-    if(maxHp>=3){colTop='#FFE566';colBot='#9A6000';}
-    else if(maxHp===2){colTop='#EBEBEB';colBot='#767676';}
-    else if(hasPowerup){colTop='#FFD700';colBot='#FF69B4';}
-    else{const p=TILE_PAL[donutIdx%TILE_PAL.length];colTop=p[0];colBot=p[1];}
-    const grd=ctx.createLinearGradient(x,y,x,y+h);
-    grd.addColorStop(0,rgbaStr(colTop,alpha));grd.addColorStop(1,rgbaStr(colBot,alpha));
-    roundRect(ctx,x,y,w,h,2);ctx.fillStyle=grd;ctx.fill();
-    ctx.lineWidth=1;
-    ctx.strokeStyle='rgba(255,255,255,0.52)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+1,y+1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
-    ctx.strokeStyle='rgba(0,0,0,0.32)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+w-1,y+h-1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
-    if(dmg>=1){ctx.strokeStyle='rgba(255,255,255,0.72)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.3,y);ctx.lineTo(x+w*.5,y+h*.5);ctx.lineTo(x+w*.2,y+h);ctx.stroke();}
-    if(dmg>=2){ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.7,y);ctx.lineTo(x+w*.5,y+h*.5);ctx.lineTo(x+w*.8,y+h);ctx.stroke();}
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    if(hasPowerup){ctx.font=`${Math.floor(h*.72)}px serif`;ctx.fillText('🎁',x+w/2,y+h/2+1);}
-    else if(maxHp>=2&&hp>=2){
-      ctx.font=`bold ${Math.floor(h*.72)}px "Fredoka One",cursive`;
-      ctx.fillStyle=maxHp>=3?'rgba(50,25,0,0.85)':'rgba(15,15,50,0.85)';
-      ctx.shadowColor='rgba(255,255,255,0.45)';ctx.shadowBlur=2;
-      ctx.fillText(String(hp),x+w/2,y+h/2+1);ctx.shadowBlur=0;
-    }
+
+    // ── プレゼントブロック ──
     if(hasPowerup){
+      const grd=ctx.createLinearGradient(x,y,x,y+h);
+      grd.addColorStop(0,'#FFD700');grd.addColorStop(1,'#FF69B4');
+      roundRect(ctx,x,y,w,h,2);ctx.fillStyle=grd;ctx.fill();
+      ctx.lineWidth=1;
+      ctx.strokeStyle='rgba(255,255,255,0.52)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+1,y+1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.strokeStyle='rgba(0,0,0,0.32)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+w-1,y+h-1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font=`${Math.floor(h*.72)}px serif`;ctx.fillText('🎁',x+w/2,y+h/2+1);
       roundRect(ctx,x-.5,y-.5,w+1,h+1,3);
       ctx.strokeStyle=`hsl(${hue},100%,65%)`;ctx.lineWidth=2;
       ctx.shadowColor=`hsl(${hue},100%,65%)`;ctx.shadowBlur=5;ctx.stroke();ctx.shadowBlur=0;
-    }else if(maxHp>=3){
-      roundRect(ctx,x+.5,y+.5,w-1,h-1,2);ctx.strokeStyle='#FFD700';ctx.lineWidth=1.5;
-      ctx.shadowColor='#FFD700';ctx.shadowBlur=3;ctx.stroke();ctx.shadowBlur=0;
-    }else if(maxHp===2){
-      roundRect(ctx,x+.5,y+.5,w-1,h-1,2);ctx.strokeStyle='#C0C0C0';ctx.lineWidth=1.5;
-      ctx.shadowColor='#C0C0C0';ctx.shadowBlur=2;ctx.stroke();ctx.shadowBlur=0;
+      ctx.restore();return;
     }
-    ctx.restore();
+
+    // ── チョコレートブロック（3HP）板チョコ模様 ──
+    if(maxHp>=3){
+      const grd=ctx.createLinearGradient(x,y,x,y+h);
+      grd.addColorStop(0,`rgba(139,75,20,${alpha})`);
+      grd.addColorStop(0.5,`rgba(101,43,10,${alpha})`);
+      grd.addColorStop(1,`rgba(56,20,4,${alpha})`);
+      roundRect(ctx,x,y,w,h,2);ctx.fillStyle=grd;ctx.fill();
+      ctx.save();roundRect(ctx,x,y,w,h,2);ctx.clip();
+      const cols=3,rows=2,sw=w/cols,sh=h/rows;
+      ctx.lineWidth=1.2;ctx.strokeStyle=`rgba(0,0,0,${alpha*0.55})`;
+      for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) ctx.strokeRect(x+c*sw+1,y+r*sh+1,sw-2,sh-2);
+      ctx.lineWidth=0.8;ctx.strokeStyle=`rgba(255,180,80,${alpha*0.22})`;
+      for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+        const sx=x+c*sw+2,sy=y+r*sh+2;
+        ctx.beginPath();ctx.moveTo(sx,sy+sh*.4);ctx.lineTo(sx,sy);ctx.lineTo(sx+sw-4,sy);ctx.stroke();
+      }
+      ctx.restore();
+      ctx.lineWidth=1;
+      ctx.strokeStyle='rgba(210,140,60,0.4)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+1,y+1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+w-1,y+h-1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      if(hp>=2){
+        ctx.font=`bold ${Math.floor(h*.72)}px "Fredoka One",cursive`;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillStyle='rgba(255,210,100,0.92)';ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=3;
+        ctx.fillText(String(hp),x+w/2,y+h/2+1);ctx.shadowBlur=0;
+      }
+      if(dmg>=1){ctx.strokeStyle='rgba(255,200,80,0.75)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.3,y);ctx.lineTo(x+w*.5,y+h*.5);ctx.lineTo(x+w*.2,y+h);ctx.stroke();}
+      if(dmg>=2){ctx.strokeStyle='rgba(255,200,80,0.55)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.7,y);ctx.lineTo(x+w*.5,y+h*.5);ctx.lineTo(x+w*.8,y+h);ctx.stroke();}
+      roundRect(ctx,x+.5,y+.5,w-1,h-1,2);
+      ctx.strokeStyle='#A0522D';ctx.lineWidth=1.5;ctx.shadowColor='#CD853F';ctx.shadowBlur=3;ctx.stroke();ctx.shadowBlur=0;
+      ctx.restore();return;
+    }
+
+    // ── ナッツブロック（2HP）ナッツの粒と凸凹模様 ──
+    if(maxHp===2){
+      const grd=ctx.createLinearGradient(x,y,x,y+h);
+      grd.addColorStop(0,`rgba(245,205,90,${alpha})`);
+      grd.addColorStop(1,`rgba(155,95,5,${alpha})`);
+      roundRect(ctx,x,y,w,h,2);ctx.fillStyle=grd;ctx.fill();
+      ctx.save();roundRect(ctx,x,y,w,h,2);ctx.clip();
+      [[0.22,0.45,0.4],[0.55,0.28,-0.3],[0.78,0.62,0.6],[0.42,0.7,-0.5]].forEach(([rx,ry,rot])=>{
+        ctx.save();ctx.translate(x+w*rx,y+h*ry);ctx.rotate(rot);
+        ctx.beginPath();ctx.ellipse(0,0,w*0.09,h*0.21,0,0,Math.PI*2);
+        ctx.fillStyle=`rgba(110,55,0,${alpha*0.6})`;ctx.fill();
+        ctx.beginPath();ctx.ellipse(-w*0.02,-h*0.07,w*0.04,h*0.07,0,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,220,100,${alpha*0.38})`;ctx.fill();
+        ctx.restore();
+      });
+      const bumps=5,bw2=w/bumps,bh2=h*0.2;
+      ctx.fillStyle=`rgba(200,140,20,${alpha*0.45})`;
+      for(let i=0;i<bumps;i++){ctx.beginPath();ctx.arc(x+bw2*(i+0.5),y,bh2,Math.PI,0);ctx.fill();}
+      ctx.restore();
+      ctx.lineWidth=1;
+      ctx.strokeStyle='rgba(255,240,130,0.55)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+1,y+1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.strokeStyle='rgba(0,0,0,0.32)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+w-1,y+h-1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      if(hp>=2){
+        ctx.font=`bold ${Math.floor(h*.72)}px "Fredoka One",cursive`;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillStyle='rgba(70,35,0,0.9)';ctx.shadowColor='rgba(255,220,100,0.65)';ctx.shadowBlur=2;
+        ctx.fillText(String(hp),x+w/2,y+h/2+1);ctx.shadowBlur=0;
+      }
+      if(dmg>=1){ctx.strokeStyle='rgba(255,255,255,0.72)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+w*.3,y);ctx.lineTo(x+w*.5,y+h*.5);ctx.lineTo(x+w*.2,y+h);ctx.stroke();}
+      roundRect(ctx,x+.5,y+.5,w-1,h-1,2);
+      ctx.strokeStyle='#DAA520';ctx.lineWidth=1.5;ctx.shadowColor='#DAA520';ctx.shadowBlur=2;ctx.stroke();ctx.shadowBlur=0;
+      ctx.restore();return;
+    }
+
+    // ── シュガーブロック（1HP）砂糖のきらきら模様 ──
+    {
+      const grd=ctx.createLinearGradient(x,y,x,y+h);
+      grd.addColorStop(0,`rgba(255,255,255,${alpha})`);
+      grd.addColorStop(0.5,`rgba(242,232,255,${alpha})`);
+      grd.addColorStop(1,`rgba(220,202,245,${alpha})`);
+      roundRect(ctx,x,y,w,h,2);ctx.fillStyle=grd;ctx.fill();
+      [[0.2,0.35],[0.6,0.25],[0.82,0.6],[0.38,0.72],[0.68,0.42]].forEach(([rx,ry],i)=>{
+        const phase=(time*0.05+i*1.26)%(Math.PI*2);
+        const bright=0.45+Math.sin(phase)*0.55;
+        if(bright>0.2){
+          const sx=x+w*rx,sy=y+h*ry,r=1.1+bright;
+          ctx.fillStyle=`rgba(255,255,200,${bright*alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(sx,sy-r*2.2);ctx.lineTo(sx+r*.45,sy-r*.45);
+          ctx.lineTo(sx+r*2.2,sy);ctx.lineTo(sx+r*.45,sy+r*.45);
+          ctx.lineTo(sx,sy+r*2.2);ctx.lineTo(sx-r*.45,sy+r*.45);
+          ctx.lineTo(sx-r*2.2,sy);ctx.lineTo(sx-r*.45,sy-r*.45);
+          ctx.closePath();ctx.fill();
+        }
+      });
+      [[0.12,0.55],[0.48,0.38],[0.72,0.65],[0.88,0.28],[0.3,0.2]].forEach(([rx,ry])=>{
+        ctx.fillStyle=`rgba(255,255,255,${alpha*0.75})`;
+        ctx.beginPath();ctx.arc(x+w*rx,y+h*ry,1,0,Math.PI*2);ctx.fill();
+      });
+      ctx.lineWidth=1;
+      ctx.strokeStyle='rgba(255,255,255,0.85)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+1,y+1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.strokeStyle='rgba(180,150,220,0.38)';ctx.beginPath();ctx.moveTo(x+1,y+h-1);ctx.lineTo(x+w-1,y+h-1);ctx.lineTo(x+w-1,y+1);ctx.stroke();
+      ctx.restore();
+    }
   }
 
   function renderAll(){
-    // 1HP: 色違いを3種並べる
+    // 1HP: シュガー（きらきらアニメーション）
     (function(){
       const el=document.getElementById('bc-1hp');if(!el)return;
-      const c=el.getContext('2d'), cw=el.width, ch=el.height;
-      const bw=Math.floor((cw-14)/3), bh=ch-8;
-      [0,4,9].forEach((idx,i)=>drawSampleBlock(c,{x:4+i*(bw+3),y:4,w:bw,h:bh,donutIdx:idx}));
+      let t=0;
+      function frame(){
+        const c=el.getContext('2d');
+        c.clearRect(0,0,el.width,el.height);
+        drawSampleBlock(c,{x:4,y:4,w:el.width-8,h:el.height-8,maxHp:1,hp:1},t);
+        t+=1.2;requestAnimationFrame(frame);
+      }
+      frame();
     })();
-    // 2HP
+    // 2HP: ナッツ
     (function(){
       const el=document.getElementById('bc-2hp');if(!el)return;
       const c=el.getContext('2d');
       drawSampleBlock(c,{x:4,y:4,w:el.width-8,h:el.height-8,maxHp:2,hp:2});
     })();
-    // 3HP
+    // 3HP: チョコレート
     (function(){
       const el=document.getElementById('bc-3hp');if(!el)return;
       const c=el.getContext('2d');
@@ -653,7 +739,7 @@ window.addEventListener('resize',()=>{
       const c=el.getContext('2d');
       drawSampleBlock(c,{x:4,y:4,w:el.width-8,h:el.height-8,indestr:true});
     })();
-    // 🎁 (アニメーションで虹色枠)
+    // 🎁（虹色枠アニメーション）
     (function(){
       const el=document.getElementById('bc-present');if(!el)return;
       let t=0;
