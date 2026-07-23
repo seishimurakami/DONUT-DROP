@@ -279,6 +279,74 @@ body::before {
   border: 1px solid rgba(255,255,255,0.25);
 }
 #quit-no:hover { background: rgba(255,255,255,0.15); color: white; transform: scale(1.05); }
+
+/* ── 設定モーダル ── */
+#settings-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+  z-index: 9999; align-items: center; justify-content: center;
+}
+#settings-overlay.active { display: flex; }
+#settings-card {
+  background: rgba(30,15,50,0.97);
+  border: 1px solid rgba(255,107,205,0.45); border-radius: 18px;
+  padding: 24px 22px 20px; width: 280px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 0 50px rgba(255,107,205,0.3), 0 0 100px rgba(255,107,205,0.1);
+}
+.settings-title {
+  font-family: 'Fredoka One', cursive; font-size: 18px; letter-spacing: 2px;
+  color: #ffcc00; text-shadow: 0 0 16px #ffcc0088; text-align: center; margin: 0;
+}
+.settings-lbl {
+  font-family: 'Kosugi Maru', sans-serif; font-size: 12px;
+  color: rgba(255,255,255,0.55); margin-bottom: 5px;
+}
+.slider-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.slider-row input[type=range] {
+  flex: 1; accent-color: #ff6bcd; height: 4px; cursor: pointer;
+}
+.bgm-val {
+  font-family: 'Fredoka One', cursive; font-size: 12px;
+  color: #ffcc00; min-width: 36px; text-align: right;
+}
+.settings-divider { border: none; border-top: 1px solid rgba(255,255,255,0.12); margin: 0; }
+#btn-reset-data {
+  background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.4);
+  border-radius: 10px; padding: 9px 0; color: rgba(255,150,150,0.9);
+  font-family: 'Kosugi Maru', sans-serif; font-size: 13px;
+  cursor: pointer; width: 100%; transition: all 0.18s; text-align: center;
+}
+#btn-reset-data:hover { background: rgba(255,80,80,0.25); border-color: rgba(255,80,80,0.7); }
+#reset-confirm { display: none; flex-direction: column; gap: 8px; margin-top: 2px; }
+#reset-confirm.active { display: flex; }
+#reset-confirm p {
+  font-family: 'Kosugi Maru', sans-serif; font-size: 12px;
+  color: rgba(255,180,180,0.85); text-align: center; margin: 0; line-height: 1.5;
+}
+.reset-btn-row { display: flex; gap: 8px; }
+#btn-reset-yes {
+  flex: 1; background: linear-gradient(135deg,#ff4444,#cc0000);
+  border: none; border-radius: 10px; color: white; padding: 8px 0;
+  font-family: 'Fredoka One', cursive; font-size: 14px; cursor: pointer; transition: all 0.15s;
+}
+#btn-reset-yes:hover { transform: scale(1.04); }
+#btn-reset-cancel {
+  flex: 1; background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 10px;
+  color: rgba(255,255,255,0.75); padding: 8px 0;
+  font-family: 'Fredoka One', cursive; font-size: 14px; cursor: pointer; transition: all 0.15s;
+}
+#btn-reset-cancel:hover { background: rgba(255,255,255,0.15); color: white; }
+#settings-close {
+  background: transparent; border: 1px solid rgba(255,107,205,0.5);
+  border-radius: 10px; color: rgba(255,107,205,0.85); padding: 8px 0;
+  font-family: 'Fredoka One', cursive; font-size: 14px; cursor: pointer;
+  width: 100%; transition: all 0.18s; letter-spacing: 1px;
+}
+#settings-close:hover { background: rgba(255,107,205,0.15); color: white; border-color: rgba(255,107,205,0.8); }
 </style>
 </head>
 <body>
@@ -317,6 +385,7 @@ body::before {
         <div class="info-label">MENU</div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
           <button class="icon-btn" id="btn-mute" title="ミュート (M)">🔊</button>
+          <button class="icon-btn" id="btn-settings" title="設定">⚙️</button>
         </div>
         <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
           <a href="help.html" target="_blank" class="menu-link">❓ ヘルプ</a>
@@ -386,7 +455,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.5.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.5.1</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1118,13 +1187,13 @@ function drawLevelClear(time) {
     ctx.shadowBlur=0;
   }
   for(let i=0;i<5;i++){
-    const t=(time*0.025+i*0.75)%1, dx=30+i*60, dy=t*CH-20;
+    const t=(time*0.0125+i*0.75)%1, dx=30+i*60, dy=t*CH-20;
     drawDonut(ctx,dx-12,dy-12,24,DONUTS[i*2%DONUTS.length],0.8,time*0.02+i);
   }
-  if(Math.floor(time*0.04)%2===0){
-    ctx.font='13px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
-    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=6;
-    ctx.fillText('タップして次のステージへ',CW/2,CH/2+60);
+  if(Math.floor(time*0.02)%2===0){
+    ctx.font='26px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
+    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=10;
+    ctx.fillText('タップして次のステージへ',CW/2,CH/2+160);
     ctx.shadowBlur=0;
   }
   ctx.restore();
