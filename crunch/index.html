@@ -446,6 +446,45 @@ body::before {
   </div>
 </div>
 
+<!-- 設定モーダル -->
+<div id="settings-overlay">
+  <div id="settings-card">
+    <div class="settings-title">⚙ SETTINGS</div>
+
+    <div>
+      <div class="settings-lbl">🎵 BGM ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="bgm-slider" min="0" max="1" step="0.01" value="0.3">
+        <span class="bgm-val" id="bgm-val-lbl">30%</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="settings-lbl">🔊 効果音 ボリューム</div>
+      <div class="slider-row">
+        <input type="range" id="sfx-slider" min="0" max="1" step="0.01" value="1">
+        <span class="bgm-val" id="sfx-val-lbl">100%</span>
+      </div>
+    </div>
+
+    <hr class="settings-divider">
+
+    <div>
+      <div class="settings-lbl">🗑 データ管理</div>
+      <button id="btn-reset-data">データを初期化する</button>
+      <div id="reset-confirm">
+        <p>⚠️ ハイスコア・クリアデータを全部消します。<br>本当にいいですか？</p>
+        <div class="reset-btn-row">
+          <button id="btn-reset-yes">リセット</button>
+          <button id="btn-reset-cancel">やめる</button>
+        </div>
+      </div>
+    </div>
+
+    <button id="settings-close">✕ とじる</button>
+  </div>
+</div>
+
 <div id="quit-overlay">
   <div id="quit-dialog">
     <p>🍩 ゲームをやめますか？</p>
@@ -455,7 +494,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.5.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.6.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1473,6 +1512,52 @@ document.getElementById('btn-mute').addEventListener('click',()=>{
   document.getElementById('btn-mute').textContent=muted?'🔇':'🔊';
   if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
 });
+// 設定モーダル
+function showSettings(){
+  document.getElementById('reset-confirm').classList.remove('active');
+  document.getElementById('bgm-slider').value=bgmVolume;
+  document.getElementById('bgm-val-lbl').textContent=Math.round(bgmVolume*100)+'%';
+  document.getElementById('sfx-slider').value=sfxVolume;
+  document.getElementById('sfx-val-lbl').textContent=Math.round(sfxVolume*100)+'%';
+  document.getElementById('settings-overlay').classList.add('active');
+}
+function hideSettings(){
+  document.getElementById('settings-overlay').classList.remove('active');
+}
+document.getElementById('btn-settings').addEventListener('click',()=>{
+  initAudio(); showSettings();
+});
+document.getElementById('settings-close').addEventListener('click',hideSettings);
+document.getElementById('settings-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('settings-overlay'))hideSettings();
+});
+document.getElementById('bgm-slider').addEventListener('input',e=>{
+  bgmVolume=parseFloat(e.target.value);
+  document.getElementById('bgm-val-lbl').textContent=Math.round(bgmVolume*100)+'%';
+  localStorage.setItem('crunchBgmVolume',bgmVolume);
+  if(bgmAudio)bgmAudio.volume=muted?0:bgmVolume;
+});
+document.getElementById('sfx-slider').addEventListener('input',e=>{
+  sfxVolume=parseFloat(e.target.value);
+  document.getElementById('sfx-val-lbl').textContent=Math.round(sfxVolume*100)+'%';
+  localStorage.setItem('crunchSfxVolume',sfxVolume);
+  if(sfxGain)sfxGain.gain.value=sfxVolume;
+});
+document.getElementById('btn-reset-data').addEventListener('click',()=>{
+  document.getElementById('reset-confirm').classList.add('active');
+});
+document.getElementById('btn-reset-cancel').addEventListener('click',()=>{
+  document.getElementById('reset-confirm').classList.remove('active');
+});
+document.getElementById('btn-reset-yes').addEventListener('click',()=>{
+  localStorage.removeItem('dcHiScore');
+  localStorage.removeItem('dcHiStage');
+  localStorage.removeItem('dcHiCombo');
+  localStorage.removeItem('dcContinueStage');
+  for(let i=1;i<=100;i++) localStorage.removeItem('dcBestTime_'+i);
+  location.reload();
+});
+
 function showHelp(){
   alert('DONUT-DROP CRUNCH! 操作方法\n\n← → / A D キー: パドルを動かす\nSPACE / クリック: ボールを打ち出す\n\nパワーアップドーナツをパドルで取ると特殊効果が発動！\n\nM キー: 音のON/OFF\nESC キー: タイトルへもどる（確認あり）');
 }
@@ -1569,10 +1654,18 @@ document.getElementById('stage-modal-overlay').addEventListener('click', e => {
 // ───────────────────────────────────────────────────────────
 let audioCtx=null, muted=false, bgmAudio=null, bgmStarted=false;
 let bgmVolume=parseFloat(localStorage.getItem('crunchBgmVolume')||'0.3');
+let sfxVolume=parseFloat(localStorage.getItem('crunchSfxVolume')||'1');
+let sfxGain=null;
 
 function initAudio(){
   if(audioCtx)return;
-  try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();audioCtx.resume().catch(()=>{});}catch(e){}
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    audioCtx.resume().catch(()=>{});
+    sfxGain=audioCtx.createGain();
+    sfxGain.gain.value=sfxVolume;
+    sfxGain.connect(audioCtx.destination);
+  }catch(e){}
 }
 
 function startBgm(){
@@ -1588,7 +1681,8 @@ function playSound(type){
   if(muted||!audioCtx)return;
   try{
     const now=audioCtx.currentTime, g=audioCtx.createGain(), o=audioCtx.createOscillator();
-    o.connect(g); g.connect(audioCtx.destination);
+    const sfxDest=sfxGain||audioCtx.destination;
+    o.connect(g); g.connect(sfxDest);
     switch(type){
       case 'hit':    o.frequency.value=440;o.type='square';g.gain.setValueAtTime(.12,now);g.gain.exponentialRampToValueAtTime(.001,now+.08);o.start(now);o.stop(now+.08);break;
       case 'paddle': o.frequency.value=330;o.type='sine';g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.1);o.start(now);o.stop(now+.1);break;
@@ -1600,7 +1694,7 @@ function playSound(type){
       case 'powerup':
         [440,550,660,880].forEach((f,i)=>{
           const oo=audioCtx.createOscillator(),gg=audioCtx.createGain();
-          oo.connect(gg);gg.connect(audioCtx.destination);
+          oo.connect(gg);gg.connect(sfxGain||audioCtx.destination);
           oo.frequency.value=f;oo.type='sine';
           gg.gain.setValueAtTime(.12,now+i*.06);gg.gain.exponentialRampToValueAtTime(.001,now+i*.06+.08);
           oo.start(now+i*.06);oo.stop(now+i*.06+.08);
