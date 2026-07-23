@@ -493,7 +493,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.10.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.10.1</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -1145,13 +1145,20 @@ function drawShield(time) {
 // パーティクル
 // ───────────────────────────────────────────────────────────
 function spawnParticles(x,y,color,count=8) {
+  const cols=Array.isArray(color)?color:[color];
   for(let i=0;i<count;i++){
     const angle=Math.random()*Math.PI*2, spd=1+Math.random()*3;
     particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,
-      life:40+Math.random()*30,maxLife:70,color,r:2+Math.random()*3});
+      life:40+Math.random()*30,maxLife:70,color:cols[i%cols.length],r:2+Math.random()*3});
   }
 }
 function spawnExplosion(x,y,color){spawnParticles(x,y,color,18);}
+function blockParticleColor(b){
+  if(b.hasPowerup)  return ['#FFD700','#FF69B4','#FFA500'];
+  if(b.maxHp>=3)    return ['#8B4513','#CD853F','#F5C27A']; // チョコ
+  if(b.maxHp===2)   return ['#F5D060','#DAA520','#F09000']; // ナッツ
+  return ['#FFFFFF','#EEE0FF','#FFFFE0'];                   // シュガー
+}
 function updateParticles(){
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.vx*=0.97; p.life--;
@@ -1465,11 +1472,11 @@ function hitBlock(b,ball,isBomb,isFire=false){
   if(comboCount>maxComboSession)maxComboSession=comboCount;
   const pts=donut.points+(b.maxHp-1)*5+(comboCount>1?comboCount*2:0);
   score+=pts; saveHi(); updateDOM();
-  spawnParticles(b.x+b.w/2,b.y+b.h/2,donut.glaze,6); playSound('hit');
+  spawnParticles(b.x+b.w/2,b.y+b.h/2,blockParticleColor(b),6); playSound('hit');
   if(isBomb){
     const bx=b.x+b.w/2, by=b.y+b.h/2;
     const targets=blocks.filter(nb=>nb!==b&&!nb.indestr&&Math.hypot(nb.x+nb.w/2-bx,nb.y+nb.h/2-by)<75);
-    targets.forEach(nb=>{score+=DONUTS[nb.donutIdx].points;spawnParticles(nb.x+nb.w/2,nb.y+nb.h/2,DONUTS[nb.donutIdx].glaze,4);destroyBlock(nb);});
+    targets.forEach(nb=>{score+=DONUTS[nb.donutIdx].points;spawnParticles(nb.x+nb.w/2,nb.y+nb.h/2,blockParticleColor(nb),4);destroyBlock(nb);});
     spawnExplosion(bx,by,'#FF6347'); flashColor='#FF6347'; flashAlpha=0.25; playSound('explode');
   }
   if(b.hp<=0){destroyBlock(b);checkLevelClear();}
