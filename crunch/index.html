@@ -493,7 +493,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.7.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.8.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -544,18 +544,15 @@ const DONUTS = [
 // パワーアップ定義
 // ───────────────────────────────────────────────────────────
 const POWERUP_TYPES = [
-  {id:'WIDE',   name:'ワイドパドル',    emoji:'↔️', color:'#FFD700',donutIdx:0,  duration:12000},
-  {id:'MULTI',  name:'マルチボール',    emoji:'🎱', color:'#FF69B4',donutIdx:1,  duration:0},
-  {id:'SLOW',   name:'スローボール',    emoji:'🐢', color:'#98FB98',donutIdx:2,  duration:5000},
-  {id:'FIRE',   name:'ファイアーボール',emoji:'🔥', color:'#FF4500',donutIdx:4,  duration:8000},
-  {id:'SHIELD', name:'シールド',        emoji:'🛡️', color:'#4169E1',donutIdx:5,  duration:0},
-  {id:'STICKY', name:'スティッキー',    emoji:'🧲', color:'#DEB887',donutIdx:6,  duration:0},
-  {id:'LIFE',   name:'エクストラライフ',emoji:'❤️', color:'#FF1493',donutIdx:7,  duration:0},
-  {id:'GHOST',  name:'ゴーストボール',  emoji:'👻', color:'#E6E6FA',donutIdx:8,  duration:8000},
-  {id:'SCORE2', name:'スコア2倍',       emoji:'✨', color:'#FFD700',donutIdx:9,  duration:15000},
-  {id:'BOMB',   name:'爆発ボール',      emoji:'💥', color:'#FF6347',donutIdx:10, duration:8000},
-  {id:'MAGNET', name:'マグネット',      emoji:'💜', color:'#9370DB',donutIdx:11, duration:8000},
-  // donutIdx:12(抹茶) = ボーナス +500点
+  {id:'FIRE',   name:'ファイアーボール', emoji:'🔥', color:'#FF4500', donutIdx:4,  duration:8000},
+  {id:'BOMB',   name:'爆発ボール',       emoji:'💥', color:'#FF6347', donutIdx:10, duration:8000},
+  {id:'MULTI',  name:'マルチボール',     emoji:'🎱', color:'#FF69B4', donutIdx:1,  duration:0},
+  {id:'WIDE',   name:'ワイドパドル',     emoji:'↔️', color:'#FFD700', donutIdx:0,  duration:12000},
+  {id:'STICKY', name:'スティッキー',     emoji:'🧲', color:'#DEB887', donutIdx:6,  duration:0},
+  {id:'MAGNET', name:'マグネット',       emoji:'💜', color:'#9370DB', donutIdx:11, duration:10000},
+  {id:'SHIELD', name:'シールド',         emoji:'🛡️', color:'#4169E1', donutIdx:5,  duration:0},
+  {id:'LIFE',   name:'エクストラライフ', emoji:'❤️', color:'#FF1493', donutIdx:7,  duration:0},
+  {id:'BITTER', name:'ビターチョコ',     emoji:'⚠️', color:'#8B4513', donutIdx:12, duration:8000},
 ];
 
 // パワーアップ一覧を右パネルに表示
@@ -564,7 +561,6 @@ if (puLegend) {
   POWERUP_TYPES.forEach(pu => {
     puLegend.innerHTML += `<span>${DONUTS[pu.donutIdx].emoji}</span><span>${pu.name}</span>`;
   });
-  puLegend.innerHTML += `<span>${DONUTS[12].emoji}</span><span>+500点ボーナス</span>`;
 }
 
 // ───────────────────────────────────────────────────────────
@@ -676,7 +672,7 @@ function setStageBestTime(lvl, ms) {
 let stageBestTime = 0;  // 現在ステージのベストタイム（ms、0=未記録）
 let balls = [], paddle = {}, blocks = [], fallingItems = [], particles = [];
 let powerupTimers = {};
-let hasShield = false, stickBall = null;
+let hasShield = false, hasStickyPaddle = false, stickBall = null;
 let losingLife = false; // 多重loseLife防止フラグ
 let comboCount = 0, comboTimer = 0, maxComboSession = 0;
 let frameTime = 0, lastTime = 0, titleTime = 0;
@@ -747,7 +743,7 @@ function initLevel(lvl) {
   level = lvl;
   blocks = buildBlocks(lvl);
   balls = []; fallingItems = []; particles = [];
-  powerupTimers = {}; hasShield = false; stickBall = null; losingLife = false;
+  powerupTimers = {}; hasShield = false; hasStickyPaddle = false; stickBall = null; losingLife = false;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
   stageBestTime = getStageBestTime(lvl);
@@ -763,7 +759,7 @@ function spawnBall(from) {
   const bx   = from ? from.x : paddle.x + paddle.w / 2;
   const by   = from ? from.y : paddle.y - BALL_R - 2;
   const ang  = from ? from.angle : -Math.PI / 2 + (Math.random() - 0.5) * 0.3;
-  const spd  = getLevelConfig(level).ballSpeed * (powerupTimers['SLOW'] > frameTime ? 0.5 : 1);
+  const spd  = getLevelConfig(level).ballSpeed;
   balls.push({ x: bx, y: by, vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd, stuck: !from });
 }
 
@@ -1040,17 +1036,13 @@ function drawPaddle() {
 // ───────────────────────────────────────────────────────────
 function drawBall(ball) {
   ctx.save();
-  const isGhost=powerupTimers['GHOST']>frameTime;
   const isFire=powerupTimers['FIRE']>frameTime;
   const isBomb=powerupTimers['BOMB']>frameTime;
-  let color='#fff5ff';
-  if(isGhost)color='rgba(200,190,255,0.6)';
-  else if(isFire)color='#FF4500';
-  else if(isBomb)color='#FF6347';
+  const color=isFire?'#FF4500':isBomb?'#FF6347':'#fff5ff';
   ctx.shadowColor=isFire||isBomb?color:'#ff6bcd'; ctx.shadowBlur=isFire||isBomb?18:12;
   const g=ctx.createRadialGradient(ball.x-1,ball.y-1,0,ball.x,ball.y,BALL_R);
   g.addColorStop(0,'#ffffff'); g.addColorStop(0.5,color);
-  g.addColorStop(1,rgbaStr(isFire?'#FF0000':'#ff6bcd',isGhost?0.3:0.7));
+  g.addColorStop(1,rgbaStr(isFire?'#FF0000':'#ff6bcd',0.7));
   ctx.beginPath(); ctx.arc(ball.x,ball.y,BALL_R,0,Math.PI*2);
   ctx.fillStyle=g; ctx.fill();
   ctx.restore();
@@ -1101,8 +1093,14 @@ function spawnFallingItem(bx,by,donutIdx){
   fallingItems.push({x:bx,y:by,donutIdx,vy:2.0+Math.random(),angle:0});
 }
 function updateFallingItems(){
+  const isMagnet=powerupTimers['MAGNET']>frameTime;
   for(let i=fallingItems.length-1;i>=0;i--){
-    const item=fallingItems[i]; item.y+=item.vy; item.angle+=0.05;
+    const item=fallingItems[i];
+    item.y+=item.vy; item.angle+=0.05;
+    if(isMagnet){
+      const targetX=paddle.x+paddle.w/2;
+      item.x+=(targetX-item.x)*0.07;
+    }
     if(item.y+13>paddle.y&&item.y-13<paddle.y+paddle.h&&item.x>paddle.x-8&&item.x<paddle.x+paddle.w+8){
       activatePowerup(item.donutIdx);
       spawnParticles(item.x,paddle.y,DONUTS[item.donutIdx].glaze,8);
@@ -1116,9 +1114,16 @@ function drawFallingItems(time){
     drawDonut(ctx,item.x-12,item.y-12,24,DONUTS[item.donutIdx],1,item.angle);
     const pu=POWERUP_TYPES.find(p=>p.donutIdx===item.donutIdx);
     if(pu){
-      ctx.save(); ctx.strokeStyle=pu.color; ctx.lineWidth=1.5;
+      ctx.save();
+      ctx.strokeStyle=pu.color; ctx.lineWidth=1.5;
       ctx.shadowColor=pu.color; ctx.shadowBlur=8;
-      ctx.beginPath(); ctx.arc(item.x,item.y,15,0,Math.PI*2); ctx.stroke(); ctx.restore();
+      ctx.beginPath(); ctx.arc(item.x,item.y,15,0,Math.PI*2); ctx.stroke();
+      if(pu.id==='BITTER'){
+        ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.shadowBlur=0; ctx.fillStyle='#FF4444';
+        ctx.fillText('⚠',item.x,item.y-19);
+      }
+      ctx.restore();
     }
   });
 }
@@ -1262,9 +1267,9 @@ function drawLevelClear(time) {
     const t=(time*0.0125+i*0.75)%1, dx=30+i*60, dy=t*CH-20;
     drawDonut(ctx,dx-12,dy-12,24,DONUTS[i*2%DONUTS.length],0.8,time*0.02+i);
   }
-  if(Math.floor(time*0.02)%2===0){
-    ctx.font='26px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
-    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=10;
+  if(Math.floor(time*0.01)%2===0){
+    ctx.font='17px "Fredoka One", cursive'; ctx.fillStyle='#00f5d4';
+    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=8;
     ctx.fillText('タップして次のステージへ',CW/2,CH/2+160);
     ctx.shadowBlur=0;
   }
@@ -1301,23 +1306,11 @@ function drawGameOver(time) {
 // 物理・コリジョン
 // ───────────────────────────────────────────────────────────
 function updateBalls(dt) {
-  const isFire   = powerupTimers['FIRE']   > frameTime;
-  const isGhost  = powerupTimers['GHOST']  > frameTime;
-  const isMagnet = powerupTimers['MAGNET'] > frameTime;
-  const isBomb   = powerupTimers['BOMB']   > frameTime;
+  const isFire = powerupTimers['FIRE'] > frameTime;
+  const isBomb = powerupTimers['BOMB'] > frameTime;
 
   balls.forEach(ball => {
     if (ball.stuck) { ball.x=paddle.x+paddle.w/2; ball.y=paddle.y-BALL_R-1; return; }
-    if (isMagnet && blocks.length>0) {
-      let nearest=null, minDist=Infinity;
-      blocks.forEach(b=>{const d=Math.hypot((b.x+b.w/2)-ball.x,(b.y+b.h/2)-ball.y);if(d<minDist){minDist=d;nearest=b;}});
-      if(nearest&&minDist>50){
-        const dx=(nearest.x+nearest.w/2)-ball.x, dy=(nearest.y+nearest.h/2)-ball.y, mag=Math.hypot(dx,dy);
-        ball.vx+=dx/mag*0.2; ball.vy+=dy/mag*0.2;
-        const spd=Math.hypot(ball.vx,ball.vy), tgt=getLevelConfig(level).ballSpeed*(powerupTimers['SLOW']>frameTime?0.5:1);
-        if(spd>0){ball.vx=ball.vx/spd*tgt; ball.vy=ball.vy/spd*tgt;}
-      }
-    }
     ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
     if(ball.x-BALL_R<0){ball.x=BALL_R;ball.vx=Math.abs(ball.vx);playSound('wall');}
     if(ball.x+BALL_R>CW){ball.x=CW-BALL_R;ball.vx=-Math.abs(ball.vx);playSound('wall');}
@@ -1331,7 +1324,7 @@ function updateBalls(dt) {
       const spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.01,maxSpd);
       ball.vx=Math.cos(angle)*spd; ball.vy=Math.sin(angle)*spd;
       ball.y=paddle.y-BALL_R-1;
-      if(powerupTimers['STICKY']>frameTime){ball.stuck=true;stickBall=ball;}
+      if(hasStickyPaddle){ball.stuck=true;stickBall=ball;hasStickyPaddle=false;}
       playSound('paddle'); spawnParticles(ball.x,paddle.y,'#ff6bcd',4);
     }
     // シールド衝突
@@ -1340,7 +1333,7 @@ function updateBalls(dt) {
       hasShield=false; playSound('shield'); spawnParticles(ball.x,paddle.y+paddle.h+12,'#4169E1',10);
     }
     // ブロック衝突
-    if(!isGhost){
+    {
       for(let i=blocks.length-1;i>=0;i--){
         const b=blocks[i]; if(!b)continue;
         if(b.indestr){if(intersectBlock(ball,b)){reflectBall(ball,b);break;}continue;}
@@ -1367,7 +1360,10 @@ function reflectBall(ball,b){
 }
 
 function destroyBlock(b){
-  if(b.hasPowerup||Math.random()<0.08) spawnFallingItem(b.x+b.w/2,b.y+b.h/2,b.donutIdx);
+  if(b.hasPowerup||Math.random()<0.08){
+    const pu=POWERUP_TYPES[Math.floor(Math.random()*POWERUP_TYPES.length)];
+    spawnFallingItem(b.x+b.w/2,b.y+b.h/2,pu.donutIdx);
+  }
   const idx=blocks.indexOf(b); if(idx>=0)blocks.splice(idx,1);
 }
 function checkLevelClear(){
@@ -1389,14 +1385,13 @@ function hitBlock(b,ball,isBomb,isFire=false){
   b.hp--; if(isFire)b.hp=0;
   comboCount++; comboTimer=60;
   if(comboCount>maxComboSession)maxComboSession=comboCount;
-  const mul=powerupTimers['SCORE2']>frameTime?2:1;
-  const pts=(donut.points+(b.maxHp-1)*5+(comboCount>1?comboCount*2:0))*mul;
+  const pts=donut.points+(b.maxHp-1)*5+(comboCount>1?comboCount*2:0);
   score+=pts; saveHi(); updateDOM();
   spawnParticles(b.x+b.w/2,b.y+b.h/2,donut.glaze,6); playSound('hit');
   if(isBomb){
     const bx=b.x+b.w/2, by=b.y+b.h/2;
     const targets=blocks.filter(nb=>nb!==b&&!nb.indestr&&Math.hypot(nb.x+nb.w/2-bx,nb.y+nb.h/2-by)<75);
-    targets.forEach(nb=>{score+=DONUTS[nb.donutIdx].points*mul;spawnParticles(nb.x+nb.w/2,nb.y+nb.h/2,DONUTS[nb.donutIdx].glaze,4);destroyBlock(nb);});
+    targets.forEach(nb=>{score+=DONUTS[nb.donutIdx].points;spawnParticles(nb.x+nb.w/2,nb.y+nb.h/2,DONUTS[nb.donutIdx].glaze,4);destroyBlock(nb);});
     spawnExplosion(bx,by,'#FF6347'); flashColor='#FF6347'; flashAlpha=0.25; playSound('explode');
   }
   if(b.hp<=0){destroyBlock(b);checkLevelClear();}
@@ -1406,7 +1401,7 @@ function loseLife(){
   losingLife = true;
   lives--; flashColor='#FF0000'; flashAlpha=0.35; playSound('die'); updateDOM();
   if(lives<=0){ saveHi(); state='gameover'; losingLife=false; }
-  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; losingLife=false; },700);
+  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; hasStickyPaddle=false; paddle.w=PADDLE_DEF_W; losingLife=false; },700);
 }
 
 // ───────────────────────────────────────────────────────────
@@ -1414,23 +1409,20 @@ function loseLife(){
 // ───────────────────────────────────────────────────────────
 function activatePowerup(donutIdx){
   const pu=POWERUP_TYPES.find(p=>p.donutIdx===donutIdx);
-  if(!pu){ score+=500; selectedPowerupLabel='抹茶 +500点！'; selectedPowerupTimer=60; updateDOM(); return; }
-  selectedPowerupLabel=`${pu.emoji} ${pu.name}！`; selectedPowerupTimer=70; playSound('powerup');
+  if(!pu) return;
+  selectedPowerupLabel=`${pu.emoji} ${pu.name}！`; selectedPowerupTimer=70;
+  if(pu.id==='BITTER') playSound('die'); else playSound('powerup');
   switch(pu.id){
-    case 'WIDE': paddle.w=125; powerupTimers['WIDE']=frameTime+pu.duration; break;
-    case 'MULTI':
-      if(balls.length<5){const b=balls[0];if(b){spawnBall({x:b.x,y:b.y,angle:-Math.PI/2+0.5});spawnBall({x:b.x,y:b.y,angle:-Math.PI/2-0.5});}} break;
-    case 'SLOW':
-      powerupTimers['SLOW']=frameTime+pu.duration;
-      balls.forEach(b=>{const s=Math.hypot(b.vx,b.vy)*0.5,a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*s;b.vy=Math.sin(a)*s;}); break;
-    case 'FIRE':  powerupTimers['FIRE']=frameTime+pu.duration; break;
-    case 'SHIELD': hasShield=true; break;
-    case 'STICKY': powerupTimers['STICKY']=frameTime+pu.duration; break;
-    case 'LIFE':   lives=Math.min(lives+1,5); break;
-    case 'GHOST':  powerupTimers['GHOST']=frameTime+pu.duration; break;
-    case 'SCORE2': powerupTimers['SCORE2']=frameTime+pu.duration; break;
+    case 'FIRE':   powerupTimers['FIRE']=frameTime+pu.duration; break;
     case 'BOMB':   powerupTimers['BOMB']=frameTime+pu.duration; break;
+    case 'MULTI':
+      if(balls.length<6){const b=balls[0];if(b){spawnBall({x:b.x,y:b.y,angle:-Math.PI/2+0.6});spawnBall({x:b.x,y:b.y,angle:-Math.PI/2-0.6});}} break;
+    case 'WIDE':   paddle.w=Math.round(PADDLE_DEF_W*1.5); powerupTimers['WIDE']=frameTime+pu.duration; break;
+    case 'STICKY': hasStickyPaddle=true; break;
     case 'MAGNET': powerupTimers['MAGNET']=frameTime+pu.duration; break;
+    case 'SHIELD': hasShield=true; break;
+    case 'LIFE':   lives=Math.min(lives+1,5); break;
+    case 'BITTER': paddle.w=Math.round(PADDLE_DEF_W*0.5); powerupTimers['BITTER']=frameTime+pu.duration; break;
   }
   updateDOM();
 }
@@ -1438,14 +1430,11 @@ function activatePowerup(donutIdx){
 function updatePowerupTimers(){
   for(const id of Object.keys(powerupTimers)){
     if(powerupTimers[id]<=frameTime){
-      if(id==='WIDE') paddle.w=PADDLE_DEF_W;
-      if(id==='SLOW'){
-        // スロー終了時にボール速度を通常速度に戻す
-        const baseSpd=getLevelConfig(level).ballSpeed;
-        balls.forEach(b=>{
-          const a=Math.atan2(b.vy,b.vx);
-          b.vx=Math.cos(a)*baseSpd; b.vy=Math.sin(a)*baseSpd;
-        });
+      if(id==='WIDE'){
+        paddle.w = powerupTimers['BITTER']>frameTime ? Math.round(PADDLE_DEF_W*0.5) : PADDLE_DEF_W;
+      }
+      if(id==='BITTER'){
+        paddle.w = powerupTimers['WIDE']>frameTime ? Math.round(PADDLE_DEF_W*1.5) : PADDLE_DEF_W;
       }
       delete powerupTimers[id];
     }
