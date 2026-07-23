@@ -181,25 +181,68 @@ body::before {
   box-shadow: 0 0 18px rgba(0,245,212,0.35);
 }
 .title-btn-continue:hover { transform: scale(1.04); box-shadow: 0 0 28px rgba(0,245,212,0.65); }
-.title-select-row {
-  display: flex; gap: 6px; align-items: center; width: 84%; margin-top: 2px;
+.title-btn-list {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.85);
 }
-#stage-select {
-  flex: 1; background: rgba(30,0,50,0.85); border: 1px solid rgba(255,107,205,0.4);
-  border-radius: 10px; color: white; font-family: 'Fredoka One', cursive;
-  font-size: 14px; padding: 9px 10px; cursor: pointer; outline: none;
-  appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff6bcd' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+.title-btn-list:hover { background: rgba(255,107,205,0.18); border-color: rgba(255,107,205,0.5); color: white; transform: scale(1.03); }
+
+/* ── ステージ選択ポップアップ ── */
+#stage-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+  z-index: 9998; align-items: center; justify-content: center;
 }
-#stage-select option { background: #1a0030; }
-.title-btn-sel {
-  font-family: 'Fredoka One', cursive; font-size: 14px; letter-spacing: 0.5px;
-  background: rgba(255,107,205,0.15); border: 1px solid rgba(255,107,205,0.4);
-  color: white; border-radius: 10px; padding: 9px 14px; cursor: pointer;
-  white-space: nowrap; transition: all 0.18s;
+#stage-modal-overlay.active { display: flex; }
+#stage-modal {
+  background: linear-gradient(160deg,rgba(18,0,38,0.98),rgba(36,0,56,0.98));
+  border: 1px solid rgba(255,107,205,0.45); border-radius: 20px;
+  padding: 20px 18px 18px; width: 300px; max-height: 72vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 0 50px rgba(255,107,205,0.3), 0 0 100px rgba(255,107,205,0.1);
 }
-.title-btn-sel:hover { background: rgba(255,107,205,0.35); transform: scale(1.05); }
+#stage-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-shrink: 0;
+}
+#stage-modal-title {
+  font-family: 'Fredoka One', cursive; font-size: 17px; letter-spacing: 2px;
+  color: #ffcc00; text-shadow: 0 0 16px #ffcc0088;
+}
+#stage-modal-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.55);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer; transition: all 0.18s; flex-shrink: 0;
+}
+#stage-modal-close:hover { border-color: rgba(255,107,205,0.6); color: white; background: rgba(255,107,205,0.15); }
+#stage-modal-list {
+  overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; gap: 5px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,107,205,0.3) transparent;
+  padding-right: 2px;
+}
+#stage-modal-list::-webkit-scrollbar { width: 4px; }
+#stage-modal-list::-webkit-scrollbar-track { background: transparent; }
+#stage-modal-list::-webkit-scrollbar-thumb { background: rgba(255,107,205,0.35); border-radius: 2px; }
+.stage-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,107,205,0.18);
+  border-radius: 10px; padding: 9px 14px; cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0;
+}
+.stage-row:hover {
+  background: rgba(255,107,205,0.14); border-color: rgba(255,107,205,0.5);
+  transform: translateX(3px);
+}
+.stage-row-num {
+  font-family: 'Fredoka One', cursive; font-size: 15px; color: #ffcc00;
+}
+.stage-row-bonus .stage-row-num { color: #ffe066; }
+.stage-row-time {
+  font-family: 'Kosugi Maru', sans-serif; font-size: 12px; color: #00f5d4;
+}
+.stage-row-notime { color: rgba(255,255,255,0.3); }
 
 /* ── ESC確認ポップアップ ── */
 #quit-overlay {
@@ -289,11 +332,8 @@ body::before {
       <!-- タイトル画面のUI overlay -->
       <div id="title-ui">
         <button class="title-btn title-btn-primary" id="btn-start1">ステージ 1 からスタート</button>
-        <button class="title-btn title-btn-continue" id="btn-continue" style="display:none;">続きのステージ 1 から再開</button>
-        <div class="title-select-row">
-          <select id="stage-select"></select>
-          <button class="title-btn-sel" id="btn-start-select">▶ スタート</button>
-        </div>
+        <button class="title-btn title-btn-continue" id="btn-continue" style="display:none;">続きのステージ 1 からスタート</button>
+        <button class="title-btn title-btn-list" id="btn-stage-list">ステージを選択する ▼</button>
       </div>
     </div>
 
@@ -326,6 +366,17 @@ body::before {
   </div>
 </div>
 
+<!-- ステージ選択ポップアップ -->
+<div id="stage-modal-overlay">
+  <div id="stage-modal">
+    <div id="stage-modal-header">
+      <span id="stage-modal-title">🍩 ステージを選ぶ</span>
+      <span id="stage-modal-close">✕</span>
+    </div>
+    <div id="stage-modal-list"></div>
+  </div>
+</div>
+
 <div id="quit-overlay">
   <div id="quit-dialog">
     <p>🍩 ゲームをやめますか？</p>
@@ -335,7 +386,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.4.0</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.5.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -356,7 +407,8 @@ resizeBg(); window.addEventListener('resize', resizeBg);
 const COLS = 9;
 const BLOCK_W = 30, BH = 16, BGAP = 2;
 const GRID_X = 7;   // (300 - (9*30 + 8*2)) / 2
-const GRID_Y = 96;   // ブロック開始Y（上部20%を天井ゾーンに）
+const CEILING_Y = 38; // ボールが跳ね返る天井ライン（タイトル文字の下）
+const GRID_Y = 96;   // ブロック開始Y
 const PADDLE_Y = 430;
 const PADDLE_DEF_W = 75;
 const BALL_R = 6;
@@ -387,7 +439,7 @@ const DONUTS = [
 const POWERUP_TYPES = [
   {id:'WIDE',   name:'ワイドパドル',    emoji:'↔️', color:'#FFD700',donutIdx:0,  duration:12000},
   {id:'MULTI',  name:'マルチボール',    emoji:'🎱', color:'#FF69B4',donutIdx:1,  duration:0},
-  {id:'SLOW',   name:'スローボール',    emoji:'🐢', color:'#98FB98',donutIdx:2,  duration:10000},
+  {id:'SLOW',   name:'スローボール',    emoji:'🐢', color:'#98FB98',donutIdx:2,  duration:5000},
   {id:'LASER',  name:'レーザー砲',      emoji:'⚡', color:'#FFD700',donutIdx:3,  duration:12000},
   {id:'FIRE',   name:'ファイアーボール',emoji:'🔥', color:'#FF4500',donutIdx:4,  duration:8000},
   {id:'SHIELD', name:'シールド',        emoji:'🛡️', color:'#4169E1',donutIdx:5,  duration:0},
@@ -921,7 +973,7 @@ function updateLasers(){
         hitBlock(b,null,false,false); hit=true; break;
       }
     }
-    if(hit||lasers[i].y<0)lasers.splice(i,1);
+    if(hit||lasers[i].y<CEILING_Y)lasers.splice(i,1);
   }
 }
 function drawLasers(){
@@ -937,72 +989,73 @@ function drawLasers(){
 function drawStageInfo(time) {
   ctx.save();
 
-  // ── 天井ゾーン背景（0〜GRID_Y）──
-  const skyGrad=ctx.createLinearGradient(0,0,0,GRID_Y);
-  skyGrad.addColorStop(0,'rgba(0,245,212,0.10)');
-  skyGrad.addColorStop(0.5,'rgba(10,0,21,0.78)');
-  skyGrad.addColorStop(1,'rgba(10,0,21,0.70)');
-  ctx.fillStyle=skyGrad; ctx.fillRect(0,0,CW,GRID_Y-1);
+  // ── ① ヘッダー帯（0 〜 CEILING_Y）: ステージ名・パワーアップタイマー ──
+  ctx.fillStyle='rgba(8,0,18,0.92)';
+  ctx.fillRect(0,0,CW,CEILING_Y);
 
-  // ── 天井ライン（ボールが跳ね返る壁）──
-  const ceilHue=(time*0.03)%360;
-  ctx.save();
-  ctx.shadowColor=`hsl(${ceilHue},100%,65%)`; ctx.shadowBlur=12;
-  ctx.fillStyle=`hsl(${ceilHue},100%,65%)`;
-  ctx.fillRect(0,0,CW,3); // 天井バー本体
-  // 左右の角マーカー（四角い角）
-  ctx.fillRect(0,0,10,10);
-  ctx.fillRect(CW-10,0,10,10);
-  // 点滅するダッシュライン
-  if(Math.floor(time*0.04)%2===0){
-    ctx.globalAlpha=0.4;
-    for(let x=20;x<CW-20;x+=18){ctx.fillRect(x,1,10,1);}
-    ctx.globalAlpha=1;
-  }
-  ctx.shadowBlur=0;
-  ctx.restore();
-
-  // ── ステージ名 ──
   const isBonus=level%5===0;
   const hue=(time*0.05)%360;
-  ctx.font='bold 14px "Fredoka One", cursive'; ctx.textAlign='center';
+  ctx.font='bold 13px "Fredoka One", cursive'; ctx.textAlign='center';
   if(isBonus){
-    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=8;
-    ctx.fillText(`✨ STAGE ${level} ✨ BONUS！`, CW/2, 26);
+    ctx.fillStyle=`hsl(${hue},100%,70%)`; ctx.shadowColor=`hsl(${hue},100%,70%)`; ctx.shadowBlur=7;
+    ctx.fillText(`✨ STAGE ${level} ✨ BONUS！`, CW/2, 15);
   } else {
-    ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.shadowBlur=0;
-    ctx.fillText(`STAGE ${level}`, CW/2, 26);
+    ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.shadowBlur=0;
+    ctx.fillText(`STAGE ${level}`, CW/2, 15);
   }
   ctx.shadowBlur=0;
 
-  // ── アクティブパワーアップ ──
+  // アクティブパワーアップをヘッダー内に横並び
   const actives=Object.keys(powerupTimers).filter(k=>powerupTimers[k]>frameTime);
   actives.forEach((id,i)=>{
     const pu=POWERUP_TYPES.find(p=>p.id===id);
     if(!pu)return;
     const rem=((powerupTimers[id]-frameTime)/1000).toFixed(1);
-    ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='left';
-    ctx.fillStyle=pu.color; ctx.fillText(`${pu.emoji}${rem}s`, 4+i*52, 50);
+    ctx.font='9px "Kosugi Maru", sans-serif'; ctx.textAlign='left';
+    ctx.fillStyle=pu.color; ctx.fillText(`${pu.emoji}${rem}s`, 4+i*46, 28);
   });
   if(hasShield){
-    ctx.font='10px "Kosugi Maru", sans-serif'; ctx.textAlign='right'; ctx.fillStyle='#4169E1';
-    ctx.fillText('🛡️',CW-4,50);
+    ctx.font='9px "Kosugi Maru", sans-serif'; ctx.textAlign='right'; ctx.fillStyle='#4169E1';
+    ctx.fillText('🛡️',CW-4,28);
   }
+
+  // ── ② 天井ライン（CEILING_Y） ──
+  const ceilHue=(time*0.04)%360;
+  ctx.save();
+  ctx.shadowColor=`hsl(${ceilHue},100%,65%)`; ctx.shadowBlur=14;
+  ctx.fillStyle=`hsl(${ceilHue},100%,65%)`;
+  ctx.fillRect(0,CEILING_Y,CW,3);
+  ctx.fillRect(0,CEILING_Y,10,10);
+  ctx.fillRect(CW-10,CEILING_Y,10,10);
+  if(Math.floor(time*0.05)%2===0){
+    ctx.globalAlpha=0.35;
+    for(let x=18;x<CW-18;x+=16){ctx.fillRect(x,CEILING_Y+1,9,1);}
+    ctx.globalAlpha=1;
+  }
+  ctx.shadowBlur=0;
+  ctx.restore();
+
+  // ── ③ 空きゾーン（CEILING_Y 〜 GRID_Y）: 薄いグラデ ──
+  const skyGrad=ctx.createLinearGradient(0,CEILING_Y+3,0,GRID_Y);
+  skyGrad.addColorStop(0,`hsla(${ceilHue},60%,40%,0.06)`);
+  skyGrad.addColorStop(1,'rgba(10,0,21,0)');
+  ctx.fillStyle=skyGrad;
+  ctx.fillRect(0,CEILING_Y+3,CW,GRID_Y-CEILING_Y-3);
 
   // ── パワーアップ取得フラッシュ ──
   if(selectedPowerupTimer>0){
     ctx.globalAlpha=Math.min(1,selectedPowerupTimer/20);
-    ctx.font='bold 14px "Fredoka One", cursive'; ctx.textAlign='center';
+    ctx.font='bold 13px "Fredoka One", cursive'; ctx.textAlign='center';
     ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=12;
-    ctx.fillText(selectedPowerupLabel||'',CW/2,CH-80);
+    ctx.fillText(selectedPowerupLabel||'',CW/2,CH-75);
     ctx.shadowBlur=0; ctx.globalAlpha=1;
   }
   // ── コンボ ──
   if(comboCount>1&&comboTimer>0){
     ctx.globalAlpha=Math.min(1,comboTimer/30);
-    ctx.font='bold 16px "Fredoka One", cursive'; ctx.textAlign='center';
+    ctx.font='bold 15px "Fredoka One", cursive'; ctx.textAlign='center';
     ctx.fillStyle='#ff6bcd'; ctx.shadowColor='#ff6bcd'; ctx.shadowBlur=10;
-    ctx.fillText(`コンボ ×${comboCount}！`,CW/2,CH-100);
+    ctx.fillText(`コンボ ×${comboCount}！`,CW/2,CH-95);
     ctx.shadowBlur=0; ctx.globalAlpha=1;
   }
   ctx.restore();
@@ -1127,7 +1180,7 @@ function updateBalls(dt) {
     ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
     if(ball.x-BALL_R<0){ball.x=BALL_R;ball.vx=Math.abs(ball.vx);playSound('wall');}
     if(ball.x+BALL_R>CW){ball.x=CW-BALL_R;ball.vx=-Math.abs(ball.vx);playSound('wall');}
-    if(ball.y-BALL_R<0){ball.y=BALL_R;ball.vy=Math.abs(ball.vy);playSound('wall');}
+    if(ball.y-BALL_R<CEILING_Y){ball.y=CEILING_Y+BALL_R;ball.vy=Math.abs(ball.vy);playSound('wall');}
     // パドル衝突
     if(ball.vy>0&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w&&
        ball.y+BALL_R>paddle.y&&ball.y-BALL_R<paddle.y+paddle.h){
@@ -1381,24 +1434,13 @@ document.getElementById('quit-overlay').addEventListener('click', e=>{
 });
 
 // ───────────────────────────────────────────────────────────
-// タイトルUI（ステージ選択・コンティニュー）
+// タイトルUI（コンティニュー・ステージ選択モーダル）
 // ───────────────────────────────────────────────────────────
-(function setupTitleUI(){
-  // ステージ選択プルダウンを1〜100で生成
-  const sel = document.getElementById('stage-select');
-  for(let i = 1; i <= 100; i++){
-    const opt = document.createElement('option');
-    opt.value = i;
-    const isBonus = i % 5 === 0;
-    opt.textContent = `STAGE ${i}${isBonus ? ' ⭐BONUS' : ''}`;
-    sel.appendChild(opt);
-  }
-})();
-
 function showTitleUI(){
   const cont = document.getElementById('btn-continue');
   if(continueStage > 1){
-    cont.textContent = `続きのステージ ${continueStage} から再開`;
+    const cs = Math.min(continueStage, 100);
+    cont.textContent = `続きのステージ ${cs} からスタート`;
     cont.style.display = '';
   } else {
     cont.style.display = 'none';
@@ -1410,14 +1452,47 @@ function hideTitleUI(){
 }
 
 function startFromTitle(lvl){
-  initAudio(); startBgm(); hideTitleUI(); initLevel(lvl);
+  initAudio(); startBgm(); hideTitleUI(); hideStageModal(); initLevel(lvl);
+}
+
+// ── ステージ選択モーダル ──
+function showStageModal(){
+  const list = document.getElementById('stage-modal-list');
+  list.innerHTML = '';
+  const maxCleared = continueStage - 1; // クリア済み最大ステージ
+
+  if(maxCleared < 1){
+    const msg = document.createElement('p');
+    msg.style.cssText = 'text-align:center;color:rgba(255,255,255,0.35);font-size:13px;padding:24px 0;font-family:"Kosugi Maru",sans-serif;';
+    msg.textContent = 'まだクリアしたステージはありません';
+    list.appendChild(msg);
+  } else {
+    for(let i = 1; i <= maxCleared; i++){
+      const bt = getStageBestTime(i);
+      const isBonus = i % 5 === 0;
+      const row = document.createElement('div');
+      row.className = 'stage-row' + (isBonus ? ' stage-row-bonus' : '');
+      const label = `STAGE ${i}${isBonus ? ' ⭐' : ''}`;
+      const timeStr = bt > 0 ? formatTime(bt) : '—';
+      row.innerHTML =
+        `<span class="stage-row-num">${label}</span>` +
+        `<span class="stage-row-time${bt > 0 ? '' : ' stage-row-notime'}">${timeStr}</span>`;
+      row.addEventListener('click', () => startFromTitle(i));
+      list.appendChild(row);
+    }
+  }
+  document.getElementById('stage-modal-overlay').classList.add('active');
+}
+function hideStageModal(){
+  document.getElementById('stage-modal-overlay').classList.remove('active');
 }
 
 document.getElementById('btn-start1').addEventListener('click', () => startFromTitle(1));
-document.getElementById('btn-continue').addEventListener('click', () => startFromTitle(continueStage));
-document.getElementById('btn-start-select').addEventListener('click', () => {
-  const lvl = parseInt(document.getElementById('stage-select').value);
-  startFromTitle(lvl);
+document.getElementById('btn-continue').addEventListener('click', () => startFromTitle(Math.min(continueStage,100)));
+document.getElementById('btn-stage-list').addEventListener('click', showStageModal);
+document.getElementById('stage-modal-close').addEventListener('click', hideStageModal);
+document.getElementById('stage-modal-overlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('stage-modal-overlay')) hideStageModal();
 });
 
 // ───────────────────────────────────────────────────────────
