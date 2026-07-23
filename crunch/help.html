@@ -183,6 +183,13 @@ html, body {
   width: 32px; height: 18px; border-radius: 4px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: bold; color: white;
+  position: relative;
+}
+.bi-badge {
+  position: absolute; top: 1px; right: 1px;
+  width: 9px; height: 9px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 6px; font-weight: bold; color: white;
 }
 
 /* ── スコア説明 ── */
@@ -273,38 +280,42 @@ html, body {
   <div class="section-title">🧱 ブロックのしゅるい</div>
   <div class="card">
     <div class="block-row">
-      <div class="block-icon" style="background:#8B6914; border:1px solid #FFD700;">1</div>
+      <div class="block-icon" style="background:rgba(140,85,20,0.85); border:1px solid rgba(220,160,60,0.6);"></div>
       <div>
         <strong style="color:var(--accent2);">ふつうのブロック（1HP）</strong><br>
         <span style="font-size:12px;color:rgba(255,255,255,0.6);">1回当たるとこわれる。種類によってとくてんがちがう。</span>
       </div>
     </div>
     <div class="block-row">
-      <div class="block-icon" style="background:#4169E1; border:1px solid #87CEEB;">2</div>
+      <div class="block-icon" style="background:rgba(140,85,20,0.85); border:2px solid #C0C0C0; box-shadow:0 0 5px #87CEEB;">
+        <span class="bi-badge" style="background:#4169E1; border:1px solid #87CEEB;">2</span>
+      </div>
       <div>
         <strong style="color:var(--accent2);">かたいブロック（2HP）</strong><br>
-        <span style="font-size:12px;color:rgba(255,255,255,0.6);">2回当たるとこわれる。1回当たると色が変わる。</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">2回当たるとこわれる。シルバー枠＋「2」バッジが目印。ヒットするごとにヒビが増えてバッジが減る。</span>
       </div>
     </div>
     <div class="block-row">
-      <div class="block-icon" style="background:#8B0000; border:1px solid #FF4444;">3</div>
+      <div class="block-icon" style="background:rgba(140,85,20,0.85); border:2px solid #FFD700; box-shadow:0 0 5px #FFD700;">
+        <span class="bi-badge" style="background:#8B0000; border:1px solid #FF4444;">3</span>
+      </div>
       <div>
         <strong style="color:var(--accent2);">とてもかたいブロック（3HP）</strong><br>
-        <span style="font-size:12px;color:rgba(255,255,255,0.6);">3回当たるとこわれる。段々と色が変わっていく。</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">3回当たるとこわれる。ゴールド枠＋「3」バッジが目印。ダメージを受けるごとにバッジが「2」→「1」と変わる。</span>
       </div>
     </div>
     <div class="block-row">
-      <div class="block-icon" style="background:#333; border:1px solid #888;">∞</div>
+      <div class="block-icon" style="background:linear-gradient(to bottom,#555,#2a2a2a,#1a1a1a); border:2px solid #888; color:rgba(255,255,255,0.4); font-size:12px;">∞</div>
       <div>
         <strong style="color:var(--accent2);">こわせないブロック</strong><br>
-        <span style="font-size:12px;color:rgba(255,255,255,0.6);">何回当てても消えない。邪魔にならないようにうまく避けよう。</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">何回当てても消えない。メタリックな見た目と「∞」マークが目印。</span>
       </div>
     </div>
     <div class="block-row">
-      <div class="block-icon" style="background:linear-gradient(135deg,#ff6bcd,#b44fff); border:1px solid #ff6bcd;">🎁</div>
+      <div class="block-icon" style="background:rgba(140,85,20,0.85); border:2px solid #ff6bcd; box-shadow:0 0 7px #ff6bcd; font-size:11px;">🎁</div>
       <div>
         <strong style="color:var(--accent2);">かならずドーナツが出るブロック</strong><br>
-        <span style="font-size:12px;color:rgba(255,255,255,0.6);">こわすとかならずパワーアップドーナツが落ちてくる。</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);">こわすとかならずパワーアップドーナツが落ちてくる。レインボーのキラキラした枠と「🎁」マークが目印。</span>
       </div>
     </div>
   </div>

@@ -493,7 +493,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.6.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.7.0</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -879,45 +879,102 @@ function drawBlock(b, time) {
   const donut = DONUTS[b.donutIdx];
   const {x,y,w,h} = b;
   ctx.save();
+
+  // ── 壊せないブロック：メタリック鉄板 ──
   if (b.indestr) {
-    roundRect(ctx,x,y,w,h,3);
-    ctx.fillStyle='#333'; ctx.fill();
-    ctx.strokeStyle='#666'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
-    for(let i=6;i<w;i+=6){ctx.beginPath();ctx.moveTo(x+i,y);ctx.lineTo(x+i,y+h);ctx.stroke();}
+    const mg = ctx.createLinearGradient(x,y,x,y+h);
+    mg.addColorStop(0,'#555'); mg.addColorStop(0.5,'#2a2a2a'); mg.addColorStop(1,'#1a1a1a');
+    roundRect(ctx,x,y,w,h,3); ctx.fillStyle=mg; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+    for(let i=5;i<w;i+=5){ctx.beginPath();ctx.moveTo(x+i,y);ctx.lineTo(x+i,y+h);ctx.stroke();}
+    roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3);
+    ctx.strokeStyle='#888'; ctx.lineWidth=2; ctx.stroke();
+    ctx.font=`bold ${Math.floor(h*0.85)}px "Fredoka One",cursive`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(255,255,255,0.38)';
+    ctx.shadowColor='rgba(255,255,255,0.2)'; ctx.shadowBlur=3;
+    ctx.fillText('∞',x+w/2,y+h/2+1);
     ctx.restore(); return;
   }
-  const flash = b.hitFlash > 0 ? Math.min(1, b.hitFlash / 8) : 0;
-  const alpha = b.hp === b.maxHp ? 1 : b.hp === b.maxHp-1 ? 0.8 : 0.6;
+
+  const flash = b.hitFlash>0 ? Math.min(1,b.hitFlash/8) : 0;
+  const dmg = b.maxHp - b.hp;
+  const alpha = dmg===0 ? 1 : dmg===1 ? 0.78 : 0.58;
+
+  // ── フレーバーベース ──
   roundRect(ctx,x,y,w,h,3);
-  ctx.fillStyle = rgbaStr(donut.body, alpha); ctx.fill();
+  ctx.fillStyle=rgbaStr(donut.body,alpha); ctx.fill();
   roundRect(ctx,x+1,y+1,w-2,Math.floor(h*0.5),3);
-  ctx.fillStyle = rgbaStr(donut.glaze, alpha * 0.5); ctx.fill();
+  ctx.fillStyle=rgbaStr(donut.glaze,alpha*0.5); ctx.fill();
   ctx.beginPath(); ctx.arc(x+w/2,y+h/2,h*0.2,0,Math.PI*2);
   ctx.fillStyle='rgba(10,0,21,0.6)'; ctx.fill();
-  if (donut.sprinkles.length>0) {
+  if(donut.sprinkles.length>0){
     for(let i=0;i<3;i++){
-      const sx=x+6+(i*8), sy=y+(i%2===0?3:h-6);
+      const sx=x+6+(i*8),sy=y+(i%2===0?3:h-6);
       ctx.save(); ctx.translate(sx,sy); ctx.rotate(i*0.9);
       ctx.fillStyle=donut.sprinkles[i%donut.sprinkles.length];
       ctx.fillRect(-3,-1,6,2); ctx.restore();
     }
   }
-  if (b.hp < b.maxHp && b.maxHp>1) {
-    ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.lineWidth=1.5;
-    if (b.maxHp-b.hp>=1){ctx.beginPath();ctx.moveTo(x+w*0.3,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.2,y+h);ctx.stroke();}
-    if (b.maxHp-b.hp>=2){ctx.beginPath();ctx.moveTo(x+w*0.7,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.8,y+h);ctx.stroke();}
-  }
-  if (b.hasPowerup) {
+
+  // ── 枠線：HP・プレゼントで変化 ──
+  if(b.hasPowerup){
     const hue=(time*0.1)%360;
     roundRect(ctx,x-0.5,y-0.5,w+1,h+1,4);
     ctx.strokeStyle=`hsl(${hue},100%,65%)`; ctx.lineWidth=2;
-    ctx.shadowColor=`hsl(${hue},100%,65%)`; ctx.shadowBlur=5; ctx.stroke();
+    ctx.shadowColor=`hsl(${hue},100%,65%)`; ctx.shadowBlur=6; ctx.stroke(); ctx.shadowBlur=0;
+  } else if(b.maxHp>=3){
+    // 3HP: ゴールド太枠
+    roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3);
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=2;
+    ctx.shadowColor='#FFD700'; ctx.shadowBlur=4; ctx.stroke(); ctx.shadowBlur=0;
+  } else if(b.maxHp===2){
+    // 2HP: シルバー太枠
+    roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3);
+    ctx.strokeStyle='#C0C0C0'; ctx.lineWidth=2;
+    ctx.shadowColor='#87CEEB'; ctx.shadowBlur=3; ctx.stroke(); ctx.shadowBlur=0;
   } else {
+    // 1HP: フレーバーグロー枠
     roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3);
     ctx.strokeStyle=rgbaStr(donut.glaze,alpha*0.8); ctx.lineWidth=1; ctx.stroke();
   }
-  if (flash>0){roundRect(ctx,x,y,w,h,3);ctx.fillStyle=`rgba(255,255,255,${flash*0.7})`;ctx.fill();}
+
+  // ── ヒビ割れ（白、ダメージ1以上で表示） ──
+  if(dmg>=1){
+    ctx.strokeStyle='rgba(255,255,255,0.65)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x+w*0.3,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.2,y+h);ctx.stroke();
+  }
+  if(dmg>=2){
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x+w*0.7,y);ctx.lineTo(x+w*0.5,y+h*0.5);ctx.lineTo(x+w*0.8,y+h);ctx.stroke();
+  }
+
+  // ── 🎁 プレゼントアイコン（中央） ──
+  if(b.hasPowerup){
+    ctx.font=`${Math.floor(h*0.72)}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🎁',x+w/2,y+h/2+1);
+  }
+
+  // ── HP数字バッジ（右上角・maxHp>1のとき常時表示） ──
+  if(b.maxHp>1){
+    const bR=4.5, bx2=x+w-bR-1.5, by2=y+bR+1.5;
+    let bgC,brC;
+    if(b.hp>=3){bgC='#8B0000';brC='#FF4444';}
+    else if(b.hp===2){bgC='#4169E1';brC='#87CEEB';}
+    else{bgC='#444';brC='#999';}
+    ctx.beginPath(); ctx.arc(bx2,by2,bR,0,Math.PI*2);
+    ctx.fillStyle=bgC; ctx.fill();
+    ctx.strokeStyle=brC; ctx.lineWidth=1; ctx.stroke();
+    ctx.font=`bold 7px "Fredoka One",cursive`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';
+    ctx.fillText(String(b.hp),bx2,by2+0.5);
+  }
+
+  // ── ヒットフラッシュ ──
+  if(flash>0){roundRect(ctx,x,y,w,h,3);ctx.fillStyle=`rgba(255,255,255,${flash*0.7})`;ctx.fill();}
+
   ctx.restore();
 }
 
