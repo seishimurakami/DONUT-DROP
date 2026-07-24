@@ -493,7 +493,7 @@ body::before {
   </div>
 </div>
 
-<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.10.1</div>
+<div id="copyright">© 2026 Seishi Murakami &nbsp;·&nbsp; DONUT-DROP CRUNCH! v1.13.2</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -548,7 +548,6 @@ const POWERUP_TYPES = [
   {id:'BOMB',   name:'爆発ボール',       emoji:'💥', color:'#FF6347', donutIdx:10, duration:8000},
   {id:'MULTI',  name:'マルチボール',     emoji:'🎱', color:'#FF69B4', donutIdx:1,  duration:0},
   {id:'WIDE',   name:'ワイドパドル',     emoji:'↔️', color:'#FFD700', donutIdx:0,  duration:12000},
-  {id:'STICKY', name:'スティッキー',     emoji:'🧲', color:'#DEB887', donutIdx:6,  duration:0},
   {id:'MAGNET', name:'マグネット',       emoji:'💜', color:'#9370DB', donutIdx:11, duration:10000},
   {id:'SHIELD', name:'シールド',         emoji:'🛡️', color:'#4169E1', donutIdx:5,  duration:0},
   {id:'LIFE',   name:'エクストラライフ', emoji:'❤️', color:'#FF1493', donutIdx:7,  duration:0},
@@ -672,7 +671,7 @@ function setStageBestTime(lvl, ms) {
 let stageBestTime = 0;  // 現在ステージのベストタイム（ms、0=未記録）
 let balls = [], paddle = {}, blocks = [], fallingItems = [], particles = [];
 let powerupTimers = {};
-let hasShield = false, hasStickyPaddle = false, stickBall = null;
+let hasShield = false;
 let losingLife = false; // 多重loseLife防止フラグ
 let comboCount = 0, comboTimer = 0, maxComboSession = 0;
 let frameTime = 0, lastTime = 0, titleTime = 0;
@@ -743,7 +742,7 @@ function initLevel(lvl) {
   level = lvl;
   blocks = buildBlocks(lvl);
   balls = []; fallingItems = []; particles = [];
-  powerupTimers = {}; hasShield = false; hasStickyPaddle = false; stickBall = null; losingLife = false;
+  powerupTimers = {}; hasShield = false; losingLife = false;
   comboCount = 0; comboTimer = 0;
   paddle = { x: CW/2 - PADDLE_DEF_W/2, y: PADDLE_Y, w: PADDLE_DEF_W, h: 11 };
   stageBestTime = getStageBestTime(lvl);
@@ -1063,8 +1062,6 @@ function drawPaddle() {
   let col1, col2, stripeCol, glowCol;
   if (powerupTimers['WIDE'] > frameTime) {
     col1='#FFD700'; col2='#FF8C00'; stripeCol='#FFFFFF'; glowCol='#FFD700';
-  } else if (stickBall) {
-    col1='#DEB887'; col2='#8B5E3C'; stripeCol='#FFFACD'; glowCol='#DEB887';
   } else {
     col1='#ff6bcd'; col2='#cc00aa'; stripeCol='#FFFFFF'; glowCol='#ff6bcd';
   }
@@ -1409,7 +1406,6 @@ function updateBalls(dt) {
       const spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.01,maxSpd);
       ball.vx=Math.cos(angle)*spd; ball.vy=Math.sin(angle)*spd;
       ball.y=paddle.y-BALL_R-1;
-      if(hasStickyPaddle){ball.stuck=true;stickBall=ball;hasStickyPaddle=false;}
       playSound('paddle'); spawnParticles(ball.x,paddle.y,'#ff6bcd',4);
     }
     // シールド衝突
@@ -1430,7 +1426,7 @@ function updateBalls(dt) {
       }
     }
   });
-  balls=balls.filter(ball=>{ if(ball.y>CH+20){if(stickBall===ball)stickBall=null;return false;}return true;});
+  balls=balls.filter(ball=>{ if(ball.y>CH+20){return false;}return true;});
   if(balls.length===0&&!losingLife) loseLife();
 }
 
@@ -1486,7 +1482,7 @@ function loseLife(){
   losingLife = true;
   lives--; flashColor='#FF0000'; flashAlpha=0.35; playSound('die'); updateDOM();
   if(lives<=0){ saveHi(); state='gameover'; losingLife=false; }
-  else setTimeout(()=>{ stickBall=null; spawnBall(); powerupTimers={}; hasShield=false; hasStickyPaddle=false; paddle.w=PADDLE_DEF_W; losingLife=false; },700);
+  else setTimeout(()=>{ spawnBall(); powerupTimers={}; hasShield=false; paddle.w=PADDLE_DEF_W; losingLife=false; },700);
 }
 
 // ───────────────────────────────────────────────────────────
@@ -1503,7 +1499,6 @@ function activatePowerup(donutIdx){
     case 'MULTI':
       if(balls.length<6){const b=balls[0];if(b){spawnBall({x:b.x,y:b.y,angle:-Math.PI/2+0.6});spawnBall({x:b.x,y:b.y,angle:-Math.PI/2-0.6});}} break;
     case 'WIDE':   paddle.w=Math.round(PADDLE_DEF_W*1.5); powerupTimers['WIDE']=frameTime+pu.duration; break;
-    case 'STICKY': hasStickyPaddle=true; break;
     case 'MAGNET': powerupTimers['MAGNET']=frameTime+pu.duration; break;
     case 'SHIELD': hasShield=true; break;
     case 'LIFE':   lives=Math.min(lives+1,5); break;
@@ -1536,10 +1531,7 @@ document.addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.code==='Space'||e.code==='ArrowUp'){
     e.preventDefault();
-    if(state==='playing'){
-      if(stickBall){releaseStick();}
-      else if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;}
-    }
+    if(state==='playing'){}
     if(state==='title'){startFromTitle(1);}
     if(state==='levelclear'){startNextLevel();}
     if(state==='gameover'){resetGame();}
@@ -1583,17 +1575,9 @@ function handleTap(x){
   if(state==='levelclear'){startNextLevel();return;}
   if(state==='gameover'){resetGame();return;}
   if(state==='playing'){
-    if(stickBall){releaseStick();return;}
-    if(balls.length>0&&balls[0].stuck){balls[0].stuck=false;stickBall=null;return;}
+    const stuckBall = balls.find(b => b.stuck);
+    if(stuckBall){ stuckBall.stuck = false; }
   }
-}
-function releaseStick(){
-  if(!stickBall)return;
-  stickBall.stuck=false;
-  const angle=-Math.PI/2+(Math.random()-0.5)*0.5;
-  const spd=getLevelConfig(level).ballSpeed;
-  stickBall.vx=Math.cos(angle)*spd; stickBall.vy=Math.sin(angle)*spd;
-  stickBall=null;
 }
 function updatePaddleInput(){
   if(keys['ArrowLeft']||keys['KeyA'])paddle.x=Math.max(0,paddle.x-6);

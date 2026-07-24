@@ -1,0 +1,410 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB1702C63012EB050090CB15 /* AdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1702C13012EB050090CB15 /* AdManager.swift */; };
+		BB1702C73012EB050090CB15 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1702C23012EB050090CB15 /* ContentView.swift */; };
+		BB1702C83012EB050090CB15 /* GameCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1702C43012EB050090CB15 /* GameCenterManager.swift */; };
+		BB1702C93012EB050090CB15 /* GameWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1702C53012EB050090CB15 /* GameWebView.swift */; };
+		BB1702CA3012EB050090CB15 /* DonutDropCrunchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1702C33012EB050090CB15 /* DonutDropCrunchApp.swift */; };
+		BB1702CD3012EB3E0090CB15 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = BB1702CB3012EB3E0090CB15 /* index.html */; };
+		BB1702CF3012EB9A0090CB15 /* DonutDropCrunch.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BB1702CE3012EB9A0090CB15 /* DonutDropCrunch.mp3 */; };
+		BB1702D23012F9A00090CB15 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = BB1702D13012F9A00090CB15 /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB1702A63012EA960090CB15 /* DonutDropCrunch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DonutDropCrunch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB1702C13012EB050090CB15 /* AdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManager.swift; sourceTree = "<group>"; };
+		BB1702C23012EB050090CB15 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		BB1702C33012EB050090CB15 /* DonutDropCrunchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonutDropCrunchApp.swift; sourceTree = "<group>"; };
+		BB1702C43012EB050090CB15 /* GameCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterManager.swift; sourceTree = "<group>"; };
+		BB1702C53012EB050090CB15 /* GameWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameWebView.swift; sourceTree = "<group>"; };
+		BB1702CB3012EB3E0090CB15 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		BB1702CE3012EB9A0090CB15 /* DonutDropCrunch.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = DonutDropCrunch.mp3; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BB1702BB3012EA980090CB15 /* Exceptions for "DonutDropCrunch" folder in "DonutDropCrunch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BB1702A53012EA960090CB15 /* DonutDropCrunch */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BB1702A83012EA960090CB15 /* DonutDropCrunch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BB1702BB3012EA980090CB15 /* Exceptions for "DonutDropCrunch" folder in "DonutDropCrunch" target */,
+			);
+			path = DonutDropCrunch;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB1702A33012EA960090CB15 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB1702D23012F9A00090CB15 /* GoogleMobileAds in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BB17029D3012EA960090CB15 = {
+			isa = PBXGroup;
+			children = (
+				BB1702CC3012EB3E0090CB15 /* www */,
+				BB1702C13012EB050090CB15 /* AdManager.swift */,
+				BB1702CE3012EB9A0090CB15 /* DonutDropCrunch.mp3 */,
+				BB1702C23012EB050090CB15 /* ContentView.swift */,
+				BB1702C33012EB050090CB15 /* DonutDropCrunchApp.swift */,
+				BB1702C43012EB050090CB15 /* GameCenterManager.swift */,
+				BB1702C53012EB050090CB15 /* GameWebView.swift */,
+				BB1702A83012EA960090CB15 /* DonutDropCrunch */,
+				BB1702A73012EA960090CB15 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BB1702A73012EA960090CB15 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB1702A63012EA960090CB15 /* DonutDropCrunch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB1702CC3012EB3E0090CB15 /* www */ = {
+			isa = PBXGroup;
+			children = (
+				BB1702CB3012EB3E0090CB15 /* index.html */,
+			);
+			path = www;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB1702A53012EA960090CB15 /* DonutDropCrunch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB1702BC3012EA980090CB15 /* Build configuration list for PBXNativeTarget "DonutDropCrunch" */;
+			buildPhases = (
+				BB1702A23012EA960090CB15 /* Sources */,
+				BB1702A33012EA960090CB15 /* Frameworks */,
+				BB1702A43012EA960090CB15 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BB1702A83012EA960090CB15 /* DonutDropCrunch */,
+			);
+			name = DonutDropCrunch;
+			packageProductDependencies = (
+				BB1702D13012F9A00090CB15 /* GoogleMobileAds */,
+			);
+			productName = DonutDropCrunch;
+			productReference = BB1702A63012EA960090CB15 /* DonutDropCrunch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BB17029E3012EA960090CB15 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					BB1702A53012EA960090CB15 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = BB1702A13012EA960090CB15 /* Build configuration list for PBXProject "DonutDropCrunch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BB17029D3012EA960090CB15;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB1702D03012F9A00090CB15 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BB1702A73012EA960090CB15 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB1702A53012EA960090CB15 /* DonutDropCrunch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB1702A43012EA960090CB15 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB1702CD3012EB3E0090CB15 /* index.html in Resources */,
+				BB1702CF3012EB9A0090CB15 /* DonutDropCrunch.mp3 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BB1702A23012EA960090CB15 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB1702C63012EB050090CB15 /* AdManager.swift in Sources */,
+				BB1702C73012EB050090CB15 /* ContentView.swift in Sources */,
+				BB1702C83012EB050090CB15 /* GameCenterManager.swift in Sources */,
+				BB1702C93012EB050090CB15 /* GameWebView.swift in Sources */,
+				BB1702CA3012EB050090CB15 /* DonutDropCrunchApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BB1702BD3012EA980090CB15 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 56Q4R8SKFD;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DonutDropCrunch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DonutDropCrunch;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = seishimurakami.DonutDropCrunch;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BB1702BE3012EA980090CB15 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 56Q4R8SKFD;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DonutDropCrunch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DonutDropCrunch;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = seishimurakami.DonutDropCrunch;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		BB1702BF3012EA980090CB15 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 56Q4R8SKFD;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BB1702C03012EA980090CB15 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 56Q4R8SKFD;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BB1702A13012EA960090CB15 /* Build configuration list for PBXProject "DonutDropCrunch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB1702BF3012EA980090CB15 /* Debug */,
+				BB1702C03012EA980090CB15 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB1702BC3012EA980090CB15 /* Build configuration list for PBXNativeTarget "DonutDropCrunch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB1702BD3012EA980090CB15 /* Debug */,
+				BB1702BE3012EA980090CB15 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BB1702D03012F9A00090CB15 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.7.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB1702D13012F9A00090CB15 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB1702D03012F9A00090CB15 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = BB17029E3012EA960090CB15 /* Project object */;
+}
